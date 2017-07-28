@@ -1,0 +1,126 @@
+AllCops:
+  DisplayCopNames: true
+  Include:
+    - Rakefile
+    - config.ru
+    - lib/**/*.rake
+    # those are pure ruby files used by gem axlsx as view
+    - '**/*.axlsx'
+  Exclude:
+    - db/schema.rb
+    - _*/**/*
+    - private/**/*
+    - public/**/*
+
+  TargetRubyVersion: 2.4
+  TargetRailsVersion: 5.1
+
+Layout/EmptyLines:
+  Enabled: false
+
+Layout/EmptyLineBetweenDefs:
+  NumberOfEmptyLines: [1, 2]
+
+Layout/FirstParameterIndentation:
+  IndentationWidth: 4
+
+Layout/IndentArray:
+  EnforcedStyle: align_brackets
+
+Layout/IndentHash:
+  EnforcedStyle: align_braces
+
+Layout/MultilineArrayBraceLayout:
+  EnforcedStyle: new_line
+
+Layout/MultilineHashBraceLayout:
+  EnforcedStyle: new_line
+
+# Annoying when used with some api that have blocks with sometimes useful parameters
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+# Annoying because it wines for &block parameters, which helps make signature more explicit
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockNesting:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+# Really, you aim for less than that, but we won't bug you unless you reach 150
+Metrics/LineLength:
+  IgnoreCopDirectives: true
+  Max: 150
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Rails/FilePath:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/EmptyMethod:
+  Enabled: false
+
+Style/FileName:
+  Enabled: false
+
+Style/InverseMethods:
+  InverseMethods:
+    :present?: :blank?,
+    :include?: :exclude?
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
+# We tend to prefer the explicit aspect of sometimes using self.
+Style/RedundantSelf:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+# Doesn't look right to force it in this case:
+# where(belongs_to_reflection.foreign_type => value_class.base_class.name,
+#       belongs_to_reflection.foreign_key => values.first.id)
+# But look better in some other cases. So disable
+Style/TrailingCommaInArguments:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/WordArray:
+  Enabled: false

@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+COPS_TO_AUTO_CORRECT = [
+                         # Magic comment frozen_string_literal: true
+                         "Style/FrozenStringLiteralComment",
+                         "Layout/EmptyLineAfterMagicComment",
+
+                         # String literals
+                         "Style/StringLiterals",
+                         "Style/StringLiteralsInInterpolation",
+
+                         # Indentation
+                         "Layout/IndentationWidth",
+                         "Layout/CommentIndentation",
+                         "Layout/IndentationConsistency",
+
+                         # Useless whitespace / newlines
+                         "Layout/EmptyLinesAroundBeginBody",
+                         "Layout/EmptyLinesAroundBlockBody",
+                         "Layout/EmptyLinesAroundClassBody",
+                         "Layout/EmptyLinesAroundMethodBody",
+                         "Layout/EmptyLinesAroundModuleBody",
+                         "Layout/TrailingWhitespace",
+                         "Layout/TrailingBlankLines",
+                         "Layout/ExtraSpacing",
+
+                         # Array stuff
+                         "Layout/MultilineArrayBraceLayout",
+                         "Layout/SpaceInsideBrackets",
+                         "Layout/IndentArray",
+                         "Layout/AlignArray",
+
+                         # Hash stuff
+                         "Layout/MultilineHashBraceLayout",
+                         "Layout/SpaceInsideHashLiteralBraces",
+                         "Layout/IndentHash",
+                         "Layout/AlignHash",
+                         "Style/HashSyntax",
+                         "Layout/SpaceAfterColon",
+
+                         # Hash & Array
+                         "Layout/SpaceAfterComma",
+                         "Style/TrailingCommaInLiteral",
+
+                         # Block stuff
+                         "Layout/SpaceBeforeBlockBraces",
+                         "Layout/SpaceInsideBlockBraces",
+
+                         # Parens stuff
+                         "Layout/SpaceInsideParens",
+                         "Style/NestedParenthesizedCalls",
+
+                         # Method stuff
+                         "Style/BracesAroundHashParameters",
+                         "Style/MethodDefParentheses",
+                         "Layout/SpaceAroundEqualsInParameterDefault",
+                         "Layout/FirstParameterIndentation",
+
+                         # Misc
+                         "Layout/SpaceAroundOperators",
+                         "Layout/CaseIndentation",
+                         "Layout/ElseAlignment",
+                         "Layout/LeadingCommentSpace",
+
+                         # Code transformation for cleanup
+                         "Rails/Present",
+                         "Rails/Blank",
+                         "Style/EmptyCaseCondition",
+                         "Style/InverseMethods",
+                         "Style/RedundantReturn",
+                       ].freeze
+
+system("rubocop", "--only=#{COPS_TO_AUTO_CORRECT.join(',')}", "--auto-correct")
