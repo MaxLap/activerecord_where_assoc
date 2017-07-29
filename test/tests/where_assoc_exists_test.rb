@@ -20,7 +20,7 @@ describe ActiveRecordWhereAssoc::QueryMethods do
     end
   end
 
-  let(:tm) { TM.quick_create! }
+  let(:tm) { TM.quick_create!  }
   let(:hm) { tm.hms.quick_create!(TM) }
   let(:hm__through_hm) { hm.hm__through_hms.quick_create!(TM, Hm) }
 
