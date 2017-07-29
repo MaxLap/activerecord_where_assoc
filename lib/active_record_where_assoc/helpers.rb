@@ -29,8 +29,18 @@ module ActiveRecordWhereAssoc
       result = scope.where(ast)
       # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
       result.where_clause.binds.concat(nested_scope.where_clause.binds)
-
       result
+    end
+
+
+    if ActiveRecord.gem_version >= Gem::Version.new("5.1")
+      def self.join_keys(reflection)
+        reflection.join_keys
+      end
+    elsif ActiveRecord.gem_version >= Gem::Version.new("5.0")
+      def self.join_keys(reflection)
+        reflection.join_keys(reflection.klass)
+      end
     end
   end
 end

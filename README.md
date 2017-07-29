@@ -215,11 +215,11 @@ There are lots of things I want to do for this gem. See [TODO](https://github.co
 
 ## Development
 
-After checking out the repo, run `bundle install` to install dependencies.
- 
-For each of the following commands, you might need to put `bundle exec ` before them for them to work. See what works for you.
+This gem uses the [appraisal](https://github.com/thoughtbot/appraisal) gem to easily test against multiple versions of rails.
 
-Run `rake test` to run the tests. 
+After checking out the repo, run `bundle install` then `appraisal install` to install dependencies.
+
+Run `appraisal rake test` to run the tests. 
 
 Run `bin/console` for an interactive prompt that will allow you to experiment in the same environment as the tests.
 

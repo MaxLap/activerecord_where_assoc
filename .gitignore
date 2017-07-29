@@ -5,6 +5,7 @@
 /_yardoc/
 /coverage/
 /doc/
+/gemfiles/*.gemfile.lock
 /pkg/
 /spec/reports/
 /tmp/

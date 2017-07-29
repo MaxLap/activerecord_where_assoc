@@ -13,6 +13,10 @@ env:
   - DB=sqlite3
   - DB=mysql
 
+gemfile:
+  - gemfiles/rails_5_0.gemfile
+  - gemfiles/rails_5_1.gemfile
+
 before_install: gem install bundler -v 1.15.3
 
 before_script:

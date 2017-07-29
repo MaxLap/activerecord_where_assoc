@@ -1,10 +1,10 @@
 # frozen_string_literal: true
+
 if ENV["TRAVIS"]
   require "coveralls"
   require "simplecov"
   SimpleCov.formatter = Coveralls::SimpleCov::Formatter
 end
-
 
 if ENV["COVERAGE"] || ENV["TRAVIS"]
   require "simplecov"

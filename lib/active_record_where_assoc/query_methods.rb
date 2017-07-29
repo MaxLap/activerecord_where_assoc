@@ -70,7 +70,7 @@ module ActiveRecordWhereAssoc
         end
 
         # Can use #build_join_constraint on reflection in rails 5.2
-        join_keys = reflection.join_keys
+        join_keys = Helpers.join_keys(reflection)
         key = join_keys.key
         foreign_key = join_keys.foreign_key
 
