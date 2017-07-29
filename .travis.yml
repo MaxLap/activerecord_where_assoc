@@ -1,5 +1,25 @@
 sudo: false
 language: ruby
+cache: bundler
+
 rvm:
-  - 2.4.0
+  - 2.2.7
+  - 2.3.4
+  - 2.4.1
+  - ruby-head
+
+env:
+  - DB=pg
+  - DB=sqlite3
+  - DB=mysql
+
 before_install: gem install bundler -v 1.15.3
+
+before_script:
+  - psql -c 'CREATE DATABASE activerecord_where_assoc' -U postgres
+  - mysql -e 'CREATE DATABASE activerecord_where_assoc'
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - rvm: ruby-head

@@ -70,8 +70,8 @@ module Test
     end
 
     def self.db_user_name
-      # change this to whatever your config requires
-      ENV["TRAVIS"] ? "travis" : "root"
+      # I don't know why, I get access denied on Travis-CI when using user travis, but root works...
+      ENV["TRAVIS"] ? "root" : `whoami`
     end
 
     def self.database_name
@@ -92,5 +92,5 @@ else
   Test::SelectedDBHelper = Test::SQLite3
 end
 
-Test::SelectedDBHelper.drop_and_create_database
+Test::SelectedDBHelper.drop_and_create_database unless ENV["TRAVIS"]
 Test::SelectedDBHelper.connect_db

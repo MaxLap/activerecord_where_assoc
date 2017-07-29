@@ -22,7 +22,15 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.15"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"
-  spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "pry"
+
   spec.add_development_dependency "rubocop"
+
+  # Normally, testing with sqlite3 is good enough
+  spec.add_development_dependency "sqlite3"
+
+  # Travis-CI takes care of the other ones
+  # Using conditions because someone might not even be able to install the gems
+  spec.add_development_dependency "pg" if ENV["TRAVIS"] || ENV["ALL_DB"] || ENV["DB"] == "pg"
+  spec.add_development_dependency "mysql2" if ENV["TRAVIS"] || ENV["ALL_DB"] || ENV["DB"] == "mysql"
 end
