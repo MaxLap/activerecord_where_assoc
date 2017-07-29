@@ -8,11 +8,6 @@ rvm:
   - 2.4.1
   - ruby-head
 
-env:
-  - DB=pg
-  - DB=sqlite3
-  - DB=mysql
-
 gemfile:
   - gemfiles/rails_5_0.gemfile
   - gemfiles/rails_5_1.gemfile
@@ -22,6 +17,11 @@ before_install: gem install bundler -v 1.15.3
 before_script:
   - psql -c 'CREATE DATABASE activerecord_where_assoc' -U postgres
   - mysql -e 'CREATE DATABASE activerecord_where_assoc'
+
+scipt:
+  - DB=mysql bundle exec rake test
+  - DB=pg bundle exec rake test
+  - DB=sqlite3 bundle exec rake test
 
 matrix:
   fast_finish: true
