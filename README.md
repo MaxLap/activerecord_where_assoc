@@ -28,6 +28,7 @@ These allow for powerful, chainable, clear and easy to reuse scopes.
 
 ## Installation
 
+
 Add this line to your application's Gemfile:
 
 ```ruby
