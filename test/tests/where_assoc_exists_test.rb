@@ -3,10 +3,34 @@
 require "test_helper"
 
 describe ActiveRecordWhereAssoc::QueryMethods do
+  def self.generic_test(association_path, build_from, association_sources)
+    association_path = Array.wrap(association_path)
+    it "finds the matching #{association_path.join(' then ')}" do
+      send(build_from).send(association_path.last).quick_create!(*association_sources)
+
+      assert_equal [tm], TM.where_assoc_exists(association_path).to_a
+      assert_equal [], TM.where_assoc_not_exists(association_path).to_a
+    end
+
+    it "doesn't find the not matching #{association_path.join(' then ')}" do
+      send(build_from).send(association_path.last).quick_creates_bads!(*association_sources)
+
+      assert_equal [], TM.where_assoc_exists(association_path).to_a
+      assert_equal [tm], TM.where_assoc_not_exists(association_path).to_a
+    end
+  end
+
   let(:tm) { TM.quick_create! }
   let(:hm) { tm.hms.quick_create!(TM) }
+  let(:hm__through_hm) { hm.hm__through_hms.quick_create!(TM, Hm) }
 
   describe "where_assoc_exists" do
+    generic_test :hms, :tm, [TM]
+    generic_test :hm__through_hms, :hm, [TM, Hm]
+    generic_test [:hms, :hm__through_hms], :hm, [Hm]
+    generic_test :hm__through_hm__through_hms, :hm__through_hm, [TM, HmThroughHm]
+    generic_test :hm__through_hm_with_through_hm_sources, :hm__through_hm, [TM, Hm, HmThroughHm]
+
     it "always returns no result if no possible ones exists" do
       assert_equal [], TM.where_assoc_exists(:hms)
       assert_equal [], TM.where_assoc_not_exists(:hms)
@@ -14,80 +38,5 @@ describe ActiveRecordWhereAssoc::QueryMethods do
       assert_equal [], TM.where_assoc_exists(:hms)
       assert_equal [], TM.where_assoc_not_exists(:hms)
     end
-
-    it "finds the matching hms" do
-      tm.hms.quick_create!(TM)
-
-      assert_wae_existing :hms
-    end
-
-    it "doesn't find the non-matching hms" do
-      tm.hms.quick_creates_bads!(TM)
-
-      assert_wae_not_existing :hms
-    end
-
-    it "finds the mathing hm__through_hms" do
-      hm.hm__through_hms.quick_create!(TM, Hm)
-
-      assert_wae_existing :hm__through_hms
-    end
-
-    it "doesn't find the mathing hm__through_hms" do
-      # Each should be refused by one of the scopes on the relations
-      hm.hm__through_hms.quick_creates_bads!(TM, Hm)
-
-      assert_wae_not_existing :hm__through_hms
-    end
-
-    it "finds the mathing hms then hm__through_hms" do
-      hm.hm__through_hms.quick_create!(Hm)
-
-      assert_wae_existing [:hms, :hm__through_hms]
-    end
-
-    it "doesn't find the mathing hms then hm__through_hms" do
-      hm.hm__through_hms.quick_creates_bads!(Hm)
-
-      assert_wae_not_existing [:hms, :hm__through_hms]
-    end
-
-    it "finds the mathing hm__through_hm__through_hms" do
-      hm__through_hm = hm.hm__through_hms.quick_create!(TM, Hm)
-      hm__through_hm.hm__through_hm__through_hms.quick_create!(TM, HmThroughHm)
-
-      assert_wae_existing :hm__through_hm__through_hms
-    end
-
-    it "doesn't find the mathing hm__through_hm__through_hms" do
-      hm__through_hm = hm.hm__through_hms.quick_create!(TM, Hm)
-      hm__through_hm.hm__through_hm__through_hms.quick_creates_bads!(TM, HmThroughHm)
-
-      assert_wae_not_existing :hm__through_hm__through_hms
-    end
-
-    it "finds the mathing hm__through_hm_with_through_hm_sources" do
-      hm__through_hm = hm.hm__through_hms.quick_create!(Hm)
-      hm__through_hm.hm__through_hm_with_through_hm_sources.quick_create!(TM, Hm, HmThroughHm)
-
-      assert_wae_existing :hm__through_hm_with_through_hm_sources
-    end
-
-    it "doesn't find the mathing hm__through_hm_with_through_hm_sources" do
-      hm__through_hm = hm.hm__through_hms.quick_create!(Hm)
-      hm__through_hm.hm__through_hm_with_through_hm_sources.quick_creates_bads!(TM, Hm, HmThroughHm)
-
-      assert_wae_not_existing :hm__through_hm_with_through_hm_sources
-    end
-  end
-
-  def assert_wae_existing(*args, &block)
-    assert_equal [tm], TM.where_assoc_exists(*args, &block).to_a
-    assert_equal [], TM.where_assoc_not_exists(*args, &block).to_a
-  end
-
-  def assert_wae_not_existing(*args, &block)
-    assert_equal [], TM.where_assoc_exists(*args, &block).to_a
-    assert_equal [tm], TM.where_assoc_not_exists(*args, &block).to_a
   end
 end
