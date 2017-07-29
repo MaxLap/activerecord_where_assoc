@@ -1,4 +1,7 @@
 # ActiveRecord Where Assoc
+
+[![Build Status](https://travis-ci.org/MaxLap/activerecord_where_assoc.svg?branch=master)](https://travis-ci.org/MaxLap/activerecord_where_assoc)
+
 NOTE: this gem is in active development:
  
 * Expect it to be complete somewhere in August 2017. 
