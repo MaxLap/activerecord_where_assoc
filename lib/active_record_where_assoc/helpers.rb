@@ -21,18 +21,6 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    # Apply a where on a nested scope using Arel::Nodes instead of turning everything to a string.
-    def self.where_on_nested_scope(scope, nested_scope, &block)
-      ast = nested_scope.ast
-      ast = yield ast if block_given?
-
-      result = scope.where(ast)
-      # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
-      result.where_clause.binds.concat(nested_scope.where_clause.binds)
-      result
-    end
-
-
     if ActiveRecord.gem_version >= Gem::Version.new("5.1")
       def self.join_keys(reflection)
         reflection.join_keys
