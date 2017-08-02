@@ -8,5 +8,8 @@ require "active_record_where_assoc"
 require "active_support"
 
 require_relative "database_setup"
-require_relative "schema"
-require_relative "models"
+
+TESTS_NB_DEPTH = 3
+require_relative "association_genie"
+require_relative "schema2"
+require_relative "models2"
