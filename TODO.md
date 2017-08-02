@@ -11,7 +11,7 @@
 * handle limit & order in the default_scope, association's scope, has_one. Note that limit in the custom conditions (2nd parameter and block) don't need such consideration.
 * where_assoc_count could receive a relation as first parameter
 * receive a proc as condition argument, same behavior as passing a block
-* receiving a proc/block that takes no argument will use instance_eval on scope
+* receiving a proc/block that takes no argument will use instance_exec on scope
 * require applications to enable support for receiving a relation as condition.
 * Add comments to explain the tests
 

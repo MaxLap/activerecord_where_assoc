@@ -15,6 +15,7 @@ end
 
 require_relative "support/load_test_env"
 require "minitest/autorun"
+require_relative "support/custom_asserts"
 
 
 module TestHelpers

@@ -44,44 +44,111 @@ class BaseTestRecord < ActiveRecord::Base
     "#{table_name}.#{test_condition_column} % #{value} = 0"
   end
 
-  # Creates a relations with a conditions on the one column named after the association
-  # Provides a quick_create! method to simplify model creation that match the condition in tests
-  def self.testable_has_many(association_name, options = {})
+  # Creates a relations with a conditions on #{target_table_name}.#{target_table_name}_column
+  def self.testable_has_many(association_name, given_scope = nil, options = {})
+    if given_scope.is_a?(Hash)
+      options = given_scope
+      given_scope = nil
+    end
+
     condition_value = test_condition_value_for(association_name)
-    has_many(association_name, -> { where(testable_condition(condition_value)) }, options)
+    if given_scope
+      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
+    else
+      scope = -> { where(testable_condition(condition_value)) }
+    end
+
+    has_many(association_name, scope, options)
+  end
+
+  # Creates a relations with a conditions on #{target_table_name}.#{target_table_name}_column
+  def self.testable_has_one(association_name, given_scope = nil, options = {})
+    if given_scope.is_a?(Hash)
+      options = given_scope
+      given_scope = nil
+    end
+
+    condition_value = test_condition_value_for(association_name)
+    if given_scope
+      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
+    else
+      scope = -> { where(testable_condition(condition_value)) }
+    end
+
+    has_one(association_name, scope, options)
+  end
+
+  def self.create_default!
+    create!(test_condition_column => test_condition_value_for(:default_scope))
   end
 
   # does a #create! and automatically fills the column with a value that matches the merge of the condition on
   # the matching association of each passed source_associations
-  def self.quick_create!(*source_associations)
+  def create_assoc!(association_name, *source_associations)
+    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mob]\d+$/
+
     options = source_associations.extract_options!
     if !options[:allow_no_source] && source_associations.empty?
       raise "Need at least one source model or a nil instead"
     end
     source_associations = source_associations.compact
 
-    if !options[:skip_default] && test_condition_value_for?(:default_scope)
-      condition_values = test_condition_value_for(:default_scope)
+    association_macro = association_name.to_s[0]
+
+    reflection = self.class.reflections[association_name.to_s]
+    target_model = reflection.klass
+
+    if !options[:skip_default] && target_model.test_condition_value_for?(:default_scope)
+      condition_value = target_model.test_condition_value_for(:default_scope)
     end
 
     if source_associations.present?
-      condition_values ||= 1
-      condition_values *= TestHelpers.condition_value_result_for(*source_associations)
+      condition_value ||= 1
+      condition_value *= TestHelpers.condition_value_result_for(*source_associations)
     end
 
-    create!(test_condition_column => condition_values)
+    case association_macro
+    when "m"
+      record = send(association_name).create!(target_model.test_condition_column => condition_value)
+    when "o"
+      old_matched_ids = target_model.where(reflection.foreign_key => self.id).pluck(:id)
+      record = send("create_#{association_name}!", target_model.test_condition_column => condition_value)
+      target_model.where(id: old_matched_ids).update_all(reflection.foreign_key => self.id)
+    when "b"
+      record = send("create_#{association_name}!", target_model.test_condition_column => condition_value)
+      save! # Must save that our id that just changed
+    else
+      raise "Unexpected macro: #{association_macro}"
+    end
+
+    record
   end
 
-  # Receives the parameters to to #quick_create!, and creates a record for every
+  # Receives the same parameters as #create_assoc!, but creates a record for every
   # combinations missing one of the source models and the default scope
-  def self.quick_creates_bads!(association_name = nil, *source_models)
-    source_models = source_models.compact
-    wrong_combinations = source_models.combination(source_models.size - 1)
+  def create_bad_assocs!(association_name, *source_associations, &block)
+    source_models = source_associations.compact
+    wrong_combinations = source_associations.combination(source_associations.size - 1)
+
+    records = []
 
     wrong_combinations.each do |wrong_combination|
-      quick_create!(association_name, *wrong_combination, allow_no_source: true)
+      record = create_assoc!(association_name, *wrong_combination, allow_no_source: true)
+      if block
+        yield record
+        record.destroy
+      else
+        records << record
+      end
     end
 
-    quick_create!(association_name, *source_models, allow_no_source: true, skip_default: true)
+    record = create_assoc!(association_name, *source_models, allow_no_source: true, skip_default: true)
+    if block
+      yield record
+      record.destroy
+      nil
+    else
+      records
+    end
   end
 end
