@@ -1,5 +1,5 @@
-* travis
-* code climate?
+* where_assoc_count is wrong for all but direct association (no through, no path).
+  Should do SUM(SUM(SUM(COUNT)))
 * where_assoc_count tests for has_many (and the others)
 * where_assoc_count should use = when passed :==
 * test passing conditions / blocks to where_relation_exists

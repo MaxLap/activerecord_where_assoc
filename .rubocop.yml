@@ -99,6 +99,9 @@ Style/InverseMethods:
     :present?: :blank?,
     :include?: :exclude?
 
+Style/NegatedIf:
+  Enabled: false
+
 Style/PercentLiteralDelimiters:
   Enabled: false
 
