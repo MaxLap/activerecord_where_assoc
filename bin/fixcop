@@ -62,6 +62,7 @@ COPS_TO_AUTO_CORRECT = [
                          "Layout/CaseIndentation",
                          "Layout/ElseAlignment",
                          "Layout/LeadingCommentSpace",
+                         "Layout/SpaceBeforeComment",
 
                          # Code transformation for cleanup
                          "Rails/Present",

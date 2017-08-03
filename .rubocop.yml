@@ -12,7 +12,7 @@ AllCops:
     - private/**/*
     - public/**/*
 
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.2
   TargetRailsVersion: 5.1
 
 Layout/EmptyLines:
@@ -87,6 +87,10 @@ Style/ConditionalAssignment:
 
 Style/Documentation:
   Enabled: false
+
+# Can use a single nil in the else clause to remove the warning
+Style/EmptyElse:
+  EnforcedStyle: empty
 
 Style/EmptyMethod:
   Enabled: false
