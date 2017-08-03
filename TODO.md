@@ -14,6 +14,7 @@
 * receiving a proc/block that takes no argument will use instance_exec on scope
 * require applications to enable support for receiving a relation as condition.
 * Add comments to explain the tests
+* Add mutation testing?
 
 * Does LHEW applies when doing joins? If not, this is really broken! This might help the argument of removing this behavior.
 

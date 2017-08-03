@@ -25,12 +25,16 @@ module Test
       @postgres_config ||= {
                              adapter:   "postgresql",
                              database:  database_name,
-                             username:  "postgres",
+                             username:  db_user_name,
                            }
     end
 
     def self.database_name
       "activerecord_where_assoc"
+    end
+
+    def self.db_user_name
+      ENV["TRAVIS"] ? "postgres" : `whoami`.strip
     end
   end
 
@@ -80,16 +84,20 @@ module Test
   end
 end
 
+if ENV["DB"].blank?
+  puts "No DB environment variable provided, testing using SQLite3"
+  ENV["DB"] = "sqlite3"
+end
+
 case ENV["DB"]
-when "pg"
+when "pg", "postgres", "postgresql"
   Test::SelectedDBHelper = Test::Postgres
 when "sqlite3"
   Test::SelectedDBHelper = Test::SQLite3
 when "mysql"
   Test::SelectedDBHelper = Test::MySQL
 else
-  puts "No DB environment variable provided, testing using SQLite3"
-  Test::SelectedDBHelper = Test::SQLite3
+  raise "Unhandled DB parameter: #{ENV['DB'].inspect}"
 end
 
 Test::SelectedDBHelper.drop_and_create_database unless ENV["TRAVIS"]
