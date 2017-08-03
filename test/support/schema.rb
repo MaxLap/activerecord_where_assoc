@@ -10,6 +10,7 @@ ActiveRecord::Schema.define do
     t.integer :s1_id
 
     t.bigint :s0s_column
+    t.bigint :s0s_adhoc_column
   end
 
   create_table :s1s do |t|
@@ -17,6 +18,7 @@ ActiveRecord::Schema.define do
     t.integer :s1_id
 
     t.bigint :s1s_column
+    t.bigint :s1s_adhoc_column
   end
 
   create_table :s2s do |t|
@@ -24,11 +26,13 @@ ActiveRecord::Schema.define do
     t.integer :s3_id
 
     t.bigint :s2s_column
+    t.bigint :s2s_adhoc_column
   end
 
   create_table :s3s do |t|
     t.integer :s2_id
 
     t.bigint :s3s_column
+    t.bigint :s3s_adhoc_column
   end
 end

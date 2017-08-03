@@ -10,11 +10,12 @@ module ActiveRecordWhereAssoc
     # * a symbol passes it to unscoped.send
     # * otherwise raises an exception
     def self.unscoped_relation_from(model, arg)
-      if arg.is_a?(ActiveRecord::Relation)
+      case arg
+      when ActiveRecord::Relation
         arg
-      elsif arg.is_any?(Hash, String, Array, Arel::Node)
+      when Hash, String, Array, Arel::Node
         model.unscoped.where(arg)
-      elsif arg.is_a?(Symbol)
+      when Symbol
         model.unscoped.send(arg)
       else
         raise ArgumentError, "Unhandled argument of type '#{relation.type.name}' received"

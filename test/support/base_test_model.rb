@@ -28,6 +28,11 @@ class BaseTestRecord < ActiveRecord::Base
   end
   delegate :test_condition_column, to: "self.class"
 
+  def self.adhoc_column_name
+    "#{table_name}_adhoc_column"
+  end
+  delegate :adhoc_column_name, to: "self.class"
+
   def self.test_condition_value_for(association_name)
     @@model_associations_conditions[[self.name, association_name.to_s]] ||= @@condition_values_enumerator.next
   end
@@ -84,11 +89,10 @@ class BaseTestRecord < ActiveRecord::Base
 
   # does a #create! and automatically fills the column with a value that matches the merge of the condition on
   # the matching association of each passed source_associations
-  def create_assoc!(association_name, *source_associations)
+  def create_assoc!(association_name, *source_associations, allow_no_source: false, adhoc_value: nil, skip_default: false)
     raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mob]\d+$/
 
-    options = source_associations.extract_options!
-    if !options[:allow_no_source] && source_associations.empty?
+    if !allow_no_source && source_associations.empty?
       raise "Need at least one source model or a nil instead"
     end
     source_associations = source_associations.compact
@@ -98,7 +102,7 @@ class BaseTestRecord < ActiveRecord::Base
     reflection = self.class.reflections[association_name.to_s]
     target_model = reflection.klass
 
-    if !options[:skip_default] && target_model.test_condition_value_for?(:default_scope)
+    if !skip_default && target_model.test_condition_value_for?(:default_scope)
       condition_value = target_model.test_condition_value_for(:default_scope)
     end
 
@@ -107,15 +111,20 @@ class BaseTestRecord < ActiveRecord::Base
       condition_value *= TestHelpers.condition_value_result_for(*source_associations)
     end
 
+    attributes = { target_model.test_condition_column => condition_value,
+                   target_model.adhoc_column_name => adhoc_value,
+    }
     case association_macro
     when "m"
-      record = send(association_name).create!(target_model.test_condition_column => condition_value)
+      record = send(association_name).create!(attributes)
     when "o"
+      # Creating a has_one like this removes the id of the previously existing records that were refering.
+      # We don't want that for the purpose of our tests
       old_matched_ids = target_model.where(reflection.foreign_key => self.id).pluck(:id)
-      record = send("create_#{association_name}!", target_model.test_condition_column => condition_value)
+      record = send("create_#{association_name}!", attributes)
       target_model.where(id: old_matched_ids).update_all(reflection.foreign_key => self.id)
     when "b"
-      record = send("create_#{association_name}!", target_model.test_condition_column => condition_value)
+      record = send("create_#{association_name}!", attributes)
       save! # Must save that our id that just changed
     else
       raise "Unexpected macro: #{association_macro}"

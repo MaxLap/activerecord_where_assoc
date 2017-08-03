@@ -5,7 +5,7 @@ require_relative "helpers"
 module ActiveRecordWhereAssoc
   module QueryMethods
     def where_assoc_exists(association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(association_name, given_scope, &block).select(1)
+      nested_relation = relation_on_association(association_name, given_scope, &block).select(0)
       res_relation = where(Arel::Nodes::Exists.new(nested_relation.ast))
       # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
       res_relation.where_clause.binds.concat(nested_relation.where_clause.binds)
@@ -13,7 +13,7 @@ module ActiveRecordWhereAssoc
     end
 
     def where_assoc_not_exists(association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(association_name, given_scope, &block).select(1)
+      nested_relation = relation_on_association(association_name, given_scope, &block).select(0)
       res_relation = where(Arel::Nodes::Exists.new(nested_relation.ast).not)
       # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
       res_relation.where_clause.binds.concat(nested_relation.where_clause.binds)
@@ -80,8 +80,19 @@ module ActiveRecordWhereAssoc
 
         wrapping_scope = wrapping_scope.where(table[key].eq(foreign_table[foreign_key]))
 
+        if reflection.macro == :has_one
+          # We only check the last one that matches the scopes on the associations / default_scope of record.
+          # The given scope is applied on the result.
+          # We use unscoped to avoid duplicating the conditions in the query
+          # FIXME: we shouldn't need to unscope, but we do becasue nested association use where_exists, which does a select(1)
+          wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1).unscope(:select))
+        else
+          # TODO: remove limit and order, they are useless. Probably better to do that after the given_scope is used
+          nil
+        end
+
         if i.zero?
-          wrapping_scope = current_scope.merge(Helpers.unscoped_relation_from(klass, given_scope)) if given_scope
+          wrapping_scope = wrapping_scope.merge(Helpers.unscoped_relation_from(reflection.klass, given_scope)) if given_scope
           if block
             yielded_scope = yield wrapping_scope
             wrapping_scope = yielded_scope if yielded_scope
