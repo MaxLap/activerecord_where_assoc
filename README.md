@@ -219,13 +219,20 @@ This gem uses the [appraisal](https://github.com/thoughtbot/appraisal) gem to ea
 
 After checking out the repo, run `bundle install` then `appraisal install` to install dependencies.
 
-Run `appraisal rake test` to run the tests. 
+Run `appraisal rake test` to run the tests with every supported versions of rails.
 
 Run `bin/console` for an interactive prompt that will allow you to experiment in the same environment as the tests.
 
 Run `bin/fixcop` to fix a lot of common styling mistake of your code.
 
 Run `rubocop` to see all the other rules that you break. Use common sense, sometimes it's okay to break a rule, add a [rubocop:disable comment](http://rubocop.readthedocs.io/en/latest/configuration/#disabling-cops-within-source-code) in that situation.
+
+To test closer to what Travis-CI does (multiple ruby versions):
+
+* Run `wwtd` to run the tests with every support version of rails and of ruby. Note that it will tell you which versions are not installed and you will need to install them yourself, along with bundler for each (You can skip ruby-head).
+
+* Run `wwtd --local` to run the tests with every support version of rails and of ruby that you have installed. (replaces `appraisal rake test`)
+
 
 ## Contributing
 
