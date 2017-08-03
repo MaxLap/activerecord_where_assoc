@@ -60,11 +60,6 @@ module ActiveRecordWhereAssoc
         next_reflection = chain[i + 1]
         wrapping_scope = reflection.klass.default_scoped
 
-        if next_reflection
-          # the fields are ignored by EXISTS, and we use EXISTS for all the nested relations
-          wrapping_scope = wrapping_scope.select("1")
-        end
-
         reflection.constraints.each do |callable|
           wrapping_scope = wrapping_scope.instance_exec(&callable)
         end
@@ -84,8 +79,7 @@ module ActiveRecordWhereAssoc
           # We only check the last one that matches the scopes on the associations / default_scope of record.
           # The given scope is applied on the result.
           # We use unscoped to avoid duplicating the conditions in the query
-          # FIXME: we shouldn't need to unscope, but we do becasue nested association use where_exists, which does a select(1)
-          wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1).unscope(:select))
+          wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1))
         else
           # TODO: remove limit and order, they are useless. Probably better to do that after the given_scope is used
           nil
@@ -100,7 +94,7 @@ module ActiveRecordWhereAssoc
         end
 
         if nested_scope
-          wrapping_scope = wrapping_scope.where(Arel::Nodes::Exists.new(nested_scope.ast))
+          wrapping_scope = wrapping_scope.where(Arel::Nodes::Exists.new(nested_scope.select(0).ast))
           # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
           wrapping_scope.where_clause.binds.concat(nested_scope.where_clause.binds)
         end
