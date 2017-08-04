@@ -32,8 +32,6 @@ module ActiveRecordWhereAssoc
 
       if association_names_path.size > 1
         relation_on_direct_association(association_names_path.first) do |model_scope|
-          # In the case of nested relations, the nested is always a where_assoc_exists.
-          # Anything else would be extremely confusing and will probably not lead to what is desired
           model_scope.where_assoc_exists(association_names_path[1..-1], given_scope, &block)
         end
       else
@@ -78,8 +76,19 @@ module ActiveRecordWhereAssoc
         if reflection.macro == :has_one
           # We only check the last one that matches the scopes on the associations / default_scope of record.
           # The given scope is applied on the result.
-          # We use unscoped to avoid duplicating the conditions in the query
-          wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1))
+          if klass.table_name.include?(".")
+            # This works universally, but seems to have slower performances.. Need to test if there is an alternative way
+            # of expressing the above... They should be equivalent, but their performances aren't
+            # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
+            # We use unscoped to avoid duplicating the conditions in the query, which is noise
+            wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1))
+          else
+            # This works as long as the table_name doesn't have a schema, since we need to use an alias
+            # with the table name to make scopes and everything else work as expected.
+            # TODO: Use Arel for this?
+            # We use unscoped to avoid duplicating the conditions in the query, which is noise
+            wrapping_scope = reflection.klass.unscoped.from("(#{wrapping_scope.limit(1).to_sql}) #{reflection.klass.table_name}")
+          end
         else
           # TODO: remove limit and order, they are useless. Probably better to do that after the given_scope is used
           nil

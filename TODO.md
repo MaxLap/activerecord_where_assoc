@@ -3,7 +3,6 @@
 * where_assoc_count tests for has_many (and the others)
 * where_assoc_count should use = when passed :==
 * test passing conditions / blocks to where_relation_exists
-* handle has_one (and tests)
 * handle belongs_to (and tests)
 * handle has_and_belongs_to_many (and tests)
 * handle polymorphism

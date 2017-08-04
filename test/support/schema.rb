@@ -35,4 +35,39 @@ ActiveRecord::Schema.define do
     t.bigint :s3s_column
     t.bigint :s3s_adhoc_column
   end
+
+
+  if Test::SelectedDBHelper == Test::Postgres
+    execute <<-SQL
+      CREATE SCHEMA foo_schema;
+    SQL
+
+    execute <<-SQL
+      CREATE SCHEMA bar_schema;
+    SQL
+  elsif Test::SelectedDBHelper == Test::SQLite3
+    execute <<-SQL
+      ATTACH DATABASE ':memory:' AS foo_schema;
+    SQL
+
+    execute <<-SQL
+      ATTACH DATABASE ':memory:' AS bar_schema;
+    SQL
+  elsif Test::SelectedDBHelper == Test::MySQL
+    execute <<-SQL
+      CREATE DATABASE foo_schema;
+    SQL
+
+    execute <<-SQL
+      CREATE DATABASE bar_schema;
+    SQL
+  end
+
+  create_table "foo_schema.schema_s0s" do |t|
+    t.integer :schema_s1_id
+  end
+
+  create_table "bar_schema.schema_s1s" do |t|
+    t.integer :schema_s0_id
+  end
 end

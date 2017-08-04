@@ -48,3 +48,15 @@ end
 
 class S3 < BaseTestRecord
 end
+
+
+class SchemaS0 < ActiveRecord::Base
+  self.table_name = "foo_schema.schema_s0s"
+  belongs_to :b1, class_name: "SchemaS1", foreign_key: "schema_s1_id"
+  has_many :m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+  has_one :o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+end
+
+class SchemaS1 < ActiveRecord::Base
+  self.table_name = "bar_schema.schema_s1s"
+end
