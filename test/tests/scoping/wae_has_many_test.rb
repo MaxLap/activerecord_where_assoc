@@ -8,9 +8,14 @@ describe "where_assoc_exists" do
   it "always returns no result for has_many if no possible ones exists" do
     assert_equal [], S0.where_assoc_exists(:m1)
     assert_equal [], S0.where_assoc_not_exists(:m1)
-    S1.create!(S1.test_condition_column => S0.test_condition_value_for(:m1))
+    m1 = S1.create!(S1.test_condition_column => S0.test_condition_value_for(:m1) * S1.test_condition_value_for(:default_scope))
     assert_equal [], S0.where_assoc_exists(:m1)
     assert_equal [], S0.where_assoc_not_exists(:m1)
+
+    # Making sure the S1 was valid according to the scopes by creating the S0 and
+    # setting up the association with the existing S1
+    m1.update_attributes!(s0_id: s0.id)
+    assert_exists_with_matching(:m1)
   end
 
   it "finds a matching has_many" do

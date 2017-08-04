@@ -26,11 +26,11 @@ module Minitest::Assertions
   def assert_exists_without_matching_from(start_from, association_name, *args, &block)
     msgs = []
     if start_from.where_assoc_exists(association_name, *args, &block).exists?
-      msgs << "Expected no matches but got none for S0.where_assoc_exists(#{association_name.inspect}, ...)"
+      msgs << "Expected no matches but got one for S0.where_assoc_exists(#{association_name.inspect}, ...)"
     end
 
     if !start_from.where_assoc_not_exists(association_name, *args, &block).exists?
-      msgs << "Expected a match but got one for S0.where_assoc_not_exists(#{association_name.inspect}, ...)"
+      msgs << "Expected a match but got none for S0.where_assoc_not_exists(#{association_name.inspect}, ...)"
     end
     assert msgs.empty?, msgs.map { |s| "  #{s}" }.join("\n")
   end
