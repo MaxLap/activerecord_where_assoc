@@ -4,42 +4,75 @@ require_relative "helpers"
 
 module ActiveRecordWhereAssoc
   module QueryMethods
-    def where_assoc_exists(association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(association_name, given_scope, &block).select(0)
-      res_relation = where(Arel::Nodes::Exists.new(nested_relation.ast))
+    NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, not_exists: false|
+      ast = Arel::Nodes::Exists.new(nested_scope.select(0).ast)
+      ast = ast.not if not_exists
+
+      res_scope = wrapping_scope.where(ast)
       # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
-      res_relation.where_clause.binds.concat(nested_relation.where_clause.binds)
-      res_relation
+      res_scope.where_clause.binds.concat(nested_scope.where_clause.binds)
+      res_scope
+    end
+
+    NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
+      # Using #to_sql because in "< 5.2", the binds are separate from the ast and there is no place
+      # to put them for the SELECT that i'm aware of. Not sure using #ast will work even in 5.2
+      # Need the double parentheses
+      sql = "SUM((#{nested_scope.to_sql}))"
+
+      # Unscoping in case some scopes did a select
+      wrapping_scope.unscope(:select).select(sql)
+    end
+
+    def where_assoc_exists(association_name, given_scope = nil, &block)
+      nested_relation = relation_on_association(association_name, given_scope, block, NestWithExistsBlock)
+      NestWithExistsBlock.call(self, nested_relation)
     end
 
     def where_assoc_not_exists(association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(association_name, given_scope, &block).select(0)
-      res_relation = where(Arel::Nodes::Exists.new(nested_relation.ast).not)
-      # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
-      res_relation.where_clause.binds.concat(nested_relation.where_clause.binds)
-      res_relation
+      nested_relation = relation_on_association(association_name, given_scope, block, NestWithExistsBlock)
+      NestWithExistsBlock.call(self, nested_relation, not_exists: true)
     end
 
+    # TODO: Document that this makes little sense if any of the scopes on the association or
+    #       default_scope or custom condition use joins.
     def where_assoc_count(nb, operator, association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(association_name, given_scope, &block)
-      nested_relation = nested_relation.select(Arel::Nodes::Count.new([Arel.star]))
+      deepest_scope_mod = lambda do |deepest_scope|
+        deepest_scope = deepest_scope.instance_exec(&block) || deepest_scope if block
+
+        deepest_scope.unscope(:select).select("COUNT(*)")
+      end
+
+      nested_relation = relation_on_association(association_name, given_scope, deepest_scope_mod, NestWithSumBlock)
+      operator = case operator.to_s
+                 when "=="
+                   "="
+                 when "!="
+                   "<>"
+                 else
+                   operator
+                 end
+
       where("#{nb} #{operator} (#{nested_relation.to_sql})")
     end
 
 
-    def relation_on_association(association_names_path, given_scope = nil, &block)
+    def relation_on_association(association_names_path, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_names_path = Array.wrap(association_names_path)
 
       if association_names_path.size > 1
-        relation_on_direct_association(association_names_path.first) do |model_scope|
-          model_scope.where_assoc_exists(association_names_path[1..-1], given_scope, &block)
+        recursive_scope_block = lambda do |scope|
+          nested_scope = scope.relation_on_association(association_names_path[1..-1], given_scope, last_assoc_block, nest_assocs_block)
+          nest_assocs_block.call(scope, nested_scope)
         end
+
+        relation_on_direct_association(association_names_path.first, nil, recursive_scope_block, nest_assocs_block)
       else
-        relation_on_direct_association(association_names_path.first, given_scope, &block)
+        relation_on_direct_association(association_names_path.first, given_scope, last_assoc_block, nest_assocs_block)
       end
     end
 
-    def relation_on_direct_association(association_name, given_scope = nil, &block)
+    def relation_on_direct_association(association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_name = association_name.to_s
       final_reflection = reflections[association_name]
 
@@ -53,6 +86,8 @@ module ActiveRecordWhereAssoc
       wrapping_scope = nil
 
       # Chain deals with through stuff
+      # We will start with the reflection that points on the final model, and slowly move back to the reflection
+      # that points on the model closest to self
       chain = final_reflection.chain
       chain.each_with_index do |reflection, i|
         next_reflection = chain[i + 1]
@@ -96,16 +131,13 @@ module ActiveRecordWhereAssoc
 
         if i.zero?
           wrapping_scope = wrapping_scope.merge(Helpers.unscoped_relation_from(reflection.klass, given_scope)) if given_scope
-          if block
-            yielded_scope = yield wrapping_scope
-            wrapping_scope = yielded_scope if yielded_scope
-          end
+
+          # If it returns falsy, ignore the block
+          wrapping_scope = last_assoc_block.call(wrapping_scope) || wrapping_scope if last_assoc_block
         end
 
         if nested_scope
-          wrapping_scope = wrapping_scope.where(Arel::Nodes::Exists.new(nested_scope.select(0).ast))
-          # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
-          wrapping_scope.where_clause.binds.concat(nested_scope.where_clause.binds)
+          wrapping_scope = nest_assocs_block.call(wrapping_scope, nested_scope)
         end
 
         nested_scope = wrapping_scope

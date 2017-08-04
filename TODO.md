@@ -1,8 +1,4 @@
-* where_assoc_count is wrong for all but direct association (no through, no path).
-  Should do SUM(SUM(SUM(COUNT)))
-* where_assoc_count tests for has_many (and the others)
-* where_assoc_count should use = when passed :==
-* test passing conditions / blocks to where_relation_exists
+* test passing conditions / blocks to where_relation_exists / count
 * handle belongs_to (and tests)
 * handle has_and_belongs_to_many (and tests)
 * handle polymorphism
@@ -14,7 +10,7 @@
 * Add mutation testing?
 
 * Does LHEW applies when doing joins? If not, this is really broken! This might help the argument of removing this behavior.
-
+* Test things that are expected to fail. (Missing assoc, abstract_table, polymorphic on belongs_to)
 
 Doc-wise:
 * Discuss Rails versions.
