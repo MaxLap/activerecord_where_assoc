@@ -57,12 +57,19 @@ COPS_TO_AUTO_CORRECT = [
                          "Layout/SpaceAroundEqualsInParameterDefault",
                          "Layout/FirstParameterIndentation",
 
+                         # Lambda stuff
+                         "Layout/SpaceInLambdaLiteral",
+                         "Style/Lambda",
+
                          # Misc
                          "Layout/SpaceAroundOperators",
                          "Layout/CaseIndentation",
                          "Layout/ElseAlignment",
                          "Layout/LeadingCommentSpace",
                          "Layout/SpaceBeforeComment",
+
+                         "Layout/SpaceInLambdaLiteral",
+                         "Style/Lambda",
 
                          # Code transformation for cleanup
                          "Rails/Present",

@@ -70,6 +70,9 @@ Metrics/MethodLength:
 Metrics/ModuleLength:
   Enabled: false
 
+Metrics/ParameterLists:
+  Enabled: false
+
 Metrics/PerceivedComplexity:
   Enabled: false
 
@@ -132,6 +135,9 @@ Style/TrailingCommaInArguments:
 
 Style/TrailingCommaInLiteral:
   EnforcedStyleForMultiline: consistent_comma
+
+Style/VariableNumber:
+  Enabled: false
 
 Style/WordArray:
   Enabled: false
