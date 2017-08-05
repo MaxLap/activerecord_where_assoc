@@ -11,7 +11,7 @@ require "test_helper"
 # record created later must shadow earlier ones, as long as it matches the
 # scopes on the associations and the default_scope of the record.
 
-describe "where_assoc_exists has_one" do
+describe "wa_exists has_one" do
   let(:s0) { S0.create_default! }
 
   it "only check against the last associated record" do

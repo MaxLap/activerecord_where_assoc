@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-describe "wa_count " do
+describe "wa_count" do
   let(:s0) { S0.create_default! }
 
   it "always returns no result for has_one if no possible ones exists" do

@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-describe "where_assoc_exists" do
+describe "wa_exists" do
   let(:s0) { S0.create_default! }
 
   it "always returns no result for has_many if no possible ones exists" do

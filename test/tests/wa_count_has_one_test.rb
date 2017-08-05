@@ -2,18 +2,18 @@
 
 require "test_helper"
 
-describe "where_assoc_count" do
+describe "wa_count" do
   let(:s0) { S0.create_default! }
 
   it "counts every matching has_one" do
     s0
-    assert_wa_count(0, :o1)
+    assert_wa_count_full(0, :o1)
 
     s0.create_assoc!(:o1, :S0_o1)
-    assert_wa_count(1, :o1)
+    assert_wa_count_full(1, :o1)
 
     s0.create_assoc!(:o1, :S0_o1)
-    assert_wa_count(1, :o1)
+    assert_wa_count_full(1, :o1)
   end
 
   it "counts every matching has_one through has_one through has_one" do
