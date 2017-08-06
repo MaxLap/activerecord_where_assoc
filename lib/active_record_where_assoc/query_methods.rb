@@ -130,7 +130,7 @@ module ActiveRecordWhereAssoc
         end
 
         if i.zero?
-          wrapping_scope = wrapping_scope.merge(Helpers.unscoped_relation_from(reflection.klass, given_scope)) if given_scope
+          wrapping_scope = Helpers.apply_scope(wrapping_scope, given_scope) if given_scope
 
           # If it returns falsy, ignore the block
           wrapping_scope = last_assoc_block.call(wrapping_scope) || wrapping_scope if last_assoc_block

@@ -9,16 +9,16 @@ module ActiveRecordWhereAssoc
     # * a Hash, String or Array will pass them to unscoped.where
     # * a symbol passes it to unscoped.send
     # * otherwise raises an exception
-    def self.unscoped_relation_from(model, arg)
-      case arg
+    def self.apply_scope(relation, scope)
+      case scope
       when ActiveRecord::Relation
-        arg
+        relation.merge(scope)
       when Hash, String, Array, Arel::Node
-        model.unscoped.where(arg)
+        relation.where(scope)
       when Symbol
-        model.unscoped.send(arg)
+        relation.send(scope)
       else
-        raise ArgumentError, "Unhandled argument of type '#{relation.type.name}' received"
+        raise ArgumentError, "Unhandled argument of type '#{scope.class.name}' received"
       end
     end
 
