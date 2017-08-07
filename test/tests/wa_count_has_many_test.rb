@@ -26,6 +26,8 @@ describe "wa_count" do
     m2_21 = m1_2.create_assoc!(:m2, :S0_m2m1, :S1_m2)
     m2_22 = m1_2.create_assoc!(:m2, :S0_m2m1, :S1_m2)
 
+    assert_wa_count(0, :m3m2m1)
+
     m2_11.create_assoc!(:m3, :S0_m3m2m1, :S2_m3)
     m2_11.create_assoc!(:m3, :S0_m3m2m1, :S2_m3)
     m2_12.create_assoc!(:m3, :S0_m3m2m1, :S2_m3)
@@ -47,6 +49,8 @@ describe "wa_count" do
 
     m2_21 = m1_2.create_assoc!(:m2, :S0_m2m1, :S1_m2)
     m2_22 = m1_2.create_assoc!(:m2, :S0_m2m1, :S1_m2)
+
+    assert_wa_count(0, :m3m1_m3m2)
 
     m2_11.create_assoc!(:m3, :S0_m3m1_m3m2, :S1_m3m2, :S2_m3)
     m2_11.create_assoc!(:m3, :S0_m3m1_m3m2, :S1_m3m2, :S2_m3)

@@ -8,12 +8,12 @@ describe "wa_exists" do
   it "has_many with #limit(0), never matches" do
     s0.create_assoc!(:m1, :S0_m1)
 
-    assert_exists_without_matching(:m1) {|s| s.limit(0)}
+    assert_exists_without_matching(:m1) { |s| s.limit(0) }
   end
 
   it "has_one with #limit(0), never matches" do
     s0.create_assoc!(:o1, :S0_o1)
 
-    assert_exists_without_matching(:o1) {|s| s.limit(0)}
+    assert_exists_without_matching(:o1) { |s| s.limit(0) }
   end
 end

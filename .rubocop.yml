@@ -76,6 +76,9 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Performance/RedundantBlockCall:
+  Enabled: false
+
 Rails/FilePath:
   Enabled: false
 
@@ -111,6 +114,9 @@ Style/InverseMethods:
     :include?: :exclude?
 
 Style/NegatedIf:
+  Enabled: false
+
+Style/NumericPredicate:
   Enabled: false
 
 Style/PercentLiteralDelimiters:

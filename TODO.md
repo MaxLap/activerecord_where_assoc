@@ -11,6 +11,7 @@
 
 * Does LHEW applies when doing joins? If not, this is really broken! This might help the argument of removing this behavior.
 * Test things that are expected to fail. (Missing assoc, abstract_table, polymorphic on belongs_to)
+* Add check for rails head to travis-ci, somehow? Would be nice to do like with ruby-head. I know changes will make this fail in 5.2
 
 Doc-wise:
 * Discuss Rails versions.
