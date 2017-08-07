@@ -84,7 +84,7 @@ module ActiveRecordWhereAssoc
 
       if final_reflection.nil?
         # Need to use build because this exception expects a record...
-        raise ActiveRecord::AssociationNotFoundError.new(self.build, association_name)
+        raise ActiveRecord::AssociationNotFoundError.new(self.klass.new, association_name)
       end
       raise "Can't deal with polymorphic belongs_to" if final_reflection.macro == :belongs_to && final_reflection.options[:polymorphic]
 
