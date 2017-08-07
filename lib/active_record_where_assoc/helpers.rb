@@ -1,18 +1,14 @@
-
 # frozen_string_literal: true
 
 module ActiveRecordWhereAssoc
   module Helpers
-    # A simpler way for some tools that want to receive relations to cast parameters to relations.
+    # Apply a condition to a scope, possibly by sending a symbol
     # Receiving:
-    # * a relation just returns it
     # * a Hash, String or Array will pass them to unscoped.where
     # * a symbol passes it to unscoped.send
     # * otherwise raises an exception
     def self.apply_scope(relation, scope)
       case scope
-      when ActiveRecord::Relation
-        relation.merge(scope)
       when Hash, String, Array, Arel::Node
         relation.where(scope)
       when Symbol
