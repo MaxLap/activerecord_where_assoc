@@ -5,18 +5,15 @@ require_relative "helpers"
 module ActiveRecordWhereAssoc
   module QueryMethods
     NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, not_exists: false|
-      ast = Arel::Nodes::Exists.new(nested_scope.select(0).ast)
-      ast = ast.not if not_exists
+      exists_or_not = not_exists ? "NOT " : ""
 
-      res_scope = wrapping_scope.where(ast)
-      # Using an Arel::Node in #where doesn't allow passing the matching binds, so we do it by hand...
-      res_scope.where_clause.binds.concat(nested_scope.where_clause.binds)
-      res_scope
+
+      sql = "#{exists_or_not}EXISTS (#{nested_scope.select(0).to_sql})"
+
+      wrapping_scope.where(sql)
     end
 
     NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
-      # Using #to_sql because in "< 5.2", the binds are separate from the ast and there is no place
-      # to put them for the SELECT that i'm aware of. Not sure using #ast will work even in 5.2
       # Need the double parentheses
       sql = "SUM((#{nested_scope.to_sql}))"
 
