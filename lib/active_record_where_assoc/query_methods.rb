@@ -126,7 +126,7 @@ module ActiveRecordWhereAssoc
           else
             # This works as long as the table_name doesn't have a schema, since we need to use an alias
             # with the table name to make scopes and everything else work as expected.
-            # TODO: Use Arel for this?
+
             # We use unscoped to avoid duplicating the conditions in the query, which is noise
             wrapping_scope = reflection.klass.unscoped.from("(#{wrapping_scope.limit(1).to_sql}) #{reflection.klass.table_name}")
           end

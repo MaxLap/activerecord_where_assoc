@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-# Has_one relations should behave similarly to a belongs_to in that only
+# Has_one associations should behave similarly to a belongs_to in that only
 # one record should be tested: the one that would be returned by using the
 # association on a record. This is the only record that must match (or
 # not match) the condition given to the where_assoc_* methods.

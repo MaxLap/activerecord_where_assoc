@@ -49,7 +49,7 @@ class BaseTestRecord < ActiveRecord::Base
     "#{table_name}.#{test_condition_column} % #{value} = 0"
   end
 
-  # Creates a relations with a condition on #{target_table_name}.#{target_table_name}_column
+  # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
   def self.testable_has_many(association_name, given_scope = nil, options = {})
     if given_scope.is_a?(Hash)
       options = given_scope
@@ -66,7 +66,7 @@ class BaseTestRecord < ActiveRecord::Base
     has_many(association_name, scope, options)
   end
 
-  # Creates a relations with a condition on #{target_table_name}.#{target_table_name}_column
+  # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
   def self.testable_has_one(association_name, given_scope = nil, options = {})
     if given_scope.is_a?(Hash)
       options = given_scope
@@ -83,7 +83,7 @@ class BaseTestRecord < ActiveRecord::Base
     has_one(association_name, scope, options)
   end
 
-  # Creates a relations with a condition on #{target_table_name}.#{target_table_name}_column
+  # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
   def self.testable_belongs_to(association_name, given_scope = nil, options = {})
     if given_scope.is_a?(Hash)
       options = given_scope
