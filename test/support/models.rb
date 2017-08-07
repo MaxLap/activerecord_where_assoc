@@ -38,6 +38,9 @@ class S1 < BaseTestRecord
 
   testable_has_many :m3m2, through: :m2, source: :m3, class_name: "S3"
   testable_has_one :o3o2, -> { order("s3s.id DESC") }, through: :o2, source: :o3, class_name: "S3"
+
+  scope :adhoc_is_one, -> { where(adhoc_column_name => 1) }
+  scope :adhoc_is_two, -> { where(adhoc_column_name => 2) }
 end
 
 class S2 < BaseTestRecord

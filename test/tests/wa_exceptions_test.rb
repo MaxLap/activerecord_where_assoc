@@ -16,4 +16,16 @@ describe "wa" do
       S0.where_assoc_count(1, :<, :this_doesnt_exist)
     end
   end
+
+  it "_exists raises ArgumentError if condition is wrong type" do
+    assert_raises(ArgumentError) do
+      S0.where_assoc_exists(:m1, 42)
+    end
+  end
+
+  it "_exists raises ArgumentError if condition is wrong type" do
+    assert_raises(ArgumentError) do
+      S0.where_assoc_count(1, :<, :m1, 42)
+    end
+  end
 end

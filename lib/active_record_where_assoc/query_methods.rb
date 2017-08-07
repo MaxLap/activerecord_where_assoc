@@ -44,7 +44,7 @@ module ActiveRecordWhereAssoc
     #       default_scope or custom condition use joins.
     def where_assoc_count(nb, operator, association_name, given_scope = nil, &block)
       deepest_scope_mod = lambda do |deepest_scope|
-        deepest_scope = deepest_scope.instance_exec(&block) || deepest_scope if block
+        deepest_scope = block.call(deepest_scope) || deepest_scope if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
