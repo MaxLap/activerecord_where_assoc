@@ -16,4 +16,10 @@ describe "wa_exists" do
 
     assert_exists_without_matching(:o1) { |s| s.limit(0) }
   end
+
+  it "belongs_to with #limit(0), never matches" do
+    s0.create_assoc!(:b1, :S0_b1)
+
+    assert_exists_without_matching(:b1) { |s| s.limit(0) }
+  end
 end

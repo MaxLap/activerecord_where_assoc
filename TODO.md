@@ -1,5 +1,3 @@
-* test passing conditions / blocks to where_relation_exists / count
-* handle belongs_to (and tests)
 * handle has_and_belongs_to_many (and tests)
 * handle polymorphism
 * where_assoc_count could receive a relation as first parameter?

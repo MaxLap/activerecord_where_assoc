@@ -83,6 +83,23 @@ class BaseTestRecord < ActiveRecord::Base
     has_one(association_name, scope, options)
   end
 
+  # Creates a relations with a condition on #{target_table_name}.#{target_table_name}_column
+  def self.testable_belongs_to(association_name, given_scope = nil, options = {})
+    if given_scope.is_a?(Hash)
+      options = given_scope
+      given_scope = nil
+    end
+
+    condition_value = test_condition_value_for(association_name)
+    if given_scope
+      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
+    else
+      scope = -> { where(testable_condition(condition_value)) }
+    end
+
+    belongs_to(association_name, scope, options)
+  end
+
   def self.create_default!
     create!(test_condition_column => test_condition_value_for(:default_scope))
   end
