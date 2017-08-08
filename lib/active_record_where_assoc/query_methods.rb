@@ -112,8 +112,6 @@ module ActiveRecordWhereAssoc
         foreign_klass = next_reflection ? next_reflection.klass : self.klass
         foreign_table = foreign_klass.arel_table
 
-        wrapping_scope = wrapping_scope.where(table[key].eq(foreign_table[foreign_key]))
-
         if reflection.macro == :has_one
           # We only check the last one that matches the scopes on the associations / default_scope of record.
           # The given scope is applied on the result.
@@ -134,6 +132,8 @@ module ActiveRecordWhereAssoc
           # TODO: remove limit and order, they are useless. Probably better to do that after the given_scope is used
           nil
         end
+
+        wrapping_scope = wrapping_scope.where(table[key].eq(foreign_table[foreign_key]))
 
         if i.zero?
           wrapping_scope = Helpers.apply_scope(wrapping_scope, given_scope) if given_scope
