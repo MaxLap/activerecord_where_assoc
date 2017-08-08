@@ -44,7 +44,7 @@ module ActiveRecordWhereAssoc
     #       default_scope or custom condition use joins.
     def where_assoc_count(nb, operator, association_name, given_scope = nil, &block)
       deepest_scope_mod = lambda do |deepest_scope|
-        deepest_scope = block.call(deepest_scope) || deepest_scope if block
+        deepest_scope = Helpers.apply_proc_scope(deepest_scope, block) if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
@@ -137,9 +137,7 @@ module ActiveRecordWhereAssoc
 
         if i.zero?
           wrapping_scope = Helpers.apply_scope(wrapping_scope, given_scope) if given_scope
-
-          # If it returns falsy, ignore the block
-          wrapping_scope = last_assoc_block.call(wrapping_scope) || wrapping_scope if last_assoc_block
+          wrapping_scope = Helpers.apply_proc_scope(wrapping_scope, last_assoc_block) if last_assoc_block
         end
 
         if nested_scope

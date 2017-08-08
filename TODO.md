@@ -2,7 +2,6 @@
 * handle polymorphism
 * where_assoc_count could receive a relation as first parameter?
 * receive a proc as condition argument, same behavior as passing a block
-* receiving a proc/block that takes no argument will use instance_exec on scope
 * Add comments to explain the tests
 * Add mutation testing?
 

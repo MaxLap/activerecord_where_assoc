@@ -51,7 +51,10 @@ Or install it yourself as:
   * Hash, String: These are passed directly to `#where`.
   * Array: Should be \[string_of_conditions, bind1, bind2\], passed directly to `#where`.
   * Symbol: passed to `#send`, this is a shortcut to easily use scopes
-* A block can also be passed. It receives a relation on the association after all the conditions have been applied (association's scopes, default_scope, second parameter of the method).
+* A block can also be passed. It can add conditions on the association's relation after all the conditions have been applied (association's scopes, default_scope, second parameter of the method).
+  The block either:
+  * Receive no arugment, in that case self is set to the relation
+  * Receive arguments, in that case, the block is called with the relation as first parameter
   The block should return the new relation to use or `nil` to do as if there were no blocks
   
 ### `#where_assoc_count`
@@ -134,9 +137,13 @@ my_user.posts.where_assoc_exists(:comments_authors, :admins)
 # Uses a block with a parameter to do a condition
 my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }
 
+# Find my_user's posts that have at least 5 non-spam comments
+# Uses a block without parameters to do a condition
+my_user.posts.where_assoc_count(5, :>=, :comments) { where(spam: false) }
+
 # Find my_user's posts that have comments by an honest admin
 # Uses multiple associations.
-# Uses a hash as 2nd paremeter to do the conditions
+# Uses a hash as 2nd parameter to do the conditions
 my_user.posts.where_assoc_exists([:comments, :author], honest: true, is_admin: true)
 ```
 

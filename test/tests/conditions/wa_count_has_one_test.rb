@@ -23,6 +23,12 @@ describe "wa_count has_one" do
     assert_wa_count(0, :o1) { |s| s.where(S1.adhoc_column_name => 2) }
   end
 
+  it "matches with a no arg block condition" do
+    s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
+    assert_wa_count(1, :o1) { where(S1.adhoc_column_name => 1) }
+    assert_wa_count(0, :o1) { where(S1.adhoc_column_name => 2) }
+  end
+
   it "matches with Hash condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
     assert_wa_count(1, :o1, S1.adhoc_column_name => 1)

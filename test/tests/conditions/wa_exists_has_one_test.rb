@@ -23,6 +23,12 @@ describe "wa_exists has_one" do
     assert_exists_without_matching(:o1) { |s| s.where(S1.adhoc_column_name => 2) }
   end
 
+  it "matches with a no arg block condition" do
+    s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
+    assert_exists_with_matching(:o1) { where(S1.adhoc_column_name => 1) }
+    assert_exists_without_matching(:o1) { where(S1.adhoc_column_name => 2) }
+  end
+
   it "matches with Hash condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
     assert_exists_with_matching(:o1, S1.adhoc_column_name => 1)

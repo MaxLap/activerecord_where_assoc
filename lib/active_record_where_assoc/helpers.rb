@@ -18,6 +18,17 @@ module ActiveRecordWhereAssoc
       end
     end
 
+    # Apply a proc used as scope
+    # If it can't receive arguments, call the proc with self set to the relation
+    # If it can receive arguments, call the proc the relation passed as argument
+    def self.apply_proc_scope(relation, proc_scope)
+      if proc_scope.arity == 0
+        relation.instance_exec(&proc_scope) || relation
+      else
+        proc_scope.call(relation) || relation
+      end
+    end
+
     if ActiveRecord.gem_version >= Gem::Version.new("5.1")
       def self.join_keys(reflection)
         reflection.join_keys
