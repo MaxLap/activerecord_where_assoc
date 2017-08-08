@@ -29,6 +29,19 @@ module ActiveRecordWhereAssoc
       end
     end
 
+    def self.join_constraints(reflection, next_reflection, final_klass)
+      # Can use #build_join_constraint on reflection in rails 5.2?
+      join_keys = Helpers.join_keys(reflection)
+      key = join_keys.key
+      foreign_key = join_keys.foreign_key
+
+      table = reflection.klass.arel_table
+      foreign_klass = next_reflection ? next_reflection.klass : final_klass
+      foreign_table = foreign_klass.arel_table
+
+      table[key].eq(foreign_table[foreign_key])
+    end
+
     if ActiveRecord.gem_version >= Gem::Version.new("5.1")
       def self.join_keys(reflection)
         reflection.join_keys

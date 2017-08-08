@@ -103,15 +103,6 @@ module ActiveRecordWhereAssoc
           wrapping_scope = wrapping_scope.instance_exec(&callable)
         end
 
-        # Can use #build_join_constraint on reflection in rails 5.2
-        join_keys = Helpers.join_keys(reflection)
-        key = join_keys.key
-        foreign_key = join_keys.foreign_key
-
-        table = reflection.klass.arel_table
-        foreign_klass = next_reflection ? next_reflection.klass : self.klass
-        foreign_table = foreign_klass.arel_table
-
         if reflection.macro == :has_one
           # We only check the last one that matches the scopes on the associations / default_scope of record.
           # The given scope is applied on the result.
@@ -133,7 +124,7 @@ module ActiveRecordWhereAssoc
           nil
         end
 
-        wrapping_scope = wrapping_scope.where(table[key].eq(foreign_table[foreign_key]))
+        wrapping_scope = wrapping_scope.where(Helpers.join_constraints(reflection, next_reflection, self.klass))
 
         if i.zero?
           wrapping_scope = Helpers.apply_scope(wrapping_scope, given_scope) if given_scope
