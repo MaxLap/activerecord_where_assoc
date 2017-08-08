@@ -18,7 +18,7 @@ before_script:
   - psql -c 'CREATE DATABASE activerecord_where_assoc' -U postgres
   - mysql -e 'CREATE DATABASE activerecord_where_assoc'
 
-scipt:
+script:
   - DB=mysql bundle exec rake test
   - DB=pg bundle exec rake test
   - DB=sqlite3 bundle exec rake test
