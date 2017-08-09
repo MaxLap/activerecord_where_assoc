@@ -1,17 +1,20 @@
 # frozen_string_literal: true
 
+coverage_config = proc do
+  add_filter "/test/"
+end
+
 if ENV["TRAVIS"]
   require "coveralls"
   require "simplecov"
-  SimpleCov.formatter = Coveralls::SimpleCov::Formatter
+  SimpleCov.command_name "rake test-#{ENV['DB']}"
+  Coveralls.wear_merged!(&coverage_config)
+elsif ENV["COVERAGE"]
+  require "simplecov"
+  SimpleCov.start(&coverage_config)
+  SimpleCov.command_name "rake test-#{ENV['DB']}" if ENV["COVERAGE"] == "multi"
 end
 
-if ENV["COVERAGE"] || ENV["TRAVIS"]
-  require "simplecov"
-  SimpleCov.start do
-    add_filter "/test/"
-  end
-end
 
 require_relative "support/load_test_env"
 require "minitest/autorun"
