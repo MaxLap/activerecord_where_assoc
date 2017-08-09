@@ -162,6 +162,13 @@ These methods many advantages over the alternative ways of achieving the similar
 * Applies the default_scopes that was defined on the target model
 * Handles has_one correctly: Only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
 
+## Problems
+
+MySQL is terrible:
+
+* It is not currently possible to use has_one associations if the table_name includes a database name. I do not know of a way to do a query that does all the specifics for MySQL.
+* It is quite possible that the query run is not optimal due to complexities the way MySQL scopes the table names in from... 
+
 ## TODO
 
 There are lots of things I want to do for this gem. See [TODO](https://github.com/MaxLap/activerecord_where_assoc/TODO.md) 

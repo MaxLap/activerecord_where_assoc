@@ -13,6 +13,8 @@ describe "wa_exists" do
   end
 
   it "has_one works with table_names that have a schema" do
+    skip if Test::SelectedDBHelper == Test::MySQL
+
     s0.create_o1!
 
     assert_exists_with_matching_from(SchemaS0, :o1)

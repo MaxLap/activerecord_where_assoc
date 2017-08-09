@@ -13,6 +13,8 @@ describe "wa_count" do
   end
 
   it "has_one works with table_names that have a schema" do
+    skip if Test::SelectedDBHelper == Test::MySQL
+
     s0.create_o1!
 
     assert_wa_count_full_from(SchemaS0, 1, :o1)

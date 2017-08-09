@@ -4,10 +4,12 @@
 * receive a proc as condition argument, same behavior as passing a block
 * Add comments to explain the tests
 * Add mutation testing?
-
+* Have a way to customize the way the queries are built. ex: ignore has_one's behavior, place constraints in the nested query, etc.
+* Should there be support for limit on the scopes/default_scope? It's kind of a generalization of has_one's behavior.
 * Does LHEW applies when doing joins? If not, this is really broken! This might help the argument of removing this behavior.
 * Test things that are expected to fail. (Missing assoc, abstract_table, polymorphic on belongs_to)
 * Add check for rails head to travis-ci, somehow? Would be nice to do like with ruby-head. I know changes will make this fail in 5.2
+* Have a way to do some benchmarking to compare different ways to build queries
 
 Doc-wise:
 * Discuss Rails versions.

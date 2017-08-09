@@ -23,9 +23,25 @@ describe "wa" do
     end
   end
 
-  it "_exists raises ArgumentError if condition is wrong type" do
+  it "_count raises ArgumentError if condition is wrong type" do
     assert_raises(ArgumentError) do
       S0.where_assoc_count(1, :<, :m1, 42)
+    end
+  end
+
+  it "_exists raises MySQLIsTerribleError for has_one with table_names that have a schema if using MySQL" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
+      SchemaS0.where_assoc_exists(:o1)
+    end
+  end
+
+  it "_count raises MySQLIsTerribleError for has_one with table_names that have a schema if using MySQL" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
+      SchemaS0.where_assoc_count(1, :<, :o1)
     end
   end
 end
