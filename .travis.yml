@@ -12,6 +12,10 @@ gemfile:
   - gemfiles/rails_5_0.gemfile
   - gemfiles/rails_5_1.gemfile
 
+env:
+  global:
+    - secure: "OMVXtjv1t4dqxAa9wbeOwFRkMtln3WpHIrocie8bHxeiPjpMcqcYOBA9gljaOCPTKPN89ROuyGkSx0qcjvt2iQePC9wAcZRNjTFppgJdPGwpCqz633mSoryp5md20oXxx81rDzcg9Rzfw47/OxmdwqL6hI9OjjipfsQZOBcF5Yi9UU5Ng56w0MaKbzfevkm4s2/SB8fm7fObJhL/skQDAmoscdfm+pz/0On10kQx0b4AEPAXl8p3bVE+PR2/m9V6LwYeQ7VvOlsJGQVnlBO9LV/QPcFS2+CvSCs/nW+XLS1ItMom6h3OaiEjLi1xo/d+AcvNnkJWSI3p80EDpoBT7DI/lyMWJr/LgyzbUSHqMNwflOGdHWZHd8ihsgefLo8wU1p4+lVQisu0oCm+KgdZwkVOghw1XLn5sKR7Tzhj0jAMc21/jeBoFppgJyhgb1QaijOl1xpuUML6rE9+u3StnJkU9mgARHzwbaR+vIRHz6KaBbbiD7Mu8sKkgYWgTQr8yN1TlOKo4okCwNZYjO9VsDrVGtp1CrS+vWAvOmmgAM0fV7ITEPnAwlB4mnUpJUxSuy3UOuhxcADkM3cYH6rk/7FDupRYQo3rO+NQUO7FavG0WYIzBHsL+X7gnb/3oslxHQbf4HjzrVPUj5ibw/5nbL/4iOhR0v4xMQ7T2IMQeMs="
+
 before_install: gem install bundler -v 1.15.3
 
 before_script:
@@ -30,3 +34,8 @@ matrix:
   # fast_finish: true
   allow_failures:
     - rvm: ruby-head
+    - gemfile: gemfiles/rails_head.gemfile
+
+  include:
+    - rvm: 2.4.1
+      gemfile: gemfiles/rails_head.gemfile
