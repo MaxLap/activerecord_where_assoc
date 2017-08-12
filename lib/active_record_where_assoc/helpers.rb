@@ -30,7 +30,6 @@ module ActiveRecordWhereAssoc
     end
 
     def self.join_constraints(reflection, next_reflection, final_klass)
-      # Can use #build_join_constraint on reflection in rails 5.2?
       join_keys = Helpers.join_keys(reflection)
       key = join_keys.key
       foreign_key = join_keys.foreign_key
@@ -39,6 +38,8 @@ module ActiveRecordWhereAssoc
       foreign_klass = next_reflection ? next_reflection.klass : final_klass
       foreign_table = foreign_klass.arel_table
 
+      # No need to do any conditions on type, it is already added as soon as we use a scope on the klass
+      # Free STI support!
       table[key].eq(foreign_table[foreign_key])
     end
 

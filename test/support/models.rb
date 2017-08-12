@@ -79,3 +79,26 @@ end
 class SchemaS1 < ActiveRecord::Base
   self.table_name = "bar_schema.schema_s1s"
 end
+
+
+class STIS0 < ActiveRecord::Base
+  self.table_name = "sti_s0s"
+  belongs_to :b1, class_name: "STIS1", foreign_key: "sti_s1_id"
+  belongs_to :b1sub, class_name: "STIS1Sub", foreign_key: "sti_s1_id"
+  has_many :m1, class_name: "STIS1", foreign_key: "sti_s0_id"
+  has_many :m1sub, class_name: "STIS1Sub", foreign_key: "sti_s0_id"
+  has_one :o1, class_name: "STIS1", foreign_key: "sti_s0_id"
+  has_one :o1sub, class_name: "STIS1Sub", foreign_key: "sti_s0_id"
+  has_and_belongs_to_many :z1, class_name: "STIS1", join_table: "sti_s0s_sti_s1s", foreign_key: "sti_s0_id", association_foreign_key: "sti_s1_id"
+  has_and_belongs_to_many :z1sub, class_name: "STIS1Sub",
+                                  join_table: "sti_s0s_sti_s1s",
+                                  foreign_key: "sti_s0_id",
+                                  association_foreign_key: "sti_s1_id"
+end
+
+class STIS1 < ActiveRecord::Base
+  self.table_name = "sti_s1s"
+end
+
+class STIS1Sub < STIS1
+end
