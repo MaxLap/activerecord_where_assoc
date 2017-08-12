@@ -13,6 +13,20 @@ describe "wa_count" do
     assert_equal [], S0.where_assoc_not_exists(:b1)
   end
 
+  it "finds the right matching belongs_tos" do
+    s0_1 = s0
+    s0_1.create_assoc!(:b1, :S0_b1)
+
+    s0_2 = S0.create_default!
+
+    s0_3 = S0.create_default!
+    s0_3.create_assoc!(:b1, :S0_b1)
+
+    s0_4 = S0.create_default!
+
+    assert_equal [s0_1, s0_3], S0.where_assoc_count(1, :==, :b1).to_a.sort_by(&:id)
+  end
+
   it "finds a matching belongs_to" do
     s0.create_assoc!(:b1, :S0_b1)
     s0.create_assoc!(:b1, :S0_b1)

@@ -104,7 +104,13 @@ module ActiveRecordWhereAssoc
           wrapping_scope = wrapping_scope.instance_exec(&callable)
         end
 
+        wrapping_scope = wrapping_scope.where(Helpers.join_constraints(reflection, next_reflection, self.klass))
+
         if reflection.macro == :has_one
+          if %w(mysql mysql2).include?(connection.adapter_name.downcase)
+            raise MySQLIsTerribleError, "has_one on models with a table_name that includes the database is not supported for MySQL"
+          end
+
           # We only check the last one that matches the scopes on the associations / default_scope of record.
           # The given scope is applied on the result.
           if klass.table_name.include?(".")
@@ -112,9 +118,6 @@ module ActiveRecordWhereAssoc
             # of expressing the above... They should be equivalent, but their performances aren't
             # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
             # We use unscoped to avoid duplicating the conditions in the query, which is noise
-            if %w(mysql mysql2).include?(connection.adapter_name.downcase)
-              raise MySQLIsTerribleError, "has_one on models with a table_name that includes the database is not supported for MySQL"
-            end
             wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1))
           else
             # This works as long as the table_name doesn't have a schema, since we need to use an alias
@@ -127,8 +130,6 @@ module ActiveRecordWhereAssoc
           # TODO: remove limit and order, they are useless. Probably better to do that after the given_scope is used
           nil
         end
-        # TODO: Is there a performance cost to putting this after?
-        wrapping_scope = wrapping_scope.where(Helpers.join_constraints(reflection, next_reflection, self.klass))
 
         if i.zero?
           wrapping_scope = Helpers.apply_scope(wrapping_scope, given_scope) if given_scope

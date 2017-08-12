@@ -12,6 +12,9 @@ require "test_helper"
 # scopes on the associations and the default_scope of the record.
 
 describe "wa_exists has_one" do
+  # MySQL doesn't support has_one
+  next if Test::SelectedDBHelper == Test::MySQL
+
   let(:s0) { S0.create_default! }
 
   it "only check against the last associated record" do

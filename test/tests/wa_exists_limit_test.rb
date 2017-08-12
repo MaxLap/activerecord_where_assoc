@@ -12,6 +12,7 @@ describe "wa_exists" do
   end
 
   it "has_one with #limit(0), never matches" do
+    skip if Test::SelectedDBHelper == Test::MySQL
     s0.create_assoc!(:o1, :S0_o1)
 
     assert_exists_without_matching(:o1) { |s| s.limit(0) }

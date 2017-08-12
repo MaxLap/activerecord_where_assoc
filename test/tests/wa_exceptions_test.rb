@@ -29,19 +29,19 @@ describe "wa" do
     end
   end
 
-  it "_exists raises MySQLIsTerribleError for has_one with table_names that have a schema if using MySQL" do
+  it "_exists raises MySQLIsTerribleError for has_one" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
-      SchemaS0.where_assoc_exists(:o1)
+      S0.where_assoc_exists(:o1)
     end
   end
 
-  it "_count raises MySQLIsTerribleError for has_one with table_names that have a schema if using MySQL" do
+  it "_count raises MySQLIsTerribleError for has_one" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
-      SchemaS0.where_assoc_count(1, :<, :o1)
+      S0.where_assoc_count(1, :<, :o1)
     end
   end
 end

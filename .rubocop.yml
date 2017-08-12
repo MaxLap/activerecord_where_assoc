@@ -36,6 +36,10 @@ Layout/MultilineArrayBraceLayout:
 Layout/MultilineHashBraceLayout:
   EnforcedStyle: new_line
 
+# Sometimes, variable name is worth more than a comment
+Lint/UselessAssignment:
+  Enabled: false
+
 # Annoying when used with some api that have blocks with sometimes useful parameters
 Lint/UnusedBlockArgument:
   Enabled: false

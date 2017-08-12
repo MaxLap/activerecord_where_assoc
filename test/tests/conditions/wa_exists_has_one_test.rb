@@ -3,6 +3,9 @@
 require "test_helper"
 
 describe "wa_exists has_one" do
+  # MySQL doesn't support has_one
+  next if Test::SelectedDBHelper == Test::MySQL
+
   let(:s0) { S0.create_default! }
 
   it "matches with Arel condition" do

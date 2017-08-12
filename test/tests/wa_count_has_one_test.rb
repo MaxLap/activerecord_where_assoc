@@ -3,6 +3,9 @@
 require "test_helper"
 
 describe "wa_count" do
+  # MySQL doesn't support has_one
+  next if Test::SelectedDBHelper == Test::MySQL
+
   let(:s0) { S0.create_default! }
 
   it "counts mathing has_one as at most 1" do
