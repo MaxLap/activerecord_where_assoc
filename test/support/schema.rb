@@ -36,6 +36,9 @@ ActiveRecord::Schema.define do
     t.bigint :s3s_adhoc_column
   end
 
+  create_join_table :s0s, :s1s
+  create_join_table :s1s, :s2s
+  create_join_table :s2s, :s3s
 
   if Test::SelectedDBHelper == Test::Postgres
     execute <<-SQL
@@ -45,6 +48,10 @@ ActiveRecord::Schema.define do
     execute <<-SQL
       CREATE SCHEMA bar_schema;
     SQL
+
+    execute <<-SQL
+      CREATE SCHEMA spam_schema;
+    SQL
   elsif Test::SelectedDBHelper == Test::SQLite3
     execute <<-SQL
       ATTACH DATABASE ':memory:' AS foo_schema;
@@ -53,6 +60,10 @@ ActiveRecord::Schema.define do
     execute <<-SQL
       ATTACH DATABASE ':memory:' AS bar_schema;
     SQL
+
+    execute <<-SQL
+      ATTACH DATABASE ':memory:' AS spam_schema;
+    SQL
   elsif Test::SelectedDBHelper == Test::MySQL
     execute <<-SQL
       CREATE DATABASE foo_schema;
@@ -60,6 +71,10 @@ ActiveRecord::Schema.define do
 
     execute <<-SQL
       CREATE DATABASE bar_schema;
+    SQL
+
+    execute <<-SQL
+      CREATE DATABASE spam_schema;
     SQL
   end
 
@@ -70,4 +85,6 @@ ActiveRecord::Schema.define do
   create_table "bar_schema.schema_s1s" do |t|
     t.integer :schema_s0_id
   end
+
+  create_join_table "schema_s0s", "schema_s1s", table_name: "spam_schema.schema_s0s_schema_s1s"
 end

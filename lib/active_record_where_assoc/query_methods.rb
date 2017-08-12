@@ -81,7 +81,7 @@ module ActiveRecordWhereAssoc
 
     def relation_on_direct_association(association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_name = association_name.to_s
-      final_reflection = reflections[association_name]
+      final_reflection = _reflections[association_name]
 
       if final_reflection.nil?
         # Need to use build because this exception expects a record...

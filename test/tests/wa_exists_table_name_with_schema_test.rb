@@ -25,4 +25,10 @@ describe "wa_exists" do
 
     assert_exists_with_matching_from(SchemaS0, :m1)
   end
+
+  it "has_and_belongs_to_many works with table_names that have a schema" do
+    s0.z1.create!
+
+    assert_exists_with_matching_from(SchemaS0, :z1)
+  end
 end

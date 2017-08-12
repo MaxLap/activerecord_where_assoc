@@ -50,54 +50,36 @@ class BaseTestRecord < ActiveRecord::Base
   end
 
   # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
+  def self.testable_association(macro, association_name, given_scope = nil, options = {})
+    if given_scope.is_a?(Hash)
+      options = given_scope
+      given_scope = nil
+    end
+
+    condition_value = test_condition_value_for(association_name)
+    if given_scope
+      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
+    else
+      scope = -> { where(testable_condition(condition_value)) }
+    end
+
+    send(macro, association_name, scope, options)
+  end
+
   def self.testable_has_many(association_name, given_scope = nil, options = {})
-    if given_scope.is_a?(Hash)
-      options = given_scope
-      given_scope = nil
-    end
-
-    condition_value = test_condition_value_for(association_name)
-    if given_scope
-      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
-    else
-      scope = -> { where(testable_condition(condition_value)) }
-    end
-
-    has_many(association_name, scope, options)
+    testable_association(:has_many, association_name, given_scope, options)
   end
 
-  # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
   def self.testable_has_one(association_name, given_scope = nil, options = {})
-    if given_scope.is_a?(Hash)
-      options = given_scope
-      given_scope = nil
-    end
-
-    condition_value = test_condition_value_for(association_name)
-    if given_scope
-      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
-    else
-      scope = -> { where(testable_condition(condition_value)) }
-    end
-
-    has_one(association_name, scope, options)
+    testable_association(:has_one, association_name, given_scope, options)
   end
 
-  # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
   def self.testable_belongs_to(association_name, given_scope = nil, options = {})
-    if given_scope.is_a?(Hash)
-      options = given_scope
-      given_scope = nil
-    end
+    testable_association(:belongs_to, association_name, given_scope, options)
+  end
 
-    condition_value = test_condition_value_for(association_name)
-    if given_scope
-      scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
-    else
-      scope = -> { where(testable_condition(condition_value)) }
-    end
-
-    belongs_to(association_name, scope, options)
+  def self.testable_has_and_belongs_to_many(association_name, given_scope = nil, options = {})
+    testable_association(:has_and_belongs_to_many, association_name, given_scope, options)
   end
 
   def self.create_default!
@@ -107,7 +89,7 @@ class BaseTestRecord < ActiveRecord::Base
   # does a #create! and automatically fills the column with a value that matches the merge of the condition on
   # the matching association of each passed source_associations
   def create_assoc!(association_name, *source_associations, allow_no_source: false, adhoc_value: nil, skip_default: false)
-    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mob]\d+$/
+    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]\d+$/
 
     if !allow_no_source && source_associations.empty?
       raise "Need at least one source model or a nil instead"
@@ -132,7 +114,7 @@ class BaseTestRecord < ActiveRecord::Base
                    target_model.adhoc_column_name => adhoc_value,
     }
     case association_macro
-    when "m"
+    when "m", "z"
       record = send(association_name).create!(attributes)
     when "o"
       # Creating a has_one like this removes the id of the previously existing records that were refering.

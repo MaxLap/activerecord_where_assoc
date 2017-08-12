@@ -1,7 +1,5 @@
-* handle has_and_belongs_to_many (and tests)
 * handle polymorphism
 * where_assoc_count could receive a relation as first parameter?
-* receive a proc as condition argument, same behavior as passing a block
 * Add comments to explain the tests
 * Add mutation testing?
 * Have a way to customize the way the queries are built. ex: ignore has_one's behavior, place constraints in the nested query, etc.

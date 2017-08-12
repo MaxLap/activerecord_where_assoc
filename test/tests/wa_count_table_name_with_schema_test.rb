@@ -25,4 +25,10 @@ describe "wa_count" do
 
     assert_wa_count_full_from(SchemaS0, 1, :m1)
   end
+
+  it "has_and_belongs_to_many works with table_names that have a schema" do
+    s0.z1.create!
+
+    assert_wa_count_full_from(SchemaS0, 1, :z1)
+  end
 end
