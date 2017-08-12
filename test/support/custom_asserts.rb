@@ -13,9 +13,15 @@ module Minitest::Assertions
    :assert_wa_count_full,
    :assert_wa_count_specific,
    ].each do |shortcut|
-    define_method shortcut do |*args, &block|
-      send("#{shortcut}_from", S0, *args, &block)
-    end
+    # Using class eval to define a real method instead of using #define_method
+    # #define_method made minitest not give the right location for where the assert
+    # happened because it scans the backtrace for the first non-assert-like method,
+    # and the #define_method added an extra block which wasn't filtered.
+    class_eval <<-RUBY, __FILE__, __LINE__ + 1
+      def #{shortcut}(*args, &block)
+        #{shortcut}_from(S0, *args, &block)
+      end
+    RUBY
   end
 
   def assert_exists_with_matching_from(start_from, association_name, *args, &block)
