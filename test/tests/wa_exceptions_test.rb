@@ -29,7 +29,7 @@ describe "wa" do
     end
   end
 
-  it "_exists raises MySQLIsTerribleError for has_one" do
+  it "_exists raises MySQLIsTerribleError for has_one with MySQL" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
@@ -37,7 +37,7 @@ describe "wa" do
     end
   end
 
-  it "_count raises MySQLIsTerribleError for has_one" do
+  it "_count raises MySQLIsTerribleError for has_one with MySQL" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do

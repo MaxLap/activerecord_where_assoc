@@ -5,17 +5,6 @@ require "test_helper"
 describe "wa_count" do
   let(:s0) { S0.create_default! }
 
-  it "counts every matching has_many" do
-    s0
-    assert_wa_count_full(0, :m1)
-
-    s0.create_assoc!(:m1, :S0_m1)
-    assert_wa_count_full(1, :m1)
-
-    s0.create_assoc!(:m1, :S0_m1)
-    assert_wa_count_full(2, :m1)
-  end
-
   it "counts every matching has_many through has_many through has_many" do
     m1_1 = s0.create_assoc!(:m1, :S0_m1)
     m1_2 = s0.create_assoc!(:m1, :S0_m1)

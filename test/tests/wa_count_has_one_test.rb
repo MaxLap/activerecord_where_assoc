@@ -8,17 +8,6 @@ describe "wa_count" do
 
   let(:s0) { S0.create_default! }
 
-  it "counts mathing has_one as at most 1" do
-    s0
-    assert_wa_count_full(0, :o1)
-
-    s0.create_assoc!(:o1, :S0_o1)
-    assert_wa_count_full(1, :o1)
-
-    s0.create_assoc!(:o1, :S0_o1)
-    assert_wa_count_full(1, :o1)
-  end
-
   it "counts matching has_one through has_one through has_one as at most 1" do
     o1_1 = s0.create_assoc!(:o1, :S0_o1)
     o1_2 = s0.create_assoc!(:o1, :S0_o1)

@@ -60,7 +60,7 @@ module ActiveRecordWhereAssoc
                    operator
                  end
 
-      where("#{nb} #{operator} (#{nested_relation.to_sql})")
+      where("#{nb} #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
     end
 
 
@@ -118,6 +118,7 @@ module ActiveRecordWhereAssoc
             # of expressing the above... They should be equivalent, but their performances aren't
             # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
             # We use unscoped to avoid duplicating the conditions in the query, which is noise
+
             wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1))
           else
             # This works as long as the table_name doesn't have a schema, since we need to use an alias

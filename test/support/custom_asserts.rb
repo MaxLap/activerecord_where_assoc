@@ -12,6 +12,7 @@ module Minitest::Assertions
    :assert_wa_count,
    :assert_wa_count_full,
    :assert_wa_count_specific,
+   :assert_wa,
    ].each do |shortcut|
     # Using class eval to define a real method instead of using #define_method
     # #define_method made minitest not give the right location for where the assert
@@ -22,6 +23,15 @@ module Minitest::Assertions
         #{shortcut}_from(S0, *args, &block)
       end
     RUBY
+  end
+
+  def assert_wa_from(start_from, nb_match_assoc, association_name, *args, &block)
+    assert_wa_count_from(start_from, nb_match_assoc, association_name, *args, &block)
+    if nb_match_assoc > 0
+      assert_exists_with_matching_from(start_from, association_name, *args, &block)
+    else
+      assert_exists_without_matching_from(start_from, association_name, *args, &block)
+    end
   end
 
   def assert_exists_with_matching_from(start_from, association_name, *args, &block)
