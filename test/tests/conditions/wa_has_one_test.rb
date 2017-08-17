@@ -43,10 +43,4 @@ describe "wa has_one" do
     assert_wa(1, :o1, "#{S1.adhoc_column_name} = 1")
     assert_wa(0, :o1, "#{S1.adhoc_column_name} = 2")
   end
-
-  it "matches with Symbol condition" do
-    s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
-    assert_wa(1, :o1, :adhoc_is_one)
-    assert_wa(0, :o1, :adhoc_is_two)
-  end
 end

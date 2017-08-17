@@ -7,8 +7,6 @@
 * Test things that are expected to fail. (abstract_table?)
 * Have a way to do some benchmarking to compare different ways to build queries
 
-* Remove symbols support for the given scope. Can be replaced by a &:symbol instead
-
 Doc-wise:
 * Discuss Rails versions.
 * Add doc on the new methods

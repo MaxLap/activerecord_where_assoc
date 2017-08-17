@@ -18,7 +18,7 @@ This gem provides powerful methods to give you the power of SQL's EXISTS:
 my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
  
 # Find my_user's posts that have comments by an admin
-my_user.posts.where_assoc_exists(:comments_authors, :admins).where(...)
+my_user.posts.where_assoc_exists(:comments_authors, &:admins).where(...)
  
 # Find my_user's posts that have at least 5 non-spam comments
 my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }.where(...)
@@ -47,15 +47,13 @@ Or install it yourself as:
 ### `#where_assoc_exists` & `#where_assoc_not_exists`
  
 * The first parameter is the association we are doing the condition on.
-* The second parameter (optional) is the condition to apply on the association. It can be one of:
-  * Hash, String: These are passed directly to `#where`.
-  * Array: Should be \[string_of_conditions, bind1, bind2\], passed directly to `#where`.
-  * Symbol: passed to `#send`, this is a shortcut to easily use scopes
+* The second parameter (optional) is the condition to apply on the association. It can be anything that #where can receive, so: Hash, String, Array (string with binds), Arel node.
 * A block can also be passed. It can add conditions on the association's relation after all the conditions have been applied (association's scopes, default_scope, second parameter of the method).
   The block either:
-  * Receive no arugment, in that case self is set to the relation
+  * Receive no argument, in that case self is set to the relation, so you can do { where(id: 123) }
   * Receive arguments, in that case, the block is called with the relation as first parameter
   The block should return the new relation to use or `nil` to do as if there were no blocks
+  It's common to use where_assoc_*(..., &:scope_name) to apply a single scope quickly
   
 ### `#where_assoc_count`
 
@@ -78,9 +76,10 @@ Sometimes, there isn't a single association that goes deep enough. In that situa
 
 ```ruby
 # Find users that have a post that has a comment that was made by an admin.
+# Using &:is_admin to use the is_admin scope (or any other class method of comments)
 User.where_assoc_exists(:posts) { |posts|
     posts.where_assoc_exists(:comments) { |comments| 
-        comments.where_assoc_exists(:author, :is_admin)
+        comments.where_assoc_exists(:author, &:is_admin)
     }
 }
 ```
@@ -89,7 +88,7 @@ If you don't need special conditions on any of the intermediary associations, th
 
 ```ruby
 # Same as above
-User.where_assoc_exists([:posts, :comments, :author], :is_admin)
+User.where_assoc_exists([:posts, :comments, :author], &:is_admin)
 ```
 
 This shortcut can be used for every methods. The conditions and the block will be applied only to the last assocation of the chain.
@@ -131,7 +130,7 @@ my_post.comments.where_assoc_not_exists(:author, is_admin: true)
  
 # Find my_user's posts that have comments by an admin
 # Uses a Symbol to use a scope that exists on Author
-my_user.posts.where_assoc_exists(:comments_authors, :admins)
+my_user.posts.where_assoc_exists(:comments_authors, &:admins)
  
 # Find my_user's posts that have at least 5 non-spam comments
 # Uses a block with a parameter to do a condition

@@ -135,7 +135,7 @@ module ActiveRecordWhereAssoc
         end
 
         if i.zero?
-          wrapping_scope = Helpers.apply_scope(wrapping_scope, given_scope) if given_scope
+          wrapping_scope = wrapping_scope.where(given_scope) if given_scope
           wrapping_scope = Helpers.apply_proc_scope(wrapping_scope, last_assoc_block) if last_assoc_block
         end
 
