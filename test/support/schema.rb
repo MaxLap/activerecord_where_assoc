@@ -4,10 +4,14 @@ ActiveRecord::Schema.verbose = false
 
 # Every table is a step. In tests, you always go toward the bigger step.
 # You can do it using a belongs_to, or has_one/has_many.
+# Try to make most columns unique so that any wrong column used is obvious in an error message.
 
 ActiveRecord::Schema.define do
   create_table :s0s do |t|
     t.integer :s1_id
+
+    t.integer :s0s_belongs_to_poly_id
+    t.string :s0s_belongs_to_poly_type
 
     t.bigint :s0s_column
     t.bigint :s0s_adhoc_column
@@ -17,6 +21,11 @@ ActiveRecord::Schema.define do
     t.integer :s0_id
     t.integer :s1_id
 
+    t.integer :has_s1s_poly_id
+    t.string :has_s1s_poly_type
+    t.integer :s1s_belongs_to_poly_id
+    t.string :s1s_belongs_to_poly_type
+
     t.bigint :s1s_column
     t.bigint :s1s_adhoc_column
   end
@@ -25,12 +34,20 @@ ActiveRecord::Schema.define do
     t.integer :s1_id
     t.integer :s3_id
 
+    t.integer :has_s2s_poly_id
+    t.string :has_s2s_poly_type
+    t.integer :s2s_belongs_to_poly_id
+    t.string :s2s_belongs_to_poly_type
+
     t.bigint :s2s_column
     t.bigint :s2s_adhoc_column
   end
 
   create_table :s3s do |t|
     t.integer :s2_id
+
+    t.integer :has_s3s_poly_id
+    t.string :has_s3s_poly_type
 
     t.bigint :s3s_column
     t.bigint :s3s_adhoc_column

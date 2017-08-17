@@ -13,8 +13,7 @@ describe "wa" do
     assert !S0.where_assoc_not_exists(association).exists?
 
     # With a record of the association
-    condition_column_value = S0.test_condition_value_for(association) * S1.test_condition_value_for(:default_scope)
-    assoc_record = S1.create!(S1.test_condition_column => condition_column_value)
+    assoc_record = S1.create_default!("S0_#{association}")
     assert !S0.where_assoc_count(1, :==, association).exists?
     assert !S0.where_assoc_count(1, :!=, association).exists?
     assert !S0.where_assoc_exists(association).exists?
@@ -56,6 +55,12 @@ describe "wa" do
     skip if Test::SelectedDBHelper == Test::MySQL
     check_association(:o1) do |o1|
       o1.update_attributes!(s0_id: s0.id)
+    end
+  end
+
+  it "always returns no result for polymorphic has_many if no possible ones exists" do
+    check_association(:mp1) do |mp1|
+      mp1.update_attributes!(has_s1s_poly_id: s0.id, has_s1s_poly_type: "S0")
     end
   end
 end

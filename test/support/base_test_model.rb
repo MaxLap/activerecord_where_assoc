@@ -67,38 +67,46 @@ class BaseTestRecord < ActiveRecord::Base
   end
 
   def self.testable_has_many(association_name, given_scope = nil, options = {})
+    raise "association_name should start with 'm'" unless association_name.to_s.start_with?("m")
     testable_association(:has_many, association_name, given_scope, options)
   end
 
   def self.testable_has_one(association_name, given_scope = nil, options = {})
+    raise "association_name should start with 'o'" unless association_name.to_s.start_with?("o")
     testable_association(:has_one, association_name, given_scope, options)
   end
 
   def self.testable_belongs_to(association_name, given_scope = nil, options = {})
+    raise "association_name should start with 'b'" unless association_name.to_s.start_with?("b")
     testable_association(:belongs_to, association_name, given_scope, options)
   end
 
   def self.testable_has_and_belongs_to_many(association_name, given_scope = nil, options = {})
+    raise "association_name should start with 'z'" unless association_name.to_s.start_with?("z")
     testable_association(:has_and_belongs_to_many, association_name, given_scope, options)
   end
 
-  def self.create_default!
-    create!(test_condition_column => test_condition_value_for(:default_scope))
+  def self.create_default!(*source_associations)
+    condition_value = TestHelpers.condition_value_result_for(*source_associations) || 1
+    condition_value *= test_condition_value_for(:default_scope)
+    create!(test_condition_column => condition_value)
   end
 
   # does a #create! and automatically fills the column with a value that matches the merge of the condition on
   # the matching association of each passed source_associations
-  def create_assoc!(association_name, *source_associations, allow_no_source: false, adhoc_value: nil, skip_default: false)
-    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]\d+$/
+  def create_assoc!(association_name, *source_associations, allow_no_source: false,
+                    adhoc_value: nil, skip_default: false, use_bad_type: false)
+    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]p?\d+$/
 
     if !allow_no_source && source_associations.empty?
       raise "Need at least one source model or a nil instead"
     end
     source_associations = source_associations.compact
-
-    association_macro = association_name.to_s[0]
+    association_macro = association_name.to_s[/^[a-z]+/]
 
     reflection = self.class.reflections[association_name.to_s]
+    raise "Didn't find association: #{association_name}" unless reflection
+
     target_model = reflection.klass
 
     if !skip_default && target_model.test_condition_value_for?(:default_scope)
@@ -114,9 +122,9 @@ class BaseTestRecord < ActiveRecord::Base
                    target_model.adhoc_column_name => adhoc_value,
     }
     case association_macro
-    when "m", "z"
+    when "m", "z", "mp"
       record = send(association_name).create!(attributes)
-    when "o"
+    when "o", "op"
       # Creating a has_one like this removes the id of the previously existing records that were refering.
       # We don't want that for the purpose of our tests
       old_matched_ids = target_model.where(reflection.foreign_key => self.id).pluck(:id)
@@ -129,6 +137,16 @@ class BaseTestRecord < ActiveRecord::Base
       raise "Unexpected macro: #{association_macro}"
     end
 
+    if use_bad_type
+      case association_macro
+      when "mp", "op"
+        record.update_attributes(:"has_#{record.class.table_name}_poly_type" => "PolyBadRecord")
+      when "bp"
+        update_attributes(:"#{self.class.table_name}_belongs_to_poly_type" => "PolyBadRecord")
+      end
+
+    end
+
     record
   end
 
@@ -136,24 +154,30 @@ class BaseTestRecord < ActiveRecord::Base
   # combinations missing one of the source models and the default scope
   def create_bad_assocs!(association_name, *source_associations, &block)
     source_models = source_associations.compact
+    assocs_options = []
+
     wrong_combinations = source_associations.combination(source_associations.size - 1)
+    wrong_combinations.each do |wrong_combination|
+      assocs_options << [association_name, *wrong_combination, allow_no_source: true]
+    end
+
+    assocs_options << [association_name, *source_models, allow_no_source: true, skip_default: true]
+
+    if association_name =~ /^.p\d/
+      assocs_options << [association_name, *source_models, allow_no_source: true, use_bad_type: true]
+    end
 
     records = []
 
-    wrong_combinations.each do |wrong_combination|
-      record = create_assoc!(association_name, *wrong_combination, allow_no_source: true)
+    assocs_options.each do |assoc_options|
+      records << create_assoc!(*assoc_options)
       if block
-        yield record
-        record.destroy
-      else
-        records << record
+        yield records.last
+        records.last.destroy
       end
     end
 
-    record = create_assoc!(association_name, *source_models, allow_no_source: true, skip_default: true)
     if block
-      yield record
-      record.destroy
       nil
     else
       records

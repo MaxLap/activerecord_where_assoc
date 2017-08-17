@@ -38,9 +38,15 @@ module ActiveRecordWhereAssoc
       foreign_klass = next_reflection ? next_reflection.klass : final_klass
       foreign_table = foreign_klass.arel_table
 
-      # No need to do any conditions on type, it is already added as soon as we use a scope on the klass
-      # Free STI support!
-      table[key].eq(foreign_table[foreign_key])
+      # Using default_scope / unscoped / any scope comes with the STI constrain built-in for free!
+
+      constraints = table[key].eq(foreign_table[foreign_key])
+
+      if reflection.type
+        # Handing of the polymorphic has_many/has_one's type column
+        constraints = constraints.and(table[reflection.type].eq(foreign_klass.name))
+      end
+      constraints
     end
 
     if ActiveRecord.gem_version >= Gem::Version.new("5.1")

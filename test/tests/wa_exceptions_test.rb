@@ -44,4 +44,16 @@ describe "wa" do
       S0.where_assoc_count(1, :<, :o1)
     end
   end
+
+  it "_exists raises NotImplementedError for polymorphic belongs_to" do
+    assert_raises(NotImplementedError) do
+      S0.where_assoc_exists(:bp1)
+    end
+  end
+
+  it "_count raises NotImplementedError for polymorphic belongs_to" do
+    assert_raises(NotImplementedError) do
+      S0.where_assoc_count(1, :<, :bp1)
+    end
+  end
 end

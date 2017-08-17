@@ -87,7 +87,9 @@ module ActiveRecordWhereAssoc
         # Need to use build because this exception expects a record...
         raise ActiveRecord::AssociationNotFoundError.new(self.klass.new, association_name)
       end
-      raise "Can't deal with polymorphic belongs_to" if final_reflection.macro == :belongs_to && final_reflection.options[:polymorphic]
+      if final_reflection.macro == :belongs_to && final_reflection.options[:polymorphic]
+        raise NotImplementedError, "Can't deal with polymorphic belongs_to"
+      end
 
       nested_scope = nil
       wrapping_scope = nil
