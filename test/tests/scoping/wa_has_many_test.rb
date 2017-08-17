@@ -5,23 +5,6 @@ require "test_helper"
 describe "wa" do
   let(:s0) { S0.create_default! }
 
-  it "always returns no result for has_many if no possible ones exists" do
-    assert !S0.where_assoc_count(1, :==, :m1).exists?
-    assert !S0.where_assoc_count(1, :!=, :m1).exists?
-    assert !S0.where_assoc_exists(:m1).exists?
-    assert !S0.where_assoc_not_exists(:m1).exists?
-    m1 = S1.create!(S1.test_condition_column => S0.test_condition_value_for(:m1) * S1.test_condition_value_for(:default_scope))
-    assert !S0.where_assoc_count(1, :==, :m1).exists?
-    assert !S0.where_assoc_count(1, :!=, :m1).exists?
-    assert !S0.where_assoc_exists(:m1).exists?
-    assert !S0.where_assoc_not_exists(:m1).exists?
-
-    # Making sure the S1 was valid according to the scopes by creating the S0 and
-    # setting up the association with the existing S1
-    m1.update_attributes!(s0_id: s0.id)
-    assert_wa(1, :m1)
-  end
-
   it "finds the right matching has_manys" do
     s0_1 = s0
     s0_1.create_assoc!(:m1, :S0_m1)

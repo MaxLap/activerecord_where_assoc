@@ -8,23 +8,6 @@ describe "wa" do
 
   let(:s0) { S0.create_default! }
 
-  it "always returns no result for has_one if no possible ones exists" do
-    assert !S0.where_assoc_count(1, :==, :o1).exists?
-    assert !S0.where_assoc_count(1, :!=, :o1).exists?
-    assert !S0.where_assoc_exists(:o1).exists?
-    assert !S0.where_assoc_not_exists(:o1).exists?
-    o1 = S1.create!(S1.test_condition_column => S0.test_condition_value_for(:o1) * S1.test_condition_value_for(:default_scope))
-    assert !S0.where_assoc_count(1, :==, :o1).exists?
-    assert !S0.where_assoc_count(1, :!=, :o1).exists?
-    assert !S0.where_assoc_exists(:o1).exists?
-    assert !S0.where_assoc_not_exists(:o1).exists?
-
-    # Making sure the S1 was valid according to the scopes by creating the S0 and
-    # setting up the association with the existing S1
-    o1.update_attributes!(s0_id: s0.id)
-    assert_wa(1, :o1)
-  end
-
   it "finds the right matching has_ones" do
     s0_1 = s0
     s0_1.create_assoc!(:o1, :S0_o1)
