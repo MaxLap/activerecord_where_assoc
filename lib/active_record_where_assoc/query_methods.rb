@@ -97,12 +97,14 @@ module ActiveRecordWhereAssoc
       # Chain deals with through stuff
       # We will start with the reflection that points on the final model, and slowly move back to the reflection
       # that points on the model closest to self
-      chain = final_reflection.chain
-      chain.each_with_index do |reflection, i|
-        next_reflection = chain[i + 1]
+      refl_and_cons_chain = Helpers.chain_reflection_and_constraints(final_reflection)
+      refl_and_cons_chain.each_with_index do |(reflection, constraints), i|
+        next_refl_and_cons = refl_and_cons_chain[i + 1]
+        next_reflection = next_refl_and_cons.first if next_refl_and_cons
+
         wrapping_scope = reflection.klass.default_scoped
 
-        reflection.constraints.each do |callable|
+        constraints.each do |callable|
           wrapping_scope = wrapping_scope.instance_exec(&callable)
         end
 

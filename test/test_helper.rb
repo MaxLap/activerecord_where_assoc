@@ -26,9 +26,16 @@ class MyMinitestSpec < Minitest::Spec
 
   # Annoying stuff for tests to run in transactions
   include ActiveRecord::TestFixtures
-  self.use_transactional_tests = true
-  def run_in_transaction?
-    self.use_transactional_tests
+  if ActiveRecord.gem_version >= Gem::Version.new("5.0")
+    self.use_transactional_tests = true
+    def run_in_transaction?
+      self.use_transactional_tests
+    end
+  else
+    self.use_transactional_fixtures = true
+    def run_in_transaction?
+      self.use_transactional_fixtures
+    end
   end
 end
 

@@ -20,7 +20,8 @@ class BaseTestRecord < ActiveRecord::Base
   def self.inherited(other)
     super
     value = other.test_condition_value_for(:default_scope)
-    other.send(:default_scope, -> { where(testable_condition(value)) })
+    condition = other.testable_condition(value)
+    other.send(:default_scope, -> { where(condition) })
   end
 
   def self.test_condition_column

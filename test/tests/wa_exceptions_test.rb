@@ -17,18 +17,6 @@ describe "wa" do
     end
   end
 
-  it "_exists raises ArgumentError if condition is wrong type" do
-    assert_raises(ArgumentError) do
-      S0.where_assoc_exists(:m1, 42)
-    end
-  end
-
-  it "_count raises ArgumentError if condition is wrong type" do
-    assert_raises(ArgumentError) do
-      S0.where_assoc_count(1, :<, :m1, 42)
-    end
-  end
-
   it "_exists raises MySQLIsTerribleError for has_one with MySQL" do
     skip if Test::SelectedDBHelper != Test::MySQL
 

@@ -37,9 +37,19 @@ module ActiveRecordWhereAssoc
       def self.join_keys(reflection)
         reflection.join_keys
       end
-    elsif ActiveRecord.gem_version >= Gem::Version.new("5.0")
+    else
       def self.join_keys(reflection)
         reflection.join_keys(reflection.klass)
+      end
+    end
+
+    if ActiveRecord.gem_version >= Gem::Version.new("5.0")
+      def self.chain_reflection_and_constraints(reflection)
+        reflection.chain.map{|ref| [ref, ref.constraints] }
+      end
+    else
+      def self.chain_reflection_and_constraints(reflection)
+        reflection.chain.zip(reflection.scope_chain)
       end
     end
   end
