@@ -80,3 +80,6 @@ COPS_TO_AUTO_CORRECT = [
                        ].freeze
 
 system("rubocop", "--only=#{COPS_TO_AUTO_CORRECT.join(',')}", "--auto-correct")
+
+# Then just run rubocop normally to print remaining problems
+system("rubocop")
