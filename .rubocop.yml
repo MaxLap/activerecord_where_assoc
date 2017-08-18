@@ -3,9 +3,9 @@ AllCops:
   Include:
     - Rakefile
     - config.ru
+    - bin/console
+    - bin/fixcop
     - lib/**/*.rake
-    # those are pure ruby files used by gem axlsx as view
-    - '**/*.axlsx'
   Exclude:
     - db/schema.rb
     - _*/**/*
@@ -116,6 +116,8 @@ Style/InverseMethods:
   InverseMethods:
     :present?: :blank?,
     :include?: :exclude?
+  Exclude:
+    - bin/*
 
 Style/NegatedIf:
   Enabled: false
