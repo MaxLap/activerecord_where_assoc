@@ -70,6 +70,37 @@ The parameters are in the same order as in that query: number, operator, associa
 * The third and fourth parameters and the block are the same as the first and second parameters of `#where_assoc_exists`.
 
 
+## Supported Rails versions
+
+Rails 5.1, 5.0, 4.2 and 4.1 are supported for every Ruby versions they support. Just install the gem as usual.
+
+## More examples
+
+```ruby
+# Find my_post's comments that were not made by an admin
+# Uses a Hash for the condition
+my_post.comments.where_assoc_not_exists(:author, is_admin: true)
+
+# Find my_user's posts that have comments by an admin
+# Uses a Symbol to use a scope that exists on Author
+my_user.posts.where_assoc_exists(:comments_authors, &:admins)
+
+# Find my_user's posts that have at least 5 non-spam comments
+# Uses a block with a parameter to do a condition
+my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }
+
+# Find my_user's posts that have at least 5 non-spam comments
+# Uses a block without parameters to do a condition
+my_user.posts.where_assoc_count(5, :>=, :comments) { where(spam: false) }
+
+# Find my_user's posts that have comments by an honest admin
+# Uses multiple associations.
+# Uses a hash as 2nd parameter to do the conditions
+my_user.posts.where_assoc_exists([:comments, :author], honest: true, is_admin: true)
+```
+
+## Usage tips
+
 ### Nested associations
 
 Sometimes, there isn't a single association that goes deep enough. In that situation, you can simply nest the scopes:
@@ -121,31 +152,6 @@ TODO explain
 
 All the methods always chain nested associations using an EXISTS when they have to go through multiple hoops. Only the outer-most, or first, association will have a NOT EXISTS when using `#where_assoc_not_exists` or a COUNT when using `#where_assoc_count`.
 
-## More examples
-
-```ruby
-# Find my_post's comments that were not made by an admin
-# Uses a Hash for the condition
-my_post.comments.where_assoc_not_exists(:author, is_admin: true)
- 
-# Find my_user's posts that have comments by an admin
-# Uses a Symbol to use a scope that exists on Author
-my_user.posts.where_assoc_exists(:comments_authors, &:admins)
- 
-# Find my_user's posts that have at least 5 non-spam comments
-# Uses a block with a parameter to do a condition
-my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }
-
-# Find my_user's posts that have at least 5 non-spam comments
-# Uses a block without parameters to do a condition
-my_user.posts.where_assoc_count(5, :>=, :comments) { where(spam: false) }
-
-# Find my_user's posts that have comments by an honest admin
-# Uses multiple associations.
-# Uses a hash as 2nd parameter to do the conditions
-my_user.posts.where_assoc_exists([:comments, :author], honest: true, is_admin: true)
-```
-
 ## Advantages
 These methods many advantages over the alternative ways of achieving the similar results:
 * Can be chained and nested with regular ActiveRecord scoping methods.
@@ -161,7 +167,7 @@ These methods many advantages over the alternative ways of achieving the similar
 * Applies the default_scopes that was defined on the target model
 * Handles has_one correctly: Only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
 
-## Problems
+## Known issues
 
 MySQL is terrible:
 
@@ -183,11 +189,11 @@ Run `bin/fixcop` to fix a lot of common styling mistake of your code, make sure 
 
 Run `rubocop` to see all the other rules that you break. Use common sense, sometimes it's okay to break a rule, add a [rubocop:disable comment](http://rubocop.readthedocs.io/en/latest/configuration/#disabling-cops-within-source-code) in that situation.
 
-To test closer to what Travis-CI does (multiple ruby versions / multiple rails versions), use `bin/testall`:
-* It will tell you about missing ruby versions, which you can install if you want
-* It will run rake test on each supported version or ruby/rails
+Run `bin/testall` to test all supported rails/ruby versions:
+* It will tell you about missing ruby versions, which you can install if you want to test for them
+* It will run `rake test` on each supported version or ruby/rails
 * It automatically installs bundler if a ruby version doesn't have it
-* It automatically runs bundle install
+* It automatically runs `bundle install`
 
 ## Contributing
 

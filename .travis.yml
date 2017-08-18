@@ -13,6 +13,7 @@ _ruby_aliases:
   - &ru2_2 2.2.7
   - &ru2_1 2.1.10
   - &ru2_0 2.0.0-p648
+  - &ru1_9_3 1.9.3-p551
 
 _rails_aliases:
   - &rails_5_1 gemfiles/rails_5_1.gemfile
@@ -53,6 +54,8 @@ matrix:
       rvm: *ru2_1
     - gemfile: *rails_4_2
       rvm: *ru2_0
+    - gemfile: *rails_4_2
+      rvm: *ru1_9_3
 
     - gemfile: *rails_4_1
       rvm: *ru2_3
@@ -62,6 +65,8 @@ matrix:
       rvm: *ru2_1
     - gemfile: *rails_4_1
       rvm: *ru2_0
+    - gemfile: *rails_4_1
+      rvm: *ru1_9_3
 
 
   allow_failures:

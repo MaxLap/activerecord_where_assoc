@@ -8,5 +8,4 @@
 * Have a way to do some benchmarking to compare different ways to build queries
 
 Doc-wise:
-* Discuss Rails versions.
 * Add doc on the new methods

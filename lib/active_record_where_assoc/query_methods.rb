@@ -5,20 +5,18 @@ require_relative "exceptions"
 
 module ActiveRecordWhereAssoc
   module QueryMethods
-    NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, not_exists: false|
-      exists_or_not = not_exists ? "NOT " : ""
-
+    NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, exists_prefix = ""|
       # Limit 0 means nothing should be found. We can stop right there then with a false condition.
       # Note that this is needed because SQLite3 doesn't apply the LIMIT(0)
       if nested_scope.limit_value == 0
-        return wrapping_scope.where("#{exists_or_not} 'EXISTS_WITH_LIMIT_0' = 'SKIP_THE_REST'")
+        return wrapping_scope.where("#{exists_prefix}'EXISTS_WITH_LIMIT_0' = 'SKIP_THE_REST'")
       end
 
       # Other limit values, and order clauses are ignored in an exists, get rid of them for clarity
       # Note that we allow negative limits by doing this, which some DB would have failed on. I don't think it's an issue.
       nested_scope = nested_scope.unscope(:order, :limit)
 
-      sql = "#{exists_or_not}EXISTS (#{nested_scope.select('0').to_sql})"
+      sql = "#{exists_prefix}EXISTS (#{nested_scope.select('0').to_sql})"
 
       wrapping_scope.where(sql)
     end
@@ -38,7 +36,7 @@ module ActiveRecordWhereAssoc
 
     def where_assoc_not_exists(association_name, given_scope = nil, &block)
       nested_relation = relation_on_association(association_name, given_scope, block, NestWithExistsBlock)
-      NestWithExistsBlock.call(self, nested_relation, not_exists: true)
+      NestWithExistsBlock.call(self, nested_relation, "NOT ")
     end
 
     # TODO: Document that this makes little sense if any of the scopes on the association or

@@ -95,11 +95,13 @@ class BaseTestRecord < ActiveRecord::Base
 
   # does a #create! and automatically fills the column with a value that matches the merge of the condition on
   # the matching association of each passed source_associations
-  def create_assoc!(association_name, *source_associations, allow_no_source: false,
-                    adhoc_value: nil, skip_default: false, use_bad_type: false)
+  def create_assoc!(association_name, *source_associations)
+    options = source_associations.extract_options!
+    options = options.reverse_merge(allow_no_source: false, adhoc_value: nil, skip_default: false, use_bad_type: false)
+
     raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]p?\d+$/
 
-    if !allow_no_source && source_associations.empty?
+    if !options[:allow_no_source] && source_associations.empty?
       raise "Need at least one source model or a nil instead"
     end
     source_associations = source_associations.compact
@@ -111,7 +113,7 @@ class BaseTestRecord < ActiveRecord::Base
 
     target_model = reflection.klass
 
-    if !skip_default && target_model.test_condition_value_for?(:default_scope)
+    if !options[:skip_default] && target_model.test_condition_value_for?(:default_scope)
       condition_value = target_model.test_condition_value_for(:default_scope)
     end
 
@@ -121,7 +123,7 @@ class BaseTestRecord < ActiveRecord::Base
     end
 
     attributes = { target_model.test_condition_column => condition_value,
-                   target_model.adhoc_column_name => adhoc_value,
+                   target_model.adhoc_column_name => options[:adhoc_value],
     }
     case association_macro
     when "m", "z", "mp"
@@ -139,7 +141,7 @@ class BaseTestRecord < ActiveRecord::Base
       raise "Unexpected macro: #{association_macro}"
     end
 
-    if use_bad_type
+    if options[:use_bad_type]
       case association_macro
       when "mp", "op"
         record.update_attributes(:"has_#{record.class.table_name}_poly_type" => "PolyBadRecord")
