@@ -116,4 +116,19 @@ ActiveRecord::Schema.define do
   end
 
   create_join_table "sti_s0s", "sti_s1s", table_name: "sti_s0s_sti_s1s"
+
+  create_table "lew_s0s" do |t|
+    t.integer :lew_s1_id
+
+    t.string :lew_s0s_column
+  end
+
+  create_table "lew_s1s" do |t|
+    t.integer :lew_s0_id
+
+    t.string :lew_s1s_column
+  end
+
+  create_join_table "lew_s0s", "lew_s1s", table_name: "lew_s0s_lew_s1s"
+
 end

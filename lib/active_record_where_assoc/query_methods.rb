@@ -103,7 +103,10 @@ module ActiveRecordWhereAssoc
         wrapping_scope = reflection.klass.default_scoped
 
         constraints.each do |callable|
-          wrapping_scope = wrapping_scope.instance_exec(&callable)
+          # Need to use merge to replicate the Last Equality Wins behavior of associations
+          # https://github.com/rails/rails/issues/7365
+          # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
+          wrapping_scope = wrapping_scope.merge(reflection.klass.unscoped.instance_exec(&callable))
         end
 
         wrapping_scope = wrapping_scope.where(Helpers.join_constraints(reflection, next_reflection, self.klass))

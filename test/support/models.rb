@@ -134,3 +134,20 @@ end
 
 class STIS1Sub < STIS1
 end
+
+
+class LEWS0 <  ActiveRecord::Base
+  self.table_name = "lew_s0s"
+  has_many :m1, -> {where(lew_s1s_column: "has_many")}, class_name: "LEWS1", foreign_key: "lew_s0_id"
+  has_one :o1, -> {where(lew_s1s_column: "has_one").order(:id)}, class_name: "LEWS1", foreign_key: "lew_s0_id"
+  belongs_to :b1, -> {where(lew_s1s_column: "belongs_to")}, class_name: "LEWS1", foreign_key: "lew_s1_id"
+  has_and_belongs_to_many :z1, -> {where(lew_s1s_column: "habtm")}, class_name: "LEWS1",
+                                                                    join_table: "lew_s0s_lew_s1s",
+                                                                    foreign_key: "lew_s0_id",
+                                                                    association_foreign_key: "lew_s1_id"
+end
+
+class LEWS1 <  ActiveRecord::Base
+  self.table_name = "lew_s1s"
+  default_scope -> {where(lew_s1s_column: "default_scope")}
+end
