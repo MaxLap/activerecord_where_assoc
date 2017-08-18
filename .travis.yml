@@ -2,20 +2,56 @@ sudo: false
 language: ruby
 cache: bundler
 
-rvm:
-  - 2.2.7
-  - 2.3.4
-  - 2.4.1
-  - ruby-head
-
-gemfile:
-  - gemfiles/rails_4_2.gemfile
-  - gemfiles/rails_5_0.gemfile
-  - gemfiles/rails_5_1.gemfile
-
 env:
   global:
+    # Github oauth key to allow getting the rails-head gemfile
     - secure: "OMVXtjv1t4dqxAa9wbeOwFRkMtln3WpHIrocie8bHxeiPjpMcqcYOBA9gljaOCPTKPN89ROuyGkSx0qcjvt2iQePC9wAcZRNjTFppgJdPGwpCqz633mSoryp5md20oXxx81rDzcg9Rzfw47/OxmdwqL6hI9OjjipfsQZOBcF5Yi9UU5Ng56w0MaKbzfevkm4s2/SB8fm7fObJhL/skQDAmoscdfm+pz/0On10kQx0b4AEPAXl8p3bVE+PR2/m9V6LwYeQ7VvOlsJGQVnlBO9LV/QPcFS2+CvSCs/nW+XLS1ItMom6h3OaiEjLi1xo/d+AcvNnkJWSI3p80EDpoBT7DI/lyMWJr/LgyzbUSHqMNwflOGdHWZHd8ihsgefLo8wU1p4+lVQisu0oCm+KgdZwkVOghw1XLn5sKR7Tzhj0jAMc21/jeBoFppgJyhgb1QaijOl1xpuUML6rE9+u3StnJkU9mgARHzwbaR+vIRHz6KaBbbiD7Mu8sKkgYWgTQr8yN1TlOKo4okCwNZYjO9VsDrVGtp1CrS+vWAvOmmgAM0fV7ITEPnAwlB4mnUpJUxSuy3UOuhxcADkM3cYH6rk/7FDupRYQo3rO+NQUO7FavG0WYIzBHsL+X7gnb/3oslxHQbf4HjzrVPUj5ibw/5nbL/4iOhR0v4xMQ7T2IMQeMs="
+
+
+rvm:
+  # These are the versions supported by Rails 5.0 and 5.1
+  # Other versions are set manually in the matrix.include
+  - 2.4.1
+  - 2.3.4
+  - 2.2.7
+
+gemfile:
+  - gemfiles/rails_5_1.gemfile
+  - gemfiles/rails_5_0.gemfile
+  - gemfiles/rails_4_2.gemfile
+  - gemfiles/rails_4_1.gemfile
+
+matrix:
+  include:
+    - gemfile: gemfiles/rails_head.gemfile
+      rvm: ruby-head
+    - gemfile: gemfiles/rails_head.gemfile
+      rvm: 2.4.1
+
+    - gemfile: gemfiles/rails_5_1.gemfile
+      rvm: ruby-head
+
+    - gemfile: gemfiles/rails_4_2.gemfile
+      rvm: 2.1.10
+    - gemfile: gemfiles/rails_4_2.gemfile
+      rvm: 2.0.0-p648
+
+    - gemfile: gemfiles/rails_4_1.gemfile
+      rvm: 2.1.10
+    - gemfile: gemfiles/rails_4_1.gemfile
+      rvm: 2.0.0-p648
+
+  exclude:
+    - rvm: 2.4.1
+      gemfile: gemfiles/rails_4_1.gemfile
+
+  allow_failures:
+    - rvm: ruby-head
+    - gemfile: gemfiles/rails_head.gemfile
+
+  # fast_finish makes Travis send multiple notification email when things fail.
+  # https://github.com/travis-ci/travis-ci/issues/1696
+  # fast_finish: true
 
 before_install: gem install bundler -v 1.15.3
 
@@ -25,18 +61,8 @@ before_script:
 
 script:
   - DB=mysql bundle exec rake test
-  - DB=pg bundle exec rake test
-  - DB=sqlite3 bundle exec rake test
+  - bundle exec rake test DB=pg
+  - bundle exec rake test DB=sqlite3
   - bundle exec rake coveralls:push
 
-matrix:
-  # fast_finish makes Travis send multiple notification email when things fail.
-  # https://github.com/travis-ci/travis-ci/issues/1696
-  # fast_finish: true
-  allow_failures:
-    - rvm: ruby-head
-    - gemfile: gemfiles/rails_head.gemfile
 
-  include:
-    - rvm: 2.4.1
-      gemfile: gemfiles/rails_head.gemfile

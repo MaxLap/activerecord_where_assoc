@@ -18,7 +18,7 @@ module ActiveRecordWhereAssoc
       # Note that we allow negative limits by doing this, which some DB would have failed on. I don't think it's an issue.
       nested_scope = nested_scope.unscope(:order, :limit)
 
-      sql = "#{exists_or_not}EXISTS (#{nested_scope.select(0).to_sql})"
+      sql = "#{exists_or_not}EXISTS (#{nested_scope.select('0').to_sql})"
 
       wrapping_scope.where(sql)
     end
@@ -80,7 +80,7 @@ module ActiveRecordWhereAssoc
     end
 
     def relation_on_direct_association(association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
-      association_name = association_name.to_s
+      association_name = Helpers.normalize_association_name(association_name)
       final_reflection = _reflections[association_name]
 
       if final_reflection.nil?

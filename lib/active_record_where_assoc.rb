@@ -9,6 +9,7 @@ require "active_record_where_assoc/querying"
 ActiveSupport.on_load(:active_record) do
   ActiveRecord.eager_load!
 
-  ActiveRecord::Relation.include(ActiveRecordWhereAssoc::QueryMethods)
+  # Need to use #send for the include to support Ruby 2.0
+  ActiveRecord::Relation.send(:include, ActiveRecordWhereAssoc::QueryMethods)
   ActiveRecord::Base.extend(ActiveRecordWhereAssoc::Querying)
 end

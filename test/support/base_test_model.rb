@@ -103,9 +103,10 @@ class BaseTestRecord < ActiveRecord::Base
       raise "Need at least one source model or a nil instead"
     end
     source_associations = source_associations.compact
+    association_name = ActiveRecordWhereAssoc::Helpers.normalize_association_name(association_name)
     association_macro = association_name.to_s[/^[a-z]+/]
 
-    reflection = self.class.reflections[association_name.to_s]
+    reflection = self.class.reflections[association_name]
     raise "Didn't find association: #{association_name}" unless reflection
 
     target_model = reflection.klass

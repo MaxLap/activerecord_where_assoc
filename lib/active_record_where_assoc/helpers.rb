@@ -37,19 +37,46 @@ module ActiveRecordWhereAssoc
       def self.join_keys(reflection)
         reflection.join_keys
       end
-    else
+    elsif ActiveRecord.gem_version >= Gem::Version.new("4.2")
       def self.join_keys(reflection)
         reflection.join_keys(reflection.klass)
+      end
+    else
+      # 4.1 change that introduced JoinKeys:
+      # https://github.com/rails/rails/commit/5823e429981dc74f8f53187d2ab573823381bf28#diff-523caff658498027f61cae9d91c8503dL108
+      JoinKeys = Struct.new(:key, :foreign_key)
+      def self.join_keys(reflection)
+        if reflection.source_macro == :belongs_to
+          # The original code had to handle polymorphic here. But we don't support polymorphic belongs_to
+          # So the code would never reach here in the polymorphic case.
+          key = reflection.association_primary_key
+          foreign_key = reflection.foreign_key
+        else
+          key         = reflection.foreign_key
+          foreign_key = reflection.active_record_primary_key
+        end
+
+        JoinKeys.new(key, foreign_key)
       end
     end
 
     if ActiveRecord.gem_version >= Gem::Version.new("5.0")
       def self.chain_reflection_and_constraints(reflection)
-        reflection.chain.map{|ref| [ref, ref.constraints] }
+        reflection.chain.map { |ref| [ref, ref.constraints] }
       end
     else
       def self.chain_reflection_and_constraints(reflection)
         reflection.chain.zip(reflection.scope_chain)
+      end
+    end
+
+    if ActiveRecord.gem_version >= Gem::Version.new("4.2")
+      def self.normalize_association_name(association_name)
+        association_name.to_s
+      end
+    else
+      def self.normalize_association_name(association_name)
+        association_name.to_sym
       end
     end
   end

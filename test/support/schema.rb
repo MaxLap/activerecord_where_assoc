@@ -13,8 +13,8 @@ ActiveRecord::Schema.define do
     t.integer :s0s_belongs_to_poly_id
     t.string :s0s_belongs_to_poly_type
 
-    t.bigint :s0s_column
-    t.bigint :s0s_adhoc_column
+    t.integer :s0s_column, limit: 8
+    t.integer :s0s_adhoc_column, limit: 8
   end
 
   create_table :s1s do |t|
@@ -26,8 +26,8 @@ ActiveRecord::Schema.define do
     t.integer :s1s_belongs_to_poly_id
     t.string :s1s_belongs_to_poly_type
 
-    t.bigint :s1s_column
-    t.bigint :s1s_adhoc_column
+    t.integer :s1s_column, limit: 8
+    t.integer :s1s_adhoc_column, limit: 8
   end
 
   create_table :s2s do |t|
@@ -39,8 +39,8 @@ ActiveRecord::Schema.define do
     t.integer :s2s_belongs_to_poly_id
     t.string :s2s_belongs_to_poly_type
 
-    t.bigint :s2s_column
-    t.bigint :s2s_adhoc_column
+    t.integer :s2s_column, limit: 8
+    t.integer :s2s_adhoc_column, limit: 8
   end
 
   create_table :s3s do |t|
@@ -49,8 +49,8 @@ ActiveRecord::Schema.define do
     t.integer :has_s3s_poly_id
     t.string :has_s3s_poly_type
 
-    t.bigint :s3s_column
-    t.bigint :s3s_adhoc_column
+    t.integer :s3s_column, limit: 8
+    t.integer :s3s_adhoc_column, limit: 8
   end
 
   create_join_table :s0s, :s1s
