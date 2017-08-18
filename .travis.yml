@@ -37,8 +37,6 @@ matrix:
       rvm: *ru2_2
 
     - gemfile: *rails_5_0
-      rvm: ruby-head
-    - gemfile: *rails_5_0
       rvm: *ru2_4
     - gemfile: *rails_5_0
       rvm: *ru2_3

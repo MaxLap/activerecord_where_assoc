@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+#
+# Will run rake test on every ruby version you have installed that matches the .travis-ci.yml
+# If you want to test on something else than SQLite3, specify the DB=pg or DB=mysql before calling it.
+#
+# This is a script that does basically what wwtd is meant to do (run tests following
+# the config in travis-ci), but:
+#  * ignores the scripts and the envs which are meant for travis
+#  * only runs rake test with the specified database
+#  * ignores rails_head and ruby-head
+#
+# Other differences from wwtd:
+#  * automatically installs the bundler gem if it is missing from a ruby version.
+#
+require "wwtd"
+
+def run_command(command)
+  puts "RUNNING: #{command}"
+  system(command)
+end
+
+configs = WWTD.read_travis_yml.first
+configs = configs.select { |s| s.include?("gemfile") && s.include?("rvm") }
+
+rubies = {}
+results = []
+
+configs.each do |config|
+  rvm = config["rvm"]
+  gemfile = config["gemfile"]
+
+  next if rvm == "ruby-head"
+  next if gemfile == "gemfiles/rails_head.gemfile"
+
+  switch = WWTD::Ruby.switch_statement(rvm)
+  pre_command = "DB=#{ENV['DB'] || 'sqlite3'} BUNDLE_GEMFILE=#{gemfile} #{switch}"
+  success = true
+
+  if !rubies.include?(rvm)
+    if WWTD::Ruby.available?(rvm)
+      if !system("#{pre_command} gem list -i '^bundler$' 1>/dev/null")
+        success &&= run_command("#{pre_command} gem install bundler")
+      end
+      rubies[rvm] = true
+    else
+      rubies[rvm] = false
+    end
+  end
+
+  if rubies[rvm] == false
+    results << WWTD::CLI.send(:colorize, :yellow, "MISING RUBY: #{rvm} for #{gemfile}")
+    next
+  end
+
+  success &&= run_command("#{pre_command} bundle install --quiet") if success
+  success &&= run_command("#{pre_command} bundle exec rake test") if success
+
+  if success
+    results << WWTD::CLI.send(:colorize, :green, "SUCCESS: #{rvm} for #{gemfile}")
+  else
+    results << WWTD::CLI.send(:colorize, :red, "FAILURE: #{rvm} for #{gemfile}")
+  end
+end
+
+puts results

@@ -5,6 +5,8 @@ AllCops:
     - config.ru
     - bin/console
     - bin/fixcop
+    - bin/testall
+    - gemfiles/*.gemfile
     - lib/**/*.rake
   Exclude:
     - db/schema.rb
@@ -118,6 +120,7 @@ Style/InverseMethods:
     :include?: :exclude?
   Exclude:
     - bin/*
+    - gemfiles/*
 
 Style/NegatedIf:
   Enabled: false

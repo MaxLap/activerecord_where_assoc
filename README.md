@@ -173,24 +173,21 @@ There are lots of things I want to do for this gem. See [TODO](https://github.co
 
 ## Development
 
-This gem uses the [appraisal](https://github.com/thoughtbot/appraisal) gem to easily test against multiple versions of rails.
+After checking out the repo, run `bundle install` to install dependencies.
 
-After checking out the repo, run `bundle install` then `appraisal install` to install dependencies.
-
-Run `appraisal rake test` to run the tests with every supported versions of rails.
+Run `rake test` to run the tests for the latest version of rails
 
 Run `bin/console` for an interactive prompt that will allow you to experiment in the same environment as the tests.
 
-Run `bin/fixcop` to fix a lot of common styling mistake of your code.
+Run `bin/fixcop` to fix a lot of common styling mistake of your code, make sure to do this before commiting and submitting.
 
 Run `rubocop` to see all the other rules that you break. Use common sense, sometimes it's okay to break a rule, add a [rubocop:disable comment](http://rubocop.readthedocs.io/en/latest/configuration/#disabling-cops-within-source-code) in that situation.
 
-To test closer to what Travis-CI does (multiple ruby versions):
-
-* Run `wwtd` to run the tests with every support version of rails and of ruby. Note that it will tell you which versions are not installed and you will need to install them yourself, along with bundler for each (You can skip ruby-head).
-
-* Run `wwtd --local` to run the tests with every support version of rails and of ruby that you have installed. (replaces `appraisal rake test`)
-
+To test closer to what Travis-CI does (multiple ruby versions / multiple rails versions), use `bin/testall`:
+* It will tell you about missing ruby versions, which you can install if you want
+* It will run rake test on each supported version or ruby/rails
+* It automatically installs bundler if a ruby version doesn't have it
+* It automatically runs bundle install
 
 ## Contributing
 
