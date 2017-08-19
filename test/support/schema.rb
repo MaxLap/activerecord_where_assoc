@@ -130,5 +130,4 @@ ActiveRecord::Schema.define do
   end
 
   create_join_table "lew_s0s", "lew_s1s", table_name: "lew_s0s_lew_s1s"
-
 end

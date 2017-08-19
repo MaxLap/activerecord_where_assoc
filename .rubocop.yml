@@ -14,7 +14,7 @@ AllCops:
     - private/**/*
     - public/**/*
 
-  TargetRubyVersion: 1.9.3
+  TargetRubyVersion: 1.9
   TargetRailsVersion: 5.1
 
 Layout/EmptyLines:
