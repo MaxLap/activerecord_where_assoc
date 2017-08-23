@@ -10,10 +10,13 @@
 require_relative "base_test_model"
 
 # Classes are names S0, S1, S2... for "Step"
-# Relations are names m1, o2, b3 for "Many", "One", "Belong" and the id of the next step
+# Associations are names m1, o2, b3 for "Many", "One", "Belong" and the id of the next step
+# Associations with 'p' in the middle of the name, like mp1, op1, bp1 are polymorphic
 # A class always point further down to the next steps
 
-class S0 < BaseTestRecord
+class S0 < BaseTestModel
+  setup_test_default_scope
+
   testable_has_many :m1, class_name: "S1"
   testable_has_one :o1, -> { order("s1s.id DESC") }, class_name: "S1"
   testable_belongs_to :b1, class_name: "S1", foreign_key: "s1_id"
@@ -54,7 +57,9 @@ class S0 < BaseTestRecord
   testable_has_one :op3op1_op3op2, -> { order("s3s.id DESC") }, through: :op1, source: :op3op2, class_name: "S3"
 end
 
-class S1 < BaseTestRecord
+class S1 < BaseTestModel
+  setup_test_default_scope
+
   testable_has_many :m2, class_name: "S2"
   testable_has_one :o2, -> { order("s2s.id DESC") }, class_name: "S2"
   testable_belongs_to :b2, class_name: "S2"
@@ -82,7 +87,9 @@ class S1 < BaseTestRecord
   scope :adhoc_is_two, -> { where(adhoc_column_name => 2) }
 end
 
-class S2 < BaseTestRecord
+class S2 < BaseTestModel
+  setup_test_default_scope
+
   testable_has_many :m3, class_name: "S3"
   testable_has_one :o3, -> { order("s3s.id DESC") }, class_name: "S3"
   testable_belongs_to :b3, class_name: "S3"
@@ -93,14 +100,16 @@ class S2 < BaseTestRecord
   testable_belongs_to :bp3, polymorphic: true, foreign_key: "s2s_belongs_to_poly_id", foreign_type: "s2s_belongs_to_poly_type"
 end
 
-class S3 < BaseTestRecord
+class S3 < BaseTestModel
+  setup_test_default_scope
+
 end
 
-class PolyBadRecord < BaseTestRecord
+class PolyBadRecord < BaseTestModel
   # Used for testing polymorphic associations
 end
 
-class SchemaS0 < ActiveRecord::Base
+class SchemaS0 < BaseTestModel
   self.table_name = "foo_schema.schema_s0s"
   belongs_to :b1, class_name: "SchemaS1", foreign_key: "schema_s1_id"
   has_many :m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
@@ -108,12 +117,12 @@ class SchemaS0 < ActiveRecord::Base
   has_and_belongs_to_many :z1, class_name: "SchemaS1", join_table: "spam_schema.schema_s0s_schema_s1s"
 end
 
-class SchemaS1 < ActiveRecord::Base
+class SchemaS1 < BaseTestModel
   self.table_name = "bar_schema.schema_s1s"
 end
 
 
-class STIS0 < ActiveRecord::Base
+class STIS0 < BaseTestModel
   self.table_name = "sti_s0s"
   belongs_to :b1, class_name: "STIS1", foreign_key: "sti_s1_id"
   belongs_to :b1sub, class_name: "STIS1Sub", foreign_key: "sti_s1_id"
@@ -128,15 +137,15 @@ class STIS0 < ActiveRecord::Base
                                   association_foreign_key: "sti_s1_id"
 end
 
-class STIS1 < ActiveRecord::Base
+class STIS1 < BaseTestModel
   self.table_name = "sti_s1s"
 end
 
 class STIS1Sub < STIS1
 end
 
-
-class LEWS0 < ActiveRecord::Base
+# LEW for Last Equality Wins
+class LEWS0 < BaseTestModel
   self.table_name = "lew_s0s"
   has_many :m1, -> { where(lew_s1s_column: "has_many") }, class_name: "LEWS1", foreign_key: "lew_s0_id"
   has_one :o1, -> { where(lew_s1s_column: "has_one").order(:id) }, class_name: "LEWS1", foreign_key: "lew_s0_id"
@@ -147,7 +156,7 @@ class LEWS0 < ActiveRecord::Base
                                                                       association_foreign_key: "lew_s1_id"
 end
 
-class LEWS1 < ActiveRecord::Base
+class LEWS1 < BaseTestModel
   self.table_name = "lew_s1s"
   default_scope -> { where(lew_s1s_column: "default_scope") }
 end

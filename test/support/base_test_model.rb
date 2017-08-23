@@ -3,7 +3,7 @@
 require "prime"
 
 
-class BaseTestRecord < ActiveRecord::Base
+class BaseTestModel < ActiveRecord::Base
   self.abstract_class = true
 
   # We give a distinct prime number to ever conditions we use as part of associations
@@ -17,11 +17,10 @@ class BaseTestRecord < ActiveRecord::Base
   # association_name can also be :default_scope, :custom_scope
   @@model_associations_conditions = {} # rubocop:disable Style/ClassVars
 
-  def self.inherited(other)
-    super
-    value = other.test_condition_value_for(:default_scope)
-    condition = other.testable_condition(value)
-    other.send(:default_scope, -> { where(condition) })
+  def self.setup_test_default_scope
+    value = need_test_condition_value_for(:default_scope)
+    condition = testable_condition(value)
+    default_scope -> { where(condition) }
   end
 
   def self.test_condition_column
@@ -34,12 +33,12 @@ class BaseTestRecord < ActiveRecord::Base
   end
   delegate :adhoc_column_name, to: "self.class"
 
-  def self.test_condition_value_for(association_name)
+  def self.need_test_condition_value_for(association_name)
     @@model_associations_conditions[[self.name, association_name.to_s]] ||= @@condition_values_enumerator.next
   end
 
-  def self.test_condition_value_for?(association_name)
-    @@model_associations_conditions.include?([self.name, association_name.to_s])
+  def self.test_condition_value_for(association_name)
+    @@model_associations_conditions[[self.name, association_name.to_s]]
   end
 
   def self.model_associations_conditions
@@ -57,7 +56,7 @@ class BaseTestRecord < ActiveRecord::Base
       given_scope = nil
     end
 
-    condition_value = test_condition_value_for(association_name)
+    condition_value = need_test_condition_value_for(association_name)
     if given_scope
       scope = -> { where(testable_condition(condition_value)).instance_exec(&given_scope) }
     else
@@ -89,8 +88,21 @@ class BaseTestRecord < ActiveRecord::Base
 
   def self.create_default!(*source_associations)
     condition_value = TestHelpers.condition_value_result_for(*source_associations) || 1
-    condition_value *= test_condition_value_for(:default_scope)
+    condition_value *= need_test_condition_value_for(:default_scope)
     create!(test_condition_column => condition_value)
+  end
+
+  def create_has_one!(association_name, attrs = {})
+    association_name = ActiveRecordWhereAssoc::Helpers.normalize_association_name(association_name)
+    reflection = self.class.reflections[association_name]
+    raise "Didn't find association: #{association_name}" unless reflection
+
+    target_model = reflection.klass
+
+    old_matched_ids = target_model.where(reflection.foreign_key => self.id).unscope(:offset, :limit).pluck(:id).to_a
+    record = send("create_#{association_name}!", attrs)
+    target_model.where(id: old_matched_ids).unscope(:offset, :limit).update_all(reflection.foreign_key => self.id)
+    record
   end
 
   # does a #create! and automatically fills the column with a value that matches the merge of the condition on
@@ -99,7 +111,7 @@ class BaseTestRecord < ActiveRecord::Base
     options = source_associations.extract_options!
     options = options.reverse_merge(allow_no_source: false, adhoc_value: nil, skip_default: false, use_bad_type: false)
 
-    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]p?\d+$/
+    raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]p?l?\d+$/
 
     if !options[:allow_no_source] && source_associations.empty?
       raise "Need at least one source model or a nil instead"
@@ -113,9 +125,7 @@ class BaseTestRecord < ActiveRecord::Base
 
     target_model = reflection.klass
 
-    if !options[:skip_default] && target_model.test_condition_value_for?(:default_scope)
-      condition_value = target_model.test_condition_value_for(:default_scope)
-    end
+    condition_value = target_model.test_condition_value_for(:default_scope) unless options[:skip_default]
 
     if source_associations.present?
       condition_value ||= 1
@@ -131,9 +141,7 @@ class BaseTestRecord < ActiveRecord::Base
     when "o", "op"
       # Creating a has_one like this removes the id of the previously existing records that were refering.
       # We don't want that for the purpose of our tests
-      old_matched_ids = target_model.where(reflection.foreign_key => self.id).pluck(:id)
-      record = send("create_#{association_name}!", attributes)
-      target_model.where(id: old_matched_ids).update_all(reflection.foreign_key => self.id)
+      record = create_has_one!(association_name, attributes)
     when "b"
       record = send("create_#{association_name}!", attributes)
       save! # Must save that our id that just changed

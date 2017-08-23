@@ -29,22 +29,22 @@ describe "wa" do
 
   it "has_one works with STI type of same class" do
     skip if Test::SelectedDBHelper == Test::MySQL
-    s0.create_o1!
-    s0.create_o1!
+    s0.create_has_one!(:o1)
+    s0.create_has_one!(:o1)
 
     assert_wa_from(STIS0, 1, :o1)
   end
   it "has_one works with STI type of subclass" do
     skip if Test::SelectedDBHelper == Test::MySQL
-    s0.create_o1sub!
-    s0.create_o1sub!
+    s0.create_has_one!(:o1sub)
+    s0.create_has_one!(:o1sub)
 
     assert_wa_from(STIS0, 1, :o1)
   end
   it "has_one works with STI type of superclass" do
     skip if Test::SelectedDBHelper == Test::MySQL
-    s0.create_o1!
-    s0.create_o1!
+    s0.create_has_one!(:o1)
+    s0.create_has_one!(:o1)
 
     assert_wa_from(STIS0, 0, :o1sub)
   end

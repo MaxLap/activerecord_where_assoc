@@ -16,7 +16,7 @@ module TestHelpers
   def self.condition_value_result_for(*source_associations)
     source_associations.map do |source_association|
       model_name, association = source_association.to_s.split("_", 2)
-      value = BaseTestRecord.model_associations_conditions[[model_name, association]]
+      value = BaseTestModel.model_associations_conditions[[model_name, association]]
 
       raise "No condition #{source_association} found" if value.nil?
 

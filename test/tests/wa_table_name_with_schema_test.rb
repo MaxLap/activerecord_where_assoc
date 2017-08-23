@@ -15,7 +15,7 @@ describe "wa" do
   it "has_one works with table_names that have a schema" do
     skip if Test::SelectedDBHelper == Test::MySQL
 
-    s0.create_o1!
+    s0.create_has_one!(:o1)
 
     assert_wa_from(SchemaS0, 1, :o1)
   end
