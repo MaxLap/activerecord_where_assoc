@@ -102,7 +102,6 @@ end
 
 class S3 < BaseTestModel
   setup_test_default_scope
-
 end
 
 class PolyBadRecord < BaseTestModel
@@ -159,4 +158,46 @@ end
 class LEWS1 < BaseTestModel
   self.table_name = "lew_s1s"
   default_scope -> { where(lew_s1s_column: "default_scope") }
+end
+
+
+# LimOffOrd for Limit Offset Order
+# default_scopes are limit(3).offset(1).order(:id)
+# association_scopes with l are limit(3).offset(1).order(id desc)
+# Those without the l are on the same table, without this additional scope,
+# so they use the default_scope's values
+#
+class LimOffOrdS0 < BaseTestModel
+  self.table_name = "s0s"
+  belongs_to :b1, class_name: "LimOffOrdS1", foreign_key: "s1_id"
+  belongs_to :bl1, -> { limit(2).offset(2).reorder("s1s.id desc") }, class_name: "LimOffOrdS1", foreign_key: "s1_id"
+  has_many :m1, class_name: "LimOffOrdS1", foreign_key: "s0_id"
+  has_many :ml1, -> { limit(2).offset(2).reorder("s1s.id desc") }, class_name: "LimOffOrdS1", foreign_key: "s0_id"
+  has_one :o1, class_name: "LimOffOrdS1", foreign_key: "s0_id"
+  has_one :ol1, -> { limit(2).offset(2).reorder("s1s.id desc") }, class_name: "LimOffOrdS1", foreign_key: "s0_id"
+  has_and_belongs_to_many :z1, class_name: "LimOffOrdS1", join_table: "s0s_s1s", foreign_key: "s0_id", association_foreign_key: "s1_id"
+  has_and_belongs_to_many :zl1, -> { limit(2).offset(2).reorder("s1s.id desc") }, class_name: "LimOffOrdS1",
+                                                                                  join_table: "s0s_s1s",
+                                                                                  foreign_key: "s0_id",
+                                                                                  association_foreign_key: "s1_id"
+
+  has_many :m2m1, class_name: "LimOffOrdS2", through: :m1, source: :m2
+  has_many :m2ml1, class_name: "LimOffOrdS2", through: :ml1, source: :m2
+  has_many :ml2ml1, class_name: "LimOffOrdS2", through: :ml1, source: :ml2
+  has_many :l_ml2ml1, -> { limit(2).offset(2).reorder("s2s.id desc") }, class_name: "LimOffOrdS2", through: :ml1, source: :ml2
+end
+
+class LimOffOrdS1 < BaseTestModel
+  self.table_name = "s1s"
+  has_many :m2, class_name: "LimOffOrdS2", foreign_key: "s1_id"
+  has_many :ml2, -> { limit(2).offset(2).reorder("s2s.id desc") }, class_name: "LimOffOrdS2", foreign_key: "s1_id"
+
+
+  default_scope -> { limit(3).offset(1).order(:id) }
+end
+
+class LimOffOrdS2 < BaseTestModel
+  self.table_name = "s2s"
+
+  default_scope -> { limit(3).offset(1).order(:id) }
 end

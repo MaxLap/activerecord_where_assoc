@@ -57,6 +57,10 @@ Or install it yourself as:
   
 ### `#where_assoc_count`
 
+* The first parameter is a number.
+* The second parameter is the operator to use: `:<`, `:<=`, `:==`, `:>=`, `:>`
+* The third and fourth parameters and the block are the same as the first and second parameters of `#where_assoc_exists`.
+
 The order of the parameters may seem confusing. If you have better alternatives to suggest, feel free to open an issue to discuss this.
 
 To help remember the order of the parameters, remember that the goal is to do:
@@ -64,11 +68,6 @@ To help remember the order of the parameters, remember that the goal is to do:
     5 < (SELECT COUNT(*) FROM ...)
 
 The parameters are in the same order as in that query: number, operator, association
-
-* The first parameter is a number.
-* The second parameter is the operator to use: `:<`, `:<=`, `:==`, `:>=`, `:>`
-* The third and fourth parameters and the block are the same as the first and second parameters of `#where_assoc_exists`.
-
 
 ## Supported Rails versions
 
@@ -82,7 +81,7 @@ Rails 5.1, 5.0, 4.2 and 4.1 are supported for every Ruby versions they support. 
 my_post.comments.where_assoc_not_exists(:author, is_admin: true)
 
 # Find my_user's posts that have comments by an admin
-# Uses a Symbol to use a scope that exists on Author
+# Uses the block shortcut to use a scope that exists on Author
 my_user.posts.where_assoc_exists(:comments_authors, &:admins)
 
 # Find my_user's posts that have at least 5 non-spam comments
@@ -167,11 +166,14 @@ These methods many advantages over the alternative ways of achieving the similar
 * Applies the default_scopes that was defined on the target model
 * Handles has_one correctly: Only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
 
-## Known issues
+## Known issues/limitations
 
-MySQL is terrible:
+MySQL is terrible: On MySQL databases, it is not possible to use has_one associations and associations with a scope that apply either a limit or an offset.
+I do not know of a way to do a query that does all the specifics of has_one for MySQL. If you have one, then you may propose in an issue/pull request.
 
-* It is not currently possible to use has_one associations. I do not know of a way to do a query that does all the specifics of has_one for MySQL. 
+`has_many` and `has_one` using the `:through` option cannot have a scope that uses either `#limit` or `#offset`.
+Making such cases work is pretty complicated and would require quite a bit of refactoring. So if a real need and use case is made, this may get fixed.  
+`#limit` and `#offset` work fine in the scope of associations that do not use `:through`.
 
 ## TODO
 

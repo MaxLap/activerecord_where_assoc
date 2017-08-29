@@ -70,6 +70,17 @@ module ActiveRecordWhereAssoc
       end
     end
 
+    if ActiveRecord.gem_version >= Gem::Version.new("5.0")
+      def self.parent_reflection(reflection)
+        reflection.parent_reflection
+      end
+    else
+      def self.parent_reflection(reflection)
+        _parent_name, parent_refl = reflection.parent_reflection
+        parent_refl
+      end
+    end
+
     if ActiveRecord.gem_version >= Gem::Version.new("4.2")
       def self.normalize_association_name(association_name)
         association_name.to_s

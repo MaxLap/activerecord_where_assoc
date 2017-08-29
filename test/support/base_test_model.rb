@@ -136,9 +136,9 @@ class BaseTestModel < ActiveRecord::Base
                    target_model.adhoc_column_name => options[:adhoc_value],
     }
     case association_macro
-    when "m", "z", "mp"
+    when /mp?l?/, "z"
       record = send(association_name).create!(attributes)
-    when "o", "op"
+    when /op?l?/
       # Creating a has_one like this removes the id of the previously existing records that were refering.
       # We don't want that for the purpose of our tests
       record = create_has_one!(association_name, attributes)

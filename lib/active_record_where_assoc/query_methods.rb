@@ -22,6 +22,12 @@ module ActiveRecordWhereAssoc
     end
 
     NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
+      # Limit 0 means nothing should be found. We can stop right there then with a false condition.
+      # Note that this is needed because SQLite3 doesn't apply the LIMIT(0)
+      if nested_scope.limit_value == 0
+        return wrapping_scope.select("SUM(0)").where("'COUNT_WITH_LIMIT_0' = 'SKIP_THE_REST'")
+      end
+
       # Need the double parentheses
       sql = "SUM((#{nested_scope.to_sql}))"
 
@@ -96,51 +102,114 @@ module ActiveRecordWhereAssoc
       # We will start with the reflection that points on the final model, and slowly move back to the reflection
       # that points on the model closest to self
       refl_and_cons_chain = Helpers.chain_reflection_and_constraints(final_reflection)
+      skip_next = false
+
       refl_and_cons_chain.each_with_index do |(reflection, constraints), i|
+        if skip_next
+          skip_next = false
+          next
+        end
+
         next_refl_and_cons = refl_and_cons_chain[i + 1]
         next_reflection = next_refl_and_cons.first if next_refl_and_cons
+        parent_reflection = Helpers.parent_reflection(reflection)
+        if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
+          # SELECT ... FROM *join_table* INNER JOIN *target_table* ON ...
+          # This is the internal association made on the internal model of the habtm
 
-        wrapping_scope = reflection.klass.default_scoped
+          # Simply using next_reflection.klass.default_scoped.joins(reflection.name) would be great,
+          # except we cannot add a given_scope afterward because we are on the wrong "base class", and we can't
+          # do #merge because of the LEW crap.
+          # So we must do the joins ourself!
+          sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, self.klass)
+          wrapping_scope = reflection.klass.default_scoped.joins(<<-SQL)
+            INNER JOIN #{next_reflection.quoted_table_name} ON #{sub_join_contraints.to_sql}
+          SQL
+
+          constraint_allowed_lim_off = reflection.scope
+
+          next_next_refl_and_cons = refl_and_cons_chain[i + 2]
+          next_next_reflection = next_next_refl_and_cons.first if next_next_refl_and_cons
+
+          join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, self.klass)
+
+          # We dealt with next_reflection here by doing a join, so that limit / offset can be applied correctly
+          # So nothing is needed for it's iteration
+          skip_next = true
+        else
+          wrapping_scope = reflection.klass.default_scoped
+          constraint_allowed_lim_off = reflection.send(:actual_source_reflection).scope
+          join_constaints = Helpers.join_constraints(reflection, next_reflection, self.klass)
+        end
 
         constraints.each do |callable|
+          relation = reflection.klass.unscoped.instance_exec(&callable)
+
+          if callable != constraint_allowed_lim_off
+            if relation.limit_value
+              raise LimitFromThroughScopeError, "#limit from an association's scope is only supported on direct associations, not a through."
+            end
+
+            if relation.offset_value
+              raise OffsetFromThroughScopeError, "#offset from an association's scope is only supported on direct associations, not a through."
+            end
+          end
+
           # Need to use merge to replicate the Last Equality Wins behavior of associations
           # https://github.com/rails/rails/issues/7365
           # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
-          wrapping_scope = wrapping_scope.merge(reflection.klass.unscoped.instance_exec(&callable))
+          wrapping_scope = wrapping_scope.merge(relation)
         end
 
-        wrapping_scope = wrapping_scope.where(Helpers.join_constraints(reflection, next_reflection, self.klass))
+        wrapping_scope = wrapping_scope.where(join_constaints)
 
-        if reflection.macro == :has_one
+        wrapping_scope = wrapping_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
+        wrapping_scope = wrapping_scope.limit(1) if reflection.macro == :has_one
+
+        # Order is useless without either limit or offset
+        wrapping_scope = wrapping_scope.unscope(:order) if !wrapping_scope.limit_value && !wrapping_scope.offset_value
+
+        if wrapping_scope.limit_value
           if %w(mysql mysql2).include?(connection.adapter_name.downcase)
-            raise MySQLIsTerribleError, "has_one on models with a table_name that includes the database is not supported for MySQL"
+            raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
           end
 
-          # We only check the last one that matches the scopes on the associations / default_scope of record.
-          # The given scope is applied on the result.
+          # We only check the records that would be returned by the associations if called on the model. If:
+          # * the scope of the association has a limit
+          # * the default scope of the model has a limit
+          # * the association is a has_one
+          # Then not every records that match a naive join would be returned. So we first restrict the query to
+          # only the records that would be in the range of limit and offset.
+          #
+          # Note that if the #where_assoc_* block adds a limit or an offset, it has no effect. This is intended.
+          # An argument could be made for it to maybe make sense for #where_assoc_count, not sure why that would
+          # be useful.
+
           if klass.table_name.include?(".")
             # This works universally, but seems to have slower performances.. Need to test if there is an alternative way
-            # of expressing the above... They should be equivalent, but their performances aren't
+            # of expressing this...
             # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
-            # We use unscoped to avoid duplicating the conditions in the query, which is noise
+            # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
+            # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
 
-            wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope.limit(1))
+            wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope)
           else
-            # This works as long as the table_name doesn't have a schema, since we need to use an alias
+            # This works as long as the table_name doesn't have a schema/database, since we need to use an alias
             # with the table name to make scopes and everything else work as expected.
 
-            # We use unscoped to avoid duplicating the conditions in the query, which is noise
-            wrapping_scope = reflection.klass.unscoped.from("(#{wrapping_scope.limit(1).to_sql}) #{reflection.klass.table_name}")
+            # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
+            # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
+            wrapping_scope = reflection.klass.unscoped.from("(#{wrapping_scope.to_sql}) #{reflection.klass.table_name}")
           end
-        else
-          # TODO: remove limit and order, they are useless. Probably better to do that after the given_scope is used
-          nil
         end
 
         if i.zero?
           wrapping_scope = wrapping_scope.where(given_scope) if given_scope
           wrapping_scope = Helpers.apply_proc_scope(wrapping_scope, last_assoc_block) if last_assoc_block
         end
+
+        # Those make no sense since we are only limiting the value that would match, using conditions
+        wrapping_scope = wrapping_scope.unscope(:limit, :order, :offset)
 
         if nested_scope
           wrapping_scope = nest_assocs_block.call(wrapping_scope, nested_scope)
