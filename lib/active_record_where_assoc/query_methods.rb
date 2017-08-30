@@ -6,24 +6,12 @@ require_relative "exceptions"
 module ActiveRecordWhereAssoc
   module QueryMethods
     NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, exists_prefix = ""|
-      # Limit 0 means nothing should be found. We can stop right there then with a false condition.
-      # Note that this is needed because SQLite3 doesn't apply the LIMIT(0)
-      if nested_scope.limit_value == 0
-        return wrapping_scope.where("#{exists_prefix}'EXISTS_WITH_LIMIT_0' = 'SKIP_THE_REST'")
-      end
-
       sql = "#{exists_prefix}EXISTS (#{nested_scope.select('0').to_sql})"
 
       wrapping_scope.where(sql)
     end
 
     NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
-      # Limit 0 means nothing should be found. We can stop right there then with a false condition.
-      # Note that this is needed because SQLite3 doesn't apply the LIMIT(0)
-      if nested_scope.limit_value == 0
-        return wrapping_scope.select("SUM(0)").where("'COUNT_WITH_LIMIT_0' = 'SKIP_THE_REST'")
-      end
-
       # Need the double parentheses
       sql = "SUM((#{nested_scope.to_sql}))"
 
