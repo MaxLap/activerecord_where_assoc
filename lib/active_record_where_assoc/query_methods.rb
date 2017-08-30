@@ -12,10 +12,6 @@ module ActiveRecordWhereAssoc
         return wrapping_scope.where("#{exists_prefix}'EXISTS_WITH_LIMIT_0' = 'SKIP_THE_REST'")
       end
 
-      # Other limit values, and order clauses are ignored in an exists, get rid of them for clarity
-      # Note that we allow negative limits by doing this, which some DB would have failed on. I don't think it's an issue.
-      nested_scope = nested_scope.unscope(:order, :limit)
-
       sql = "#{exists_prefix}EXISTS (#{nested_scope.select('0').to_sql})"
 
       wrapping_scope.where(sql)
