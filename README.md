@@ -141,9 +141,12 @@ The second is the posts of my_user that have a comment made by an admin and a co
 
 ### Inter-table conditions
 
-It's possible, with string conditions, to refer to all the tables that are used before the association.
+It's possible, with string conditions, to refer to all the tables that are used before the association, including the source model.
 
-TODO explain
+```ruby
+# Find posts where the author also commented on the post.
+Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
+```
 
 ### The opposite of multiple nested EXISTS...
 
@@ -175,10 +178,6 @@ I do not know of a way to do a query that does all the specifics of has_one for 
 Making such cases work is pretty complicated and would require quite a bit of refactoring. So if a real need and use case is made, this may get fixed.  
 `#limit` and `#offset` work fine in the scope of associations that do not use `:through`.
 
-## TODO
-
-There are lots of things I want to do for this gem. See [TODO](https://github.com/MaxLap/activerecord_where_assoc/TODO.md) 
-
 ## Development
 
 After checking out the repo, run `bundle install` to install dependencies.
@@ -198,8 +197,6 @@ Run `bin/testall` to test all supported rails/ruby versions:
 * It automatically runs `bundle install`
 
 ## Contributing
-
-TODO The gem is not yet released, so wait until then before doing attempting to contribute.
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/MaxLap/activerecord_where_assoc.
 

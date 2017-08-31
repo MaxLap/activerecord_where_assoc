@@ -6,5 +6,5 @@ Doc-wise:
 * Add doc on the new methods
 
 Maybe:
-* where_assoc_count could receive a relation as first parameter?
+* where_assoc_count could receive a relation or a string as first parameter?
 * Have a way to do some benchmarking to compare different ways to build queries

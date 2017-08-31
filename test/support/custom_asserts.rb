@@ -4,8 +4,6 @@
 # Adds some nice assertions for testing if a match is found or not, and
 # testing the behavior of the not_exists variant at the same time.
 
-# TODO: make the ... be the actual arguments
-
 module Minitest::Assertions
   [:assert_exists_with_matching,
    :assert_exists_without_matching,
