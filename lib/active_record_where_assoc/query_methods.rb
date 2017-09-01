@@ -29,7 +29,7 @@ module ActiveRecordWhereAssoc
       NestWithExistsBlock.call(self, nested_relation, "NOT ")
     end
 
-    def where_assoc_count(nb, operator, association_name, given_scope = nil, &block)
+    def where_assoc_count(left_side, operator, association_name, given_scope = nil, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = Helpers.apply_proc_scope(deepest_scope, block) if block
 
@@ -46,7 +46,7 @@ module ActiveRecordWhereAssoc
                    operator
                  end
 
-      where("#{nb} #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
+      where("(#{left_side}) #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
     end
 
 

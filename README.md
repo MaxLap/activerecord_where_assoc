@@ -57,7 +57,7 @@ Or install it yourself as:
   
 ### `#where_assoc_count`
 
-* The first parameter is a number.
+* The first parameter can be a number or any string of SQL to embed in the SQL that returns a number that can be used for the comparison.
 * The second parameter is the operator to use: `:<`, `:<=`, `:==`, `:>=`, `:>`
 * The third and fourth parameters and the block are the same as the first and second parameters of `#where_assoc_exists`.
 
@@ -96,6 +96,10 @@ my_user.posts.where_assoc_count(5, :>=, :comments) { where(spam: false) }
 # Uses multiple associations.
 # Uses a hash as 2nd parameter to do the conditions
 my_user.posts.where_assoc_exists([:comments, :author], honest: true, is_admin: true)
+
+# Find any post that has reached its maximum number of allowed comments
+# Uses a string on the left side (first parameter) to refer to a column in the previous table.
+Post.where_assoc_count("posts.max_comments_allowed", :==, :comments)
 ```
 
 ## Usage tips
