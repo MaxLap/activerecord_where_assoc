@@ -55,7 +55,8 @@ configs.each do |config|
   end
 
   if success
-    bundle_installed = run_command(env_vars, "#{ruby_switcher} bundle install --quiet 1>/dev/null 2>&1")
+    bundle_installed = run_command(env_vars, "#{ruby_switcher} bundle check 1>/dev/null 2>&1")
+    bundle_installed ||= run_command(env_vars, "#{ruby_switcher} bundle install --quiet 1>/dev/null 2>&1")
     bundle_installed ||= run_command(env_vars, "#{ruby_switcher} bundle update --quiet")
     success &&= bundle_installed
   end
