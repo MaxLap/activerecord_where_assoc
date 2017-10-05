@@ -68,9 +68,6 @@ COPS_TO_AUTO_CORRECT = [
                          "Layout/LeadingCommentSpace",
                          "Layout/SpaceBeforeComment",
 
-                         "Layout/SpaceInLambdaLiteral",
-                         "Style/Lambda",
-
                          # Code transformation for cleanup
                          "Rails/Present",
                          "Rails/Blank",
