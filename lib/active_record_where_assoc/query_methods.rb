@@ -105,7 +105,7 @@ module ActiveRecordWhereAssoc
           # So we must do the joins ourself!
           sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, self.klass)
           wrapping_scope = reflection.klass.default_scoped.joins(<<-SQL)
-            INNER JOIN #{next_reflection.quoted_table_name} ON #{sub_join_contraints.to_sql}
+            INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
 
           constraint_allowed_lim_off = reflection.scope
