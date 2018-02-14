@@ -5,12 +5,14 @@ require_relative "exceptions"
 
 module ActiveRecordWhereAssoc
   module QueryMethods
+    # Block used when nesting associations for a where_assoc_[not_]exists
     NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, exists_prefix = ""|
       sql = "#{exists_prefix}EXISTS (#{nested_scope.select('0').to_sql})"
 
       wrapping_scope.where(sql)
     end
 
+    # Block used when nesting associations for a where_assoc_[not_]count
     NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
       # Need the double parentheses
       sql = "SUM((#{nested_scope.to_sql}))"
@@ -19,16 +21,85 @@ module ActiveRecordWhereAssoc
       wrapping_scope.unscope(:select).select(sql)
     end
 
+    # Returns a new relation, which is the result of filtering the current relation
+    # based on if a record for the specified association of the model exists. Conditions
+    # the associated model must match can also be specified.
+    #
+    # As first argument, you must specify the association to check against. This can be
+    # any of the associations on the current relation's model.
+    #
+    #     # Posts that have at least one comment
+    #     Post.where_assoc_exists(:comments)
+    #
+    # #where_assoc_exists accepts a block to add conditions that the association must match
+    # to be accepted for the exist test.
+    #
+    # === block that receives an argument
+    #
+    # The block receives a relation on the target association and return a relation with added
+    # filters or may return nil.
+    #
+    #    # Using a where for the added condition
+    #    Post.where_assoc_exists(:comments) { |comments| comments.where(spam_flag: true) }
+    #
+    #    # Applying a scope of the relation
+    #    Post.where_assoc_exists(:comments) { |comments| comments.spam_flagged }
+    #
+    #    # Applying a scope of the relation, using the &:shortcut for procs
+    #    Post.where_assoc_exists(:comments, &:spam_flagged)
+    #
+    # === block that receives no argument
+    #
+    # Instead of receiving the relation as argument, the relation is used as the "self" of
+    # the block.
+    #
+    #    # Using a where for the added condition
+    #    Post.where_assoc_exists(:comments) { where(spam_flag: true) }
+    #
+    #    # Applying a scope of the relation
+    #    Post.where_assoc_exists(:comments) { spam_flagged }
+    #
+    # The main reason not to use this and use a block with an argument is when you need to
+    # call methods on the real self of the block, such as:
+    #
+    #    Post.where_assoc_exists(:comments) { |comments| comments.where(id: self.something) }
+    #
+    # === the condition argument (second argument)
+    #
+    # #where_assoc_exists can receive an argument after the association's name as a shortcut
+    # for using a single where call. The argument is passed to #where.
+    #
+    #    # Using a Hash
+    #    Post.where_assoc_exists(:comments, spam_flag: true)
+    #
+    #    # Using a String
+    #    Post.where_assoc_exists(:comments, "spam_flag = true")
+    #
+    #    # Using an Array (a string and its binds)
+    #    Post.where_assoc_exists(:comments, ["spam_flag = ?", true])
+    #
+    # If the second argument is blank-ish, it is ignored (as #where does).
     def where_assoc_exists(association_name, given_scope = nil, &block)
       nested_relation = relation_on_association(association_name, given_scope, block, NestWithExistsBlock)
       NestWithExistsBlock.call(self, nested_relation)
     end
 
+    # Returns a new relation, which is the result of filtering the current relation
+    # based on if a record for the specified association of the model doesn't exist.
+    #
+    # See #where_assoc_exists for usage details. The only difference is that a record
+    # is matched if no matching association record is found.
     def where_assoc_not_exists(association_name, given_scope = nil, &block)
       nested_relation = relation_on_association(association_name, given_scope, block, NestWithExistsBlock)
       NestWithExistsBlock.call(self, nested_relation, "NOT ")
     end
 
+    # Returns a new relation, which is the result of filtering the current relation
+    # based on how many records for the specified association of the model exists. Conditions
+    # the associated model must match can also be specified.
+    #
+    # #where_assoc_count is a generalization of #where_assoc_exists, allowing you to
+    # for example, filter for comments that have at least 2 posts
     def where_assoc_count(left_side, operator, association_name, given_scope = nil, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = Helpers.apply_proc_scope(deepest_scope, block) if block
@@ -49,7 +120,8 @@ module ActiveRecordWhereAssoc
       where("(#{left_side}) #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
     end
 
-
+    # Returns a relation meant to be nested in a relation on the received.
+    # association_names_path: can be an array of association names or a single one
     def relation_on_association(association_names_path, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_names_path = Array.wrap(association_names_path)
 
@@ -65,6 +137,7 @@ module ActiveRecordWhereAssoc
       end
     end
 
+    # Returns a relation meant to be nested in a relation on the received.
     def relation_on_direct_association(association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_name = Helpers.normalize_association_name(association_name)
       final_reflection = _reflections[association_name]
@@ -168,7 +241,7 @@ module ActiveRecordWhereAssoc
           # be useful.
 
           if klass.table_name.include?(".")
-            # This works universally, but seems to have slower performances.. Need to test if there is an alternative way
+            # This works universally, but seems to sometimes have slower performances.. Need to test if there is an alternative way
             # of expressing this...
             # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
             # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
