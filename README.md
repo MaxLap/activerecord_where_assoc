@@ -47,7 +47,7 @@ Or install it yourself as:
 ### `#where_assoc_exists` & `#where_assoc_not_exists`
  
 * The first parameter is the association we are doing the condition on.
-* The second parameter (optional) is the condition to apply on the association. It can be anything that #where can receive, so: Hash, String, Array (string with binds), Arel node.
+* The second parameter (optional) is the condition to apply on the association. It can be anything that #where can receive, so: Hash, String and Array (string with binds).
 * A block can also be passed. It can add conditions on the association's relation after all the conditions have been applied (association's scopes, default_scope, second parameter of the method).
   The block either:
   * Receive no argument, in that case self is set to the relation, so you can do { where(id: 123) }
