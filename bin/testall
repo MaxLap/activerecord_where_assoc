@@ -10,62 +10,82 @@
 #  * ignores the scripts and the envs which are meant for travis
 #  * only runs rake test with the specified database
 #  * ignores rails_head and ruby-head
+#  * Way simpler
 #
 # Other differences from wwtd:
 #  * automatically installs the bundler gem if it is missing from a ruby version.
 #
-require "wwtd"
+
+require 'term/ansicolor'
+require 'yaml'
+TRAVIS_CONFIG = '.travis.yml'
 
 def run_command(env_vars, command)
   puts "RUNNING: #{command}  WITH: #{env_vars}"
   system(env_vars, command)
 end
 
-configs = WWTD.read_travis_yml.first
-configs = configs.select { |s| s.include?("gemfile") && s.include?("rvm") }
+travis_yml = (File.exist?(TRAVIS_CONFIG) ? YAML.load_file(TRAVIS_CONFIG) : {})
+ruby_versions = travis_yml['rvm'] || []
+gemfiles = travis_yml['gemfile'] || [nil]
+matrix_options = travis_yml['matrix'] || {}
+matrix_include = matrix_options['include'] || []
+matrix_exclude = matrix_options['exclude'] || []
+
+configs = ruby_versions.product(gemfiles)
+matrix_include.each do |conf|
+  configs << [conf['rvm'], conf['gemfile'] || nil]
+end
+matrix_exclude.each do |conf|
+  configs.delete [conf['rvm'], conf['gemfile'] || nil]
+end
 
 rubies = {}
 results = []
 
-configs.each do |config|
-  rvm = config["rvm"]
-  gemfile = config["gemfile"]
+if (`which rvm`; $?.success?)
+  ruby_exec = 'rvm-exec %{ruby_version} '
+elsif (`which chruby-exec`; $?.success?)
+  ruby_exec = 'chruby-exec %{version} -- '
+end
 
-  next if rvm == "ruby-head"
-  next if gemfile == "gemfiles/rails_head.gemfile"
+configs.each do |ruby_version, gemfile|
+  next if ruby_version == 'ruby-head'
 
-  ruby_switcher = WWTD::Ruby.switch_statement(rvm)
-  env_vars = { "DB" => ENV["DB"] || "sqlite3", "BUNDLE_GEMFILE" => gemfile }
+  current_ruby_exec = format(ruby_exec, ruby_version: ruby_version)
+
+  env_vars = {'BUNDLE_GEMFILE' => gemfile, 'WITHOUT_PENDING' => ENV['WITHOUT_PENDING'] || '1'}
+  gemfile_text = gemfile || 'Default gemfile'
   success = true
 
-  if !rubies.include?(rvm)
-    if WWTD::Ruby.available?(rvm)
-      if !system("#{ruby_switcher} gem list -i '^bundler$' 1>/dev/null")
-        success &&= run_command(env_vars, "#{ruby_switcher} gem install bundler")
+  if !rubies.include?(ruby_version)
+    if (`#{current_ruby_exec} ruby -v`; $?.success?)
+      if !system("#{current_ruby_exec} gem list -i '^bundler$' 1>/dev/null")
+        success &&= run_command(env_vars, "#{current_ruby_exec} gem install bundler")
       end
-      rubies[rvm] = true
+      rubies[ruby_version] = true
     else
-      rubies[rvm] = false
+      rubies[ruby_version] = false
     end
   end
 
-  if rubies[rvm] == false
-    results << WWTD::CLI.send(:colorize, :yellow, "MISING RUBY: #{rvm} for #{gemfile}")
+  if rubies[ruby_version] == false
+    results << Term::ANSIColor.yellow("MISING RUBY: #{ruby_version} for #{gemfile_text}")
     next
   end
 
   if success
-    bundle_installed = run_command(env_vars, "#{ruby_switcher} bundle check 1>/dev/null 2>&1")
-    bundle_installed ||= run_command(env_vars, "#{ruby_switcher} bundle install --quiet 1>/dev/null 2>&1")
-    bundle_installed ||= run_command(env_vars, "#{ruby_switcher} bundle update --quiet")
+    bundle_installed = run_command(env_vars, "#{current_ruby_exec} bundle check 1>/dev/null 2>&1")
+    bundle_installed ||= run_command(env_vars, "#{current_ruby_exec} bundle install --quiet 1>/dev/null 2>&1")
+    bundle_installed ||= run_command(env_vars, "#{current_ruby_exec} bundle update --quiet")
     success &&= bundle_installed
   end
-  success &&= run_command(env_vars, "#{ruby_switcher} bundle exec rake test") if success
+  success &&= run_command(env_vars, "#{current_ruby_exec} bundle exec rake test") if success
 
   if success
-    results << WWTD::CLI.send(:colorize, :green, "SUCCESS: #{rvm} for #{gemfile}")
+    results << Term::ANSIColor.green("SUCCESS: #{ruby_version} for #{gemfile_text}")
   else
-    results << WWTD::CLI.send(:colorize, :red, "FAILURE: #{rvm} for #{gemfile}")
+    results << Term::ANSIColor.red("FAILURE: #{ruby_version} for #{gemfile_text}")
   end
 end
 
