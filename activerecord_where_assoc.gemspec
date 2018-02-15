@@ -1,4 +1,3 @@
-# coding: utf-8
 # frozen_string_literal: true
 
 lib = File.expand_path("../lib", __FILE__)
@@ -22,12 +21,12 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activerecord", ">= 4.1.0"
 
   spec.add_development_dependency "bundler", "~> 1.15"
-  spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_development_dependency "pry"
+  spec.add_development_dependency "rake", "~> 10.0"
 
-  spec.add_development_dependency "rubocop"
   spec.add_development_dependency "coveralls"
+  spec.add_development_dependency "rubocop"
   spec.add_development_dependency "simplecov"
 
   # Normally, testing with sqlite3 is good enough
@@ -35,6 +34,6 @@ Gem::Specification.new do |spec|
 
   # Travis-CI takes care of the other ones
   # Using conditions because someone might not even be able to install the gems
-  spec.add_development_dependency "pg", "< 1.0.0" if ENV["TRAVIS"] || ENV["ALL_DB"] || ENV["DB"] == "pg"
   spec.add_development_dependency "mysql2" if ENV["TRAVIS"] || ENV["ALL_DB"] || ENV["DB"] == "mysql"
+  spec.add_development_dependency "pg", "< 1.0.0" if ENV["TRAVIS"] || ENV["ALL_DB"] || ENV["DB"] == "pg"
 end

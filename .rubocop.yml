@@ -106,6 +106,9 @@ Style/EmptyMethod:
 Style/FileName:
   Enabled: false
 
+Style/FormatStringToken:
+  Enabled: false
+
 # We target 2.2 to avoid cops that are not backward compatible, but we want this cop!
 Style/FrozenStringLiteralComment:
   EnforcedStyle: always

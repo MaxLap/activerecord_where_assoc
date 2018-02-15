@@ -15,10 +15,10 @@
 # Other differences from wwtd:
 #  * automatically installs the bundler gem if it is missing from a ruby version.
 #
-
-require 'term/ansicolor'
-require 'yaml'
-TRAVIS_CONFIG = '.travis.yml'
+require "English"
+require "term/ansicolor"
+require "yaml"
+TRAVIS_CONFIG = ".travis.yml".freeze
 
 def run_command(env_vars, command)
   puts "RUNNING: #{command}  WITH: #{env_vars}"
@@ -26,40 +26,49 @@ def run_command(env_vars, command)
 end
 
 travis_yml = (File.exist?(TRAVIS_CONFIG) ? YAML.load_file(TRAVIS_CONFIG) : {})
-ruby_versions = travis_yml['rvm'] || []
-gemfiles = travis_yml['gemfile'] || [nil]
-matrix_options = travis_yml['matrix'] || {}
-matrix_include = matrix_options['include'] || []
-matrix_exclude = matrix_options['exclude'] || []
+ruby_versions = travis_yml["rvm"] || []
+gemfiles = travis_yml["gemfile"] || [nil]
+matrix_options = travis_yml["matrix"] || {}
+matrix_include = matrix_options["include"] || []
+matrix_exclude = matrix_options["exclude"] || []
 
 configs = ruby_versions.product(gemfiles)
 matrix_include.each do |conf|
-  configs << [conf['rvm'], conf['gemfile'] || nil]
+  configs << [conf["rvm"], conf["gemfile"] || nil]
 end
 matrix_exclude.each do |conf|
-  configs.delete [conf['rvm'], conf['gemfile'] || nil]
+  configs.delete [conf["rvm"], conf["gemfile"] || nil]
 end
 
 rubies = {}
 results = []
 
-if (`which rvm`; $?.success?)
-  ruby_exec = 'rvm-exec %{ruby_version} '
-elsif (`which chruby-exec`; $?.success?)
-  ruby_exec = 'chruby-exec %{version} -- '
+`which rvm`
+has_rvm = $CHILD_STATUS.success?
+`which chruby-exec`
+has_chruby = $CHILD_STATUS.success?
+
+if has_rvm
+  ruby_exec = "rvm-exec %{ruby_version} "
+elsif has_chruby
+  ruby_exec = "chruby-exec %{version} -- "
+else
+  abort("Couldn't find either rvm or chruby")
 end
 
 configs.each do |ruby_version, gemfile|
-  next if ruby_version == 'ruby-head'
+  next if ruby_version == "ruby-head"
 
   current_ruby_exec = format(ruby_exec, ruby_version: ruby_version)
 
-  env_vars = {'BUNDLE_GEMFILE' => gemfile, 'WITHOUT_PENDING' => ENV['WITHOUT_PENDING'] || '1'}
-  gemfile_text = gemfile || 'Default gemfile'
+  env_vars = { "BUNDLE_GEMFILE" => gemfile, "WITHOUT_PENDING" => ENV["WITHOUT_PENDING"] || "1" }
+  gemfile_text = gemfile || "Default gemfile"
   success = true
 
   if !rubies.include?(ruby_version)
-    if (`#{current_ruby_exec} ruby -v`; $?.success?)
+    `#{current_ruby_exec} ruby -v`
+    has_ruby_version = $CHILD_STATUS.success?
+    if has_ruby_version
       if !system("#{current_ruby_exec} gem list -i '^bundler$' 1>/dev/null")
         success &&= run_command(env_vars, "#{current_ruby_exec} gem install bundler")
       end

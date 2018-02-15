@@ -27,7 +27,6 @@ COPS_TO_AUTO_CORRECT = [
 
                          # Array stuff
                          "Layout/MultilineArrayBraceLayout",
-                         "Layout/SpaceInsideBrackets",
                          "Layout/IndentArray",
                          "Layout/AlignArray",
 
@@ -67,6 +66,7 @@ COPS_TO_AUTO_CORRECT = [
                          "Layout/ElseAlignment",
                          "Layout/LeadingCommentSpace",
                          "Layout/SpaceBeforeComment",
+                         "Style/SpecialGlobalVars",
 
                          # Code transformation for cleanup
                          "Rails/Present",

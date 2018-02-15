@@ -112,10 +112,8 @@ class BaseTestModel < ActiveRecord::Base
     options = options.reverse_merge(allow_no_source: false, adhoc_value: nil, skip_default: false, use_bad_type: false)
 
     raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]p?l?\d+$/
+    raise "Need at least one source model or a nil instead" if !options[:allow_no_source] && source_associations.empty?
 
-    if !options[:allow_no_source] && source_associations.empty?
-      raise "Need at least one source model or a nil instead"
-    end
     source_associations = source_associations.compact
     association_name = ActiveRecordWhereAssoc::Helpers.normalize_association_name(association_name)
     association_macro = association_name.to_s[/^[a-z]+/]
@@ -174,10 +172,7 @@ class BaseTestModel < ActiveRecord::Base
     end
 
     assocs_options << [association_name, *source_models, allow_no_source: true, skip_default: true]
-
-    if association_name =~ /^.p\d/
-      assocs_options << [association_name, *source_models, allow_no_source: true, use_bad_type: true]
-    end
+    assocs_options << [association_name, *source_models, allow_no_source: true, use_bad_type: true] if association_name =~ /^.p\d/
 
     records = []
 

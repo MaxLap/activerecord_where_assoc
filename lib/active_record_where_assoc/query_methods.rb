@@ -265,10 +265,7 @@ module ActiveRecordWhereAssoc
 
         # Those make no sense since we are only limiting the value that would match, using conditions
         wrapping_scope = wrapping_scope.unscope(:limit, :order, :offset)
-
-        if nested_scope
-          wrapping_scope = nest_assocs_block.call(wrapping_scope, nested_scope)
-        end
+        wrapping_scope = nest_assocs_block.call(wrapping_scope, nested_scope) if nested_scope
 
         nested_scope = wrapping_scope
       end
