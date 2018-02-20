@@ -7,9 +7,8 @@
 
 NOTE: this gem is in active development:
  
-* Expect it to be complete somewhere in August 2017. 
+* Expect it to be complete somewhere in April 2018.
 * Until it is complete, the gem won't be published on rubygems.
-* Some of the docs you see might be for features that haven't been coded/tested yet.
 
 This gem provides powerful methods to give you the power of SQL's EXISTS:
 
@@ -18,7 +17,7 @@ This gem provides powerful methods to give you the power of SQL's EXISTS:
 my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
  
 # Find my_user's posts that have comments by an admin
-my_user.posts.where_assoc_exists(:comments_authors, &:admins).where(...)
+my_user.posts.where_assoc_exists([:comments, :author], &:admins).where(...)
  
 # Find my_user's posts that have at least 5 non-spam comments
 my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }.where(...)
@@ -71,9 +70,11 @@ The parameters are in the same order as in that query: number, operator, associa
 
 ## Supported Rails versions
 
-Rails 5.1, 5.0, 4.2 and 4.1 are supported for every Ruby versions they support. Just install the gem as usual.
+Rails 5.1, 5.0, 4.2 and 4.1 are supported with Ruby 2.1 and above.
 
 ## More examples
+
+High level explanation of various ways of using the methods. See next section for some tips.
 
 ```ruby
 # Find my_post's comments that were not made by an admin
@@ -81,8 +82,9 @@ Rails 5.1, 5.0, 4.2 and 4.1 are supported for every Ruby versions they support. 
 my_post.comments.where_assoc_not_exists(:author, is_admin: true)
 
 # Find my_user's posts that have comments by an admin
+# Uses an array as shortcut to go to a nested related
 # Uses the block shortcut to use a scope that exists on Author
-my_user.posts.where_assoc_exists(:comments_authors, &:admins)
+my_user.posts.where_assoc_exists([:comments, :author], &:admins).where(...)
 
 # Find my_user's posts that have at least 5 non-spam comments
 # Uses a block with a parameter to do a condition
@@ -139,9 +141,9 @@ my_user.posts.where_assoc_exists(:comments_authors, is_admin: true)
              .where_assoc_exists(:comments_authors, honest: true)
 ```
 
-The first is the posts of my_user that have a comment made by an honest admin.
+The first is the posts of my_user that have a comment made by an honest admin. It requires a single comment to match every conditions.
 
-The second is the posts of my_user that have a comment made by an admin and a comment made by someone honest. In this case, it would match a post with 2 comments, one by an admin and one by someone honest. The first example requires the same comment to be by an admin and by someone honest.
+The second is the posts of my_user that have a comment made by an admin and a comment made by someone honest. It can be the same comment (like the first query) but also be 2 different comments.
 
 ### Inter-table conditions
 
@@ -152,11 +154,20 @@ It's possible, with string conditions, to refer to all the tables that are used 
 Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
 ```
 
+Note that some database systems limit how far up you can refer to tables in nested queries. Meaning it's possible that the following query may get refused because of those limits:
+
+```ruby
+# Somewhat far fetched... it's hard to come up with a good example.
+Post.where_assoc_exists([:comments, :author, :address], "addresses.country = posts.database_country")
+```
+
+While doing the same thing, with less relations in between would not have issues.
+
 ### The opposite of multiple nested EXISTS...
 
 ... is a single NOT EXISTS with then nested ones still using EXISTS.
 
-All the methods always chain nested associations using an EXISTS when they have to go through multiple hoops. Only the outer-most, or first, association will have a NOT EXISTS when using `#where_assoc_not_exists` or a COUNT when using `#where_assoc_count`.
+All the methods always chain nested associations using an EXISTS when they have to go through multiple hoops. Only the outer-most, or first, association will have a NOT EXISTS when using `#where_assoc_not_exists` or a COUNT when using `#where_assoc_count`. This is the logical way of doing it.
 
 ## Advantages
 These methods many advantages over the alternative ways of achieving the similar results:
@@ -176,7 +187,7 @@ These methods many advantages over the alternative ways of achieving the similar
 ## Known issues/limitations
 
 MySQL is terrible: On MySQL databases, it is not possible to use has_one associations and associations with a scope that apply either a limit or an offset.
-I do not know of a way to do a query that does all the specifics of has_one for MySQL. If you have one, then you may propose in an issue/pull request.
+I do not know of a way to do a query that can deal with all the specifics of has_one for MySQL. If you have one, then you may suggest it in an issue/pull request.
 
 `has_many` and `has_one` using the `:through` option cannot have a scope that uses either `#limit` or `#offset`.
 Making such cases work is pretty complicated and would require quite a bit of refactoring. So if a real need and use case is made, this may get fixed.  
@@ -190,9 +201,7 @@ Run `rake test` to run the tests for the latest version of rails
 
 Run `bin/console` for an interactive prompt that will allow you to experiment in the same environment as the tests.
 
-Run `bin/fixcop` to fix a lot of common styling mistake of your code, make sure to do this before commiting and submitting.
-
-Run `rubocop` to see all the other rules that you break. Use common sense, sometimes it's okay to break a rule, add a [rubocop:disable comment](http://rubocop.readthedocs.io/en/latest/configuration/#disabling-cops-within-source-code) in that situation.
+Run `bin/fixcop` to fix a lot of common styling mistake of your code and then display the remaining rubocop rules you break. Make sure to do this before committing and submitting PRs. Use common sense, sometimes it's okay to break a rule, add a [rubocop:disable comment](http://rubocop.readthedocs.io/en/latest/configuration/#disabling-cops-within-source-code) in that situation.
 
 Run `bin/testall` to test all supported rails/ruby versions:
 * It will tell you about missing ruby versions, which you can install if you want to test for them
