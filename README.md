@@ -127,7 +127,7 @@ If you don't need special conditions on any of the intermediary associations, th
 User.where_assoc_exists([:posts, :comments, :author], &:is_admin)
 ```
 
-This shortcut can be used for every methods. The conditions and the block will be applied only to the last assocation of the chain.
+This shortcut can be used for every `where_assoc_*` methods. The conditions and the block will only be applied to the last assocation of the chain.
 
 
 ### Beware of spreading conditions on multiple calls

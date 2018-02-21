@@ -11,8 +11,8 @@ Gem::Specification.new do |spec|
   spec.email         = ["maxhlap@gmail.com"]
 
   spec.summary       = "Make ActiveRecord do conditions on your associations"
-  spec.description   = "Adds various #where_* methods to ActiveRecord to make it easy to do correct" \
-                       " conditions on the association of the model being queried."
+  spec.description   = "Adds various #where_assoc_* methods to ActiveRecord to make it easy to do correct" \
+                       " conditions on the associations of the model being queried."
   spec.homepage      = "https://github.com/MaxLap/activerecord_where_assoc"
   spec.license       = "MIT"
 
