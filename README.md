@@ -23,7 +23,9 @@ my_user.posts.where_assoc_exists([:comments, :author], &:admins).where(...)
 my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }.where(...)
 ```
 
-These allow for powerful, chainable, clear and easy to reuse scopes. 
+These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
+
+You also avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
 
 ## Installation
 
