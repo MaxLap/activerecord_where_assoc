@@ -99,7 +99,7 @@ module ActiveRecordWhereAssoc
     # the associated model must match can also be specified.
     #
     # #where_assoc_count is a generalization of #where_assoc_exists, allowing you to
-    # for example, filter for comments that have at least 2 posts
+    # for example, filter for comments that have at least 2 matching posts
     def where_assoc_count(left_side, operator, association_name, given_scope = nil, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = Helpers.apply_proc_scope(deepest_scope, block) if block
@@ -120,7 +120,7 @@ module ActiveRecordWhereAssoc
       where("(#{left_side}) #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
     end
 
-    # Returns a relation meant to be nested in a relation on the received.
+    # Returns a relation meant to be nested in a relation on the receiver.
     # association_names_path: can be an array of association names or a single one
     def relation_on_association(association_names_path, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_names_path = Array.wrap(association_names_path)
@@ -230,7 +230,7 @@ module ActiveRecordWhereAssoc
           end
 
           # We only check the records that would be returned by the associations if called on the model. If:
-          # * the scope of the association has a limit
+          # * the association has a limit in its lambda
           # * the default scope of the model has a limit
           # * the association is a has_one
           # Then not every records that match a naive join would be returned. So we first restrict the query to
