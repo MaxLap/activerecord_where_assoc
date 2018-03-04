@@ -10,9 +10,9 @@ NOTE: this gem is in active development:
 * Expect it to be complete somewhere in April 2018.
 * Until it is complete, the gem won't be published on rubygems.
 
-This gem provides powerful methods to give you the power of SQL's EXISTS:
+This gem provides powerful methods to add conditions based on the associations of your records. (Using SQL's EXISTS operator)
 
-```
+```ruby
 # Find my_post's comments that were not made by an admin
 my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
  
@@ -76,7 +76,7 @@ Rails 5.1, 5.0, 4.2 and 4.1 are supported with Ruby 2.1 and above.
 
 ## More examples
 
-High level explanation of various ways of using the methods. See next section for some tips.
+High level explanation of various ways of using the methods. Also take a look at [usage tips](#usage-tips)
 
 ```ruby
 # Find my_post's comments that were not made by an admin
@@ -105,6 +105,16 @@ my_user.posts.where_assoc_exists([:comments, :author], honest: true, is_admin: t
 # Uses a string on the left side (first parameter) to refer to a column in the previous table.
 Post.where_assoc_count("posts.max_comments_allowed", :==, :comments)
 ```
+
+## Advantages
+
+These methods have many advantages over the alternative ways of achieving the similar results:
+* You avoid the [problems with the alternative ways](ALTERNATIVES_PROBLEMS.md)
+* Can be chained and nested with regular ActiveRecord methods (`where`, `merge`, `scope`, etc).
+* They add a single condition in the `WHERE` of the query instead of complex things like joins.
+  * So it's easy to have multiple conditions on the same association
+* Handles has_one correctly: Only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
+* Can be used to quickly generate a SQL query that you can edit/use manually.
 
 ## Usage tips
 
@@ -145,7 +155,7 @@ my_user.posts.where_assoc_exists(:comments_authors, is_admin: true)
 
 The first is the posts of my_user that have a comment made by an honest admin. It requires a single comment to match every conditions.
 
-The second is the posts of my_user that have a comment made by an admin and a comment made by someone honest. It can be the same comment (like the first query) but also be 2 different comments.
+The second is the posts of my_user that have a comment made by an admin and a comment made by someone honest. It can be the same comment (like the first query) but it can also be 2 different comments.
 
 ### Inter-table conditions
 
@@ -159,7 +169,7 @@ Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
 Note that some database systems limit how far up you can refer to tables in nested queries. Meaning it's possible that the following query may get refused because of those limits:
 
 ```ruby
-# Somewhat far fetched... it's hard to come up with a good example.
+# it's hard to come up with a good example...
 Post.where_assoc_exists([:comments, :author, :address], "addresses.country = posts.database_country")
 ```
 
@@ -170,21 +180,6 @@ While doing the same thing, with less relations in between would not have issues
 ... is a single NOT EXISTS with then nested ones still using EXISTS.
 
 All the methods always chain nested associations using an EXISTS when they have to go through multiple hoops. Only the outer-most, or first, association will have a NOT EXISTS when using `#where_assoc_not_exists` or a COUNT when using `#where_assoc_count`. This is the logical way of doing it.
-
-## Advantages
-These methods many advantages over the alternative ways of achieving the similar results:
-* Can be chained and nested with regular ActiveRecord scoping methods.
-* They return relations with with a single added condition in the `WHERE` of the query.
-  * You can easily have multiple conditions on different records of an association
-* There is no joins needed:
-  * No need for `#distinct` to remove duplicated records that are added by the joins. 
-    (Avoids subtle bugs caused by unexpected `#distinct` in a scope) 
-  * There are no duplicated results returned as you could have with joins & conditions
-* Does not affect `includes` and `eager_load`
-  * ActiveRecord only eager loads the records that match conditions the conditions of the query, which can lead to unexpected bugs.
-* Applies the scope that was defined on the associations
-* Applies the default_scopes that was defined on the target model
-* Handles has_one correctly: Only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
 
 ## Known issues/limitations
 

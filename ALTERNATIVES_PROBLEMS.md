@@ -45,7 +45,7 @@ The general version of this problem is the handling of `limit` and `offset` on a
 
 Having to write the joins and conditions in raw SQL is more painful and more error prone than having a method do it for you. It hides the important details of what you are doing in a lot of verbosity.
 
-If there are conditions set on either the association or a default_scope of the model, then you must rewrite those conditions in your manual joins and your manual sub-selects. Worst, if you change those conditions on the association / default_scope, then you must find every places where you copied them in the raw SQL and change them too.
+If there are conditions set on either the association or a default_scope of the model, then you must rewrite those conditions in your manual joins and your manual sub-selects. Worst, if you add/change those conditions on the association / default_scope, then you must find every raw SQL that appl and do the same operation.
 
 ```ruby
 class Post < ActiveRecord::Base
