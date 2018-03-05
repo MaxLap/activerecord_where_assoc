@@ -6,18 +6,20 @@ require_relative "exceptions"
 module ActiveRecordWhereAssoc
   module QueryMethods
     # Block used when nesting associations for a where_assoc_[not_]exists
+    # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
+    # exists_prefix: raw sql prefix to the EXISTS, ex: 'NOT '
     NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, exists_prefix = ""|
       sql = "#{exists_prefix}EXISTS (#{nested_scope.select('0').to_sql})"
 
       wrapping_scope.where(sql)
     end
 
-    # Block used when nesting associations for a where_assoc_[not_]count
+    # Block used when nesting associations for a where_assoc_count
+    # Will apply the nested scope to the wrapping_scope with: select("SUM(SELECT... *nested_scope*)")
     NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
       # Need the double parentheses
       sql = "SUM((#{nested_scope.to_sql}))"
 
-      # Unscoping in case some scopes did a select
       wrapping_scope.unscope(:select).select(sql)
     end
 
@@ -156,6 +158,7 @@ module ActiveRecordWhereAssoc
       # Chain deals with through stuff
       # We will start with the reflection that points on the final model, and slowly move back to the reflection
       # that points on the model closest to self
+      # Basically, we start from the deepest part of the query and wrap it up
       refl_and_cons_chain = Helpers.chain_reflection_and_constraints(final_reflection)
       skip_next = false
 
