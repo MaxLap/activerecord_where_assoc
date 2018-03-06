@@ -139,12 +139,13 @@ module ActiveRecordWhereAssoc
 
     # Returns a relation meant to be nested in a relation on the received.
     def self.relation_on_direct_association(base_relation, association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
+      relation_klass = base_relation.klass
       association_name = Helpers.normalize_association_name(association_name)
-      final_reflection = base_relation._reflections[association_name]
+      final_reflection = relation_klass._reflections[association_name]
 
       if final_reflection.nil?
         # Need to use build because this exception expects a record...
-        raise ActiveRecord::AssociationNotFoundError.new(base_relation.klass.new, association_name)
+        raise ActiveRecord::AssociationNotFoundError.new(relation_klass.new, association_name)
       end
       if final_reflection.macro == :belongs_to && final_reflection.options[:polymorphic]
         raise NotImplementedError, "Can't deal with polymorphic belongs_to"
@@ -177,7 +178,7 @@ module ActiveRecordWhereAssoc
           # except we cannot add a given_scope afterward because we are on the wrong "base class", and we can't
           # do #merge because of the LEW crap.
           # So we must do the joins ourself!
-          sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, base_relation.klass)
+          sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
           current_scope = reflection.klass.default_scoped.joins(<<-SQL)
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
@@ -187,7 +188,7 @@ module ActiveRecordWhereAssoc
           next_next_refl_and_cons = refl_and_cons_chain[i + 2]
           next_next_reflection = next_next_refl_and_cons.first if next_next_refl_and_cons
 
-          join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, base_relation.klass)
+          join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, relation_klass)
 
           # We dealt with next_reflection here by doing a join, so that limit / offset can be applied correctly
           # So nothing is needed for it's iteration
@@ -195,7 +196,7 @@ module ActiveRecordWhereAssoc
         else
           current_scope = reflection.klass.default_scoped
           constraint_allowed_lim_off = reflection.send(:actual_source_reflection).scope
-          join_constaints = Helpers.join_constraints(reflection, next_reflection, base_relation.klass)
+          join_constaints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
         end
 
         constraints.each do |callable|
@@ -226,7 +227,7 @@ module ActiveRecordWhereAssoc
         current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
 
         if current_scope.limit_value
-          if %w(mysql mysql2).include?(base_relation.connection.adapter_name.downcase)
+          if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
             raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
           end
 
@@ -241,7 +242,7 @@ module ActiveRecordWhereAssoc
           # An argument could be made for it to maybe make sense for #where_assoc_count, not sure why that would
           # be useful.
 
-          if base_relation.klass.table_name.include?(".")
+          if relation_klass.table_name.include?(".")
             # This works universally, but seems to sometimes have slower performances.. Need to test if there is an alternative way
             # of expressing this...
             # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
