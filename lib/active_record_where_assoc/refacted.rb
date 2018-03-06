@@ -151,7 +151,7 @@ module ActiveRecordWhereAssoc
       end
 
       nested_scope = nil
-      wrapping_scope = nil
+      current_scope = nil
 
       # Chain deals with through stuff
       # We will start with the reflection that points on the final model, and slowly move back to the reflection
@@ -178,7 +178,7 @@ module ActiveRecordWhereAssoc
           # do #merge because of the LEW crap.
           # So we must do the joins ourself!
           sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, base_relation.klass)
-          wrapping_scope = reflection.klass.default_scoped.joins(<<-SQL)
+          current_scope = reflection.klass.default_scoped.joins(<<-SQL)
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
 
@@ -193,7 +193,7 @@ module ActiveRecordWhereAssoc
           # So nothing is needed for it's iteration
           skip_next = true
         else
-          wrapping_scope = reflection.klass.default_scoped
+          current_scope = reflection.klass.default_scoped
           constraint_allowed_lim_off = reflection.send(:actual_source_reflection).scope
           join_constaints = Helpers.join_constraints(reflection, next_reflection, base_relation.klass)
         end
@@ -214,18 +214,18 @@ module ActiveRecordWhereAssoc
           # Need to use merge to replicate the Last Equality Wins behavior of associations
           # https://github.com/rails/rails/issues/7365
           # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
-          wrapping_scope = wrapping_scope.merge(relation)
+          current_scope = current_scope.merge(relation)
         end
 
-        wrapping_scope = wrapping_scope.where(join_constaints)
+        current_scope = current_scope.where(join_constaints)
 
-        wrapping_scope = wrapping_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
-        wrapping_scope = wrapping_scope.limit(1) if reflection.macro == :has_one
+        current_scope = current_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
+        current_scope = current_scope.limit(1) if reflection.macro == :has_one
 
         # Order is useless without either limit or offset
-        wrapping_scope = wrapping_scope.unscope(:order) if !wrapping_scope.limit_value && !wrapping_scope.offset_value
+        current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
 
-        if wrapping_scope.limit_value
+        if current_scope.limit_value
           if %w(mysql mysql2).include?(base_relation.connection.adapter_name.downcase)
             raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
           end
@@ -248,30 +248,30 @@ module ActiveRecordWhereAssoc
             # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
             # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
 
-            wrapping_scope = reflection.klass.unscoped.where(id: wrapping_scope)
+            current_scope = reflection.klass.unscoped.where(id: current_scope)
           else
             # This works as long as the table_name doesn't have a schema/database, since we need to use an alias
             # with the table name to make scopes and everything else work as expected.
 
             # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
             # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
-            wrapping_scope = reflection.klass.unscoped.from("(#{wrapping_scope.to_sql}) #{reflection.klass.table_name}")
+            current_scope = reflection.klass.unscoped.from("(#{current_scope.to_sql}) #{reflection.klass.table_name}")
           end
         end
 
         if i.zero?
-          wrapping_scope = wrapping_scope.where(given_scope) if given_scope
-          wrapping_scope = Helpers.apply_proc_scope(wrapping_scope, last_assoc_block) if last_assoc_block
+          current_scope = current_scope.where(given_scope) if given_scope
+          current_scope = Helpers.apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
         end
 
         # Those make no sense since we are only limiting the value that would match, using conditions
-        wrapping_scope = wrapping_scope.unscope(:limit, :order, :offset)
-        wrapping_scope = nest_assocs_block.call(wrapping_scope, nested_scope) if nested_scope
+        current_scope = current_scope.unscope(:limit, :order, :offset)
+        current_scope = nest_assocs_block.call(current_scope, nested_scope) if nested_scope
 
-        nested_scope = wrapping_scope
+        nested_scope = current_scope
       end
 
-      wrapping_scope
+      current_scope
     end
   end
 end
