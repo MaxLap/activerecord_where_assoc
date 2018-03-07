@@ -220,45 +220,7 @@ module ActiveRecordWhereAssoc
 
         current_scope = current_scope.where(join_constaints)
 
-        current_scope = current_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
-        current_scope = current_scope.limit(1) if reflection.macro == :has_one
-
-        # Order is useless without either limit or offset
-        current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
-
-        if current_scope.limit_value
-          if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
-            raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
-          end
-
-          # We only check the records that would be returned by the associations if called on the model. If:
-          # * the association has a limit in its lambda
-          # * the default scope of the model has a limit
-          # * the association is a has_one
-          # Then not every records that match a naive join would be returned. So we first restrict the query to
-          # only the records that would be in the range of limit and offset.
-          #
-          # Note that if the #where_assoc_* block adds a limit or an offset, it has no effect. This is intended.
-          # An argument could be made for it to maybe make sense for #where_assoc_count, not sure why that would
-          # be useful.
-
-          if relation_klass.table_name.include?(".")
-            # This works universally, but seems to sometimes have slower performances.. Need to test if there is an alternative way
-            # of expressing this...
-            # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
-            # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
-            # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
-
-            current_scope = reflection.klass.unscoped.where(id: current_scope)
-          else
-            # This works as long as the table_name doesn't have a schema/database, since we need to use an alias
-            # with the table name to make scopes and everything else work as expected.
-
-            # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
-            # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
-            current_scope = reflection.klass.unscoped.from("(#{current_scope.to_sql}) #{reflection.klass.table_name}")
-          end
-        end
+        current_scope = process_association_step_limits(current_scope, reflection, relation_klass)
 
         if i.zero?
           current_scope = current_scope.where(given_scope) if given_scope
@@ -273,6 +235,48 @@ module ActiveRecordWhereAssoc
       end
 
       current_scope
+    end
+
+    def self.process_association_step_limits(current_scope, reflection, relation_klass)
+      return current_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
+
+      current_scope = current_scope.limit(1) if reflection.macro == :has_one
+
+      # Order is useless without either limit or offset
+      current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
+
+      return current_scope unless current_scope.limit_value
+      if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
+        raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
+      end
+
+      # We only check the records that would be returned by the associations if called on the model. If:
+      # * the association has a limit in its lambda
+      # * the default scope of the model has a limit
+      # * the association is a has_one
+      # Then not every records that match a naive join would be returned. So we first restrict the query to
+      # only the records that would be in the range of limit and offset.
+      #
+      # Note that if the #where_assoc_* block adds a limit or an offset, it has no effect. This is intended.
+      # An argument could be made for it to maybe make sense for #where_assoc_count, not sure why that would
+      # be useful.
+
+      if relation_klass.table_name.include?(".")
+        # This works universally, but seems to sometimes have slower performances.. Need to test if there is an alternative way
+        # of expressing this...
+        # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
+        # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
+        # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
+
+        reflection.klass.unscoped.where(id: current_scope)
+      else
+        # This works as long as the table_name doesn't have a schema/database, since we need to use an alias
+        # with the table name to make scopes and everything else work as expected.
+
+        # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
+        # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
+        reflection.klass.unscoped.from("(#{current_scope.to_sql}) #{reflection.klass.table_name}")
+      end
     end
   end
 end
