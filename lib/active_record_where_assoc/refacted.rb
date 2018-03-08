@@ -140,16 +140,7 @@ module ActiveRecordWhereAssoc
     # Returns a relation meant to be nested in a relation on the received.
     def self.relation_on_direct_association(base_relation, association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       relation_klass = base_relation.klass
-      association_name = Helpers.normalize_association_name(association_name)
-      final_reflection = relation_klass._reflections[association_name]
-
-      if final_reflection.nil?
-        # Need to use build because this exception expects a record...
-        raise ActiveRecord::AssociationNotFoundError.new(relation_klass.new, association_name)
-      end
-      if final_reflection.macro == :belongs_to && final_reflection.options[:polymorphic]
-        raise NotImplementedError, "Can't deal with polymorphic belongs_to"
-      end
+      final_reflection = fetch_reflection(relation_klass, association_name)
 
       nested_scope = nil
       current_scope = nil
@@ -235,6 +226,21 @@ module ActiveRecordWhereAssoc
       end
 
       current_scope
+    end
+
+    def self.fetch_reflection(relation_klass, association_name)
+      association_name = Helpers.normalize_association_name(association_name)
+      reflection = relation_klass._reflections[association_name]
+
+      if reflection.nil?
+        # Need to use build because this exception expects a record...
+        raise ActiveRecord::AssociationNotFoundError.new(relation_klass.new, association_name)
+      end
+      if reflection.macro == :belongs_to && reflection.options[:polymorphic]
+        raise NotImplementedError, "Can't deal with polymorphic belongs_to"
+      end
+
+      reflection
     end
 
     def self.process_association_step_limits(current_scope, reflection, relation_klass)
