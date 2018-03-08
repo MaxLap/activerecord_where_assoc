@@ -158,8 +158,7 @@ module ActiveRecordWhereAssoc
           next
         end
 
-        next_refl_and_cons = refl_and_cons_chain[i + 1]
-        next_reflection = next_refl_and_cons.first if next_refl_and_cons
+        next_reflection, _next_constraints = refl_and_cons_chain[i + 1]
         parent_reflection = Helpers.parent_reflection(reflection)
         if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
           # SELECT ... FROM *join_table* INNER JOIN *target_table* ON ...
@@ -174,8 +173,7 @@ module ActiveRecordWhereAssoc
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
 
-          next_next_refl_and_cons = refl_and_cons_chain[i + 2]
-          next_next_reflection = next_next_refl_and_cons.first if next_next_refl_and_cons
+          next_next_reflection, _next_next_constraints = refl_and_cons_chain[i + 2]
 
           join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, relation_klass)
 
