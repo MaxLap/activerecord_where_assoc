@@ -174,8 +174,6 @@ module ActiveRecordWhereAssoc
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
 
-          constraint_allowed_lim_off = reflection.scope
-
           next_next_refl_and_cons = refl_and_cons_chain[i + 2]
           next_next_reflection = next_next_refl_and_cons.first if next_next_refl_and_cons
 
@@ -186,14 +184,13 @@ module ActiveRecordWhereAssoc
           skip_next = true
         else
           current_scope = reflection.klass.default_scoped
-          constraint_allowed_lim_off = reflection.send(:actual_source_reflection).scope
           join_constaints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
         end
 
         constraints.each do |callable|
           relation = reflection.klass.unscoped.instance_exec(&callable)
 
-          if callable != constraint_allowed_lim_off
+          if callable != constraint_allowed_lim_off(reflection)
             if relation.limit_value
               raise LimitFromThroughScopeError, "#limit from an association's scope is only supported on direct associations, not a through."
             end
@@ -241,6 +238,15 @@ module ActiveRecordWhereAssoc
       end
 
       reflection
+    end
+
+    def self.constraint_allowed_lim_off(reflection)
+      parent_reflection = Helpers.parent_reflection(reflection)
+      if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
+        reflection.scope
+      else
+        reflection.send(:actual_source_reflection).scope
+      end
     end
 
     def self.process_association_step_limits(current_scope, reflection, relation_klass)
