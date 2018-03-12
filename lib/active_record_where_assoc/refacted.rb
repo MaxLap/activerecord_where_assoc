@@ -158,55 +158,11 @@ module ActiveRecordWhereAssoc
           next
         end
 
-        next_reflection, _next_constraints = refl_and_cons_chain[i + 1]
         parent_reflection = Helpers.parent_reflection(reflection)
-        if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
-          # SELECT ... FROM *join_table* INNER JOIN *target_table* ON ...
-          # This is the internal association made on the internal model of the habtm
+        # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
+        skip_next = true if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
 
-          # Simply using next_reflection.klass.default_scoped.joins(reflection.name) would be great,
-          # except we cannot add a given_scope afterward because we are on the wrong "base class", and we can't
-          # do #merge because of the LEW crap.
-          # So we must do the joins ourself!
-          sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
-          current_scope = reflection.klass.default_scoped.joins(<<-SQL)
-            INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
-          SQL
-
-          next_next_reflection, _next_next_constraints = refl_and_cons_chain[i + 2]
-
-          join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, relation_klass)
-
-          # We dealt with next_reflection here by doing a join, so that limit / offset can be applied correctly
-          # So nothing is needed for it's iteration
-          skip_next = true
-        else
-          current_scope = reflection.klass.default_scoped
-          join_constaints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
-        end
-
-        constraint_allowed_lim_off = constraint_allowed_lim_off_from(reflection)
-
-        constraints.each do |callable|
-          relation = reflection.klass.unscoped.instance_exec(&callable)
-
-          if callable != constraint_allowed_lim_off
-            if relation.limit_value
-              raise LimitFromThroughScopeError, "#limit from an association's scope is only supported on direct associations, not a through."
-            end
-
-            if relation.offset_value
-              raise OffsetFromThroughScopeError, "#offset from an association's scope is only supported on direct associations, not a through."
-            end
-          end
-
-          # Need to use merge to replicate the Last Equality Wins behavior of associations
-          # https://github.com/rails/rails/issues/7365
-          # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
-          current_scope = current_scope.merge(relation)
-        end
-
-        current_scope = current_scope.where(join_constaints)
+        current_scope = initial_scope_from_reflection(refl_and_cons_chain[i..-1], relation_klass)
 
         current_scope = process_association_step_limits(current_scope, reflection, relation_klass)
 
@@ -238,6 +194,65 @@ module ActiveRecordWhereAssoc
       end
 
       reflection
+    end
+
+    def self.initial_scope_from_reflection(refl_and_cons_chain, relation_klass)
+      reflection, constraints = refl_and_cons_chain.first
+      next_reflection, _next_constraints = refl_and_cons_chain[1]
+      parent_reflection = Helpers.parent_reflection(reflection)
+      if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
+        # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
+        # This is the first of those secret has_many.
+        #
+        # In order to handle limit, offset, order correctly on has_and_belongs_to_man,
+        # we must do both this reflection and the next one at the same time.
+        # Think of it this way, if you have limit 3:
+        #   Apply at 1st step: You check that any of 2nd step for the first 3 of 1st step match
+        #   Apply at 2nd step: You check that any of the first 3 of second step match for any 1st step
+        #   Apply over both (as we do): You check that only the first 3 of doing both step match,
+
+        # To create the join, simply using next_reflection.klass.default_scoped.joins(reflection.name)
+        # would be great, except we cannot add a given_scope afterward because we are on the wrong "base class",
+        # and we can't do #merge because of the LEW crap.
+        # So we must do the joins ourself!
+        sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
+        current_scope = reflection.klass.default_scoped.joins(<<-SQL)
+            INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
+        SQL
+
+        next_next_reflection, _next_next_constraints = refl_and_cons_chain[2]
+
+        join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, relation_klass)
+      else
+        current_scope = reflection.klass.default_scoped
+        join_constaints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
+      end
+
+      constraint_allowed_lim_off = constraint_allowed_lim_off_from(reflection)
+
+      constraints.each do |callable|
+        relation = reflection.klass.unscoped.instance_exec(&callable)
+
+        if callable != constraint_allowed_lim_off
+          # The only time there can be more than one constraint is when dealing with a :through relation
+          # So the only time this situation can happen is with a :through relation
+
+          if relation.limit_value
+            raise LimitFromThroughScopeError, "#limit from an association's scope is only supported on direct associations, not a through."
+          end
+
+          if relation.offset_value
+            raise OffsetFromThroughScopeError, "#offset from an association's scope is only supported on direct associations, not a through."
+          end
+        end
+
+        # Need to use merge to replicate the Last Equality Wins behavior of associations
+        # https://github.com/rails/rails/issues/7365
+        # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
+        current_scope = current_scope.merge(relation)
+      end
+
+      current_scope.where(join_constaints)
     end
 
     def self.constraint_allowed_lim_off_from(reflection)
