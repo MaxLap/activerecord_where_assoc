@@ -158,9 +158,8 @@ module ActiveRecordWhereAssoc
           next
         end
 
-        parent_reflection = Helpers.parent_reflection(reflection)
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
-        skip_next = true if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
+        skip_next = true if Helpers.has_and_belongs_to_many?(reflection)
 
         current_scope = initial_scope_from_reflection(refl_and_cons_chain[i..-1], relation_klass)
 
@@ -199,8 +198,7 @@ module ActiveRecordWhereAssoc
     def self.initial_scope_from_reflection(refl_and_cons_chain, relation_klass)
       reflection, constraints = refl_and_cons_chain.first
       next_reflection, _next_constraints = refl_and_cons_chain[1]
-      parent_reflection = Helpers.parent_reflection(reflection)
-      if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
+      if Helpers.has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
         # This is the first of those secret has_many.
         #
@@ -256,8 +254,7 @@ module ActiveRecordWhereAssoc
     end
 
     def self.constraint_allowed_lim_off_from(reflection)
-      parent_reflection = Helpers.parent_reflection(reflection)
-      if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
+      if Helpers.has_and_belongs_to_many?(reflection)
         reflection.scope
       else
         reflection.send(:actual_source_reflection).scope
