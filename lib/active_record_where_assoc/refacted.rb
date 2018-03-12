@@ -185,10 +185,12 @@ module ActiveRecordWhereAssoc
           join_constaints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
         end
 
+        constraint_allowed_lim_off = constraint_allowed_lim_off_from(reflection)
+
         constraints.each do |callable|
           relation = reflection.klass.unscoped.instance_exec(&callable)
 
-          if callable != constraint_allowed_lim_off(reflection)
+          if callable != constraint_allowed_lim_off
             if relation.limit_value
               raise LimitFromThroughScopeError, "#limit from an association's scope is only supported on direct associations, not a through."
             end
@@ -238,7 +240,7 @@ module ActiveRecordWhereAssoc
       reflection
     end
 
-    def self.constraint_allowed_lim_off(reflection)
+    def self.constraint_allowed_lim_off_from(reflection)
       parent_reflection = Helpers.parent_reflection(reflection)
       if parent_reflection && parent_reflection.macro == :has_and_belongs_to_many
         reflection.scope
