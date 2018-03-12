@@ -148,11 +148,13 @@ module ActiveRecordWhereAssoc
       # Chain deals with through stuff
       # We will start with the reflection that points on the final model, and slowly move back to the reflection
       # that points on the model closest to self
+      # Each step, we get all of the scoping lambdas that were defined on associations that apply for
+      # the reflection's target
       # Basically, we start from the deepest part of the query and wrap it up
-      refl_and_cons_chain = Helpers.chain_reflection_and_constraints(final_reflection)
+      reflection_chain, constaints_chain = Helpers.chained_reflection_and_chained_constraints(final_reflection)
       skip_next = false
 
-      refl_and_cons_chain.each_with_index do |(reflection, constraints), i|
+      reflection_chain.each_with_index do |reflection, i|
         if skip_next
           skip_next = false
           next
@@ -161,7 +163,7 @@ module ActiveRecordWhereAssoc
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
         skip_next = true if Helpers.has_and_belongs_to_many?(reflection)
 
-        current_scope = initial_scope_from_reflection(refl_and_cons_chain[i..-1], relation_klass)
+        current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i], relation_klass)
 
         current_scope = process_association_step_limits(current_scope, reflection, relation_klass)
 
@@ -195,9 +197,9 @@ module ActiveRecordWhereAssoc
       reflection
     end
 
-    def self.initial_scope_from_reflection(refl_and_cons_chain, relation_klass)
-      reflection, constraints = refl_and_cons_chain.first
-      next_reflection, _next_constraints = refl_and_cons_chain[1]
+    def self.initial_scope_from_reflection(reflection_chain, constraints, relation_klass)
+      reflection = reflection_chain.first
+      next_reflection = reflection_chain[1]
       if Helpers.has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
         # This is the first of those secret has_many.
@@ -218,7 +220,7 @@ module ActiveRecordWhereAssoc
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
         SQL
 
-        next_next_reflection, _next_next_constraints = refl_and_cons_chain[2]
+        next_next_reflection = reflection_chain[2]
 
         join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, relation_klass)
       else

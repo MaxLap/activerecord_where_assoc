@@ -61,12 +61,12 @@ module ActiveRecordWhereAssoc
     end
 
     if ActiveRecord.gem_version >= Gem::Version.new("5.0")
-      def self.chain_reflection_and_constraints(reflection)
-        reflection.chain.map { |ref| [ref, ref.constraints] }
+      def self.chained_reflection_and_chained_constraints(reflection)
+        reflection.chain.map { |ref| [ref, ref.constraints] }.transpose
       end
     else
-      def self.chain_reflection_and_constraints(reflection)
-        reflection.chain.zip(reflection.scope_chain)
+      def self.chained_reflection_and_chained_constraints(reflection)
+        [reflection.chain, reflection.scope_chain]
       end
     end
 
