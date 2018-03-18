@@ -131,14 +131,14 @@ module ActiveRecordWhereAssoc
           nest_assocs_block.call(scope, nested_scope)
         end
 
-        relation_on_direct_association(base_relation, association_names_path.first, nil, recursive_scope_block, nest_assocs_block)
+        relation_on_one_association(base_relation, association_names_path.first, nil, recursive_scope_block, nest_assocs_block)
       else
-        relation_on_direct_association(base_relation, association_names_path.first, given_scope, last_assoc_block, nest_assocs_block)
+        relation_on_one_association(base_relation, association_names_path.first, given_scope, last_assoc_block, nest_assocs_block)
       end
     end
 
     # Returns a relation meant to be nested in a relation on the received.
-    def self.relation_on_direct_association(base_relation, association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
+    def self.relation_on_one_association(base_relation, association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
 
