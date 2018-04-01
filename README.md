@@ -183,12 +183,18 @@ All the methods always chain nested associations using an EXISTS when they have 
 
 ## Known issues/limitations
 
-MySQL is terrible: On MySQL databases, it is not possible to use has_one associations and associations with a scope that apply either a limit or an offset.
-I do not know of a way to do a query that can deal with all the specifics of has_one for MySQL. If you have one, then you may suggest it in an issue/pull request.
+### MySQL is terrible
+On MySQL databases, it is not possible to use has_one associations and associations with a scope that apply either a limit or an offset.
+I do not know of a way to do a SQL query that can deal with all the specifics of has_one for MySQL. If you have one, then you may suggest it in an issue/pull request.
 
-`has_many` and `has_one` using the `:through` option cannot have a scope that uses either `#limit` or `#offset`.
-Making such cases work is pretty complicated and would require quite a bit of refactoring. So if a real need and use case is made, this may get fixed.  
-`#limit` and `#offset` work fine in the scope of associations that do not use `:through`.
+### has_* :through vs limit/offset
+For `has_many` and `has_one` with the `:through` option, `#limit` and `#offset` are ignored. Note that `#limit` and `#offset` of the `:source` and of the `:through` side are applied correctly.
+
+This is the opposite of what ActiveRecord does when you fetch the result of such an association. ActiveRecord will ignore the limits of the part `:source` and of the `:through` and only use the one of the `has_* :through`.
+
+It is pretty complicated to support `#limit` and `#offset` of the `has_* :through` and would require quite a bit of refactoring. PR welcome
+
+Note that the support of `#limit` and `#offset` for the `:source` and `:through` parts is a feature. I consider ActiveRecord wrong for not handling them correctly.
 
 ## Development
 

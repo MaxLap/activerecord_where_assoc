@@ -205,7 +205,7 @@ module ActiveRecordWhereAssoc
         # This is the first of those secret has_many.
         #
         # In order to handle limit, offset, order correctly on has_and_belongs_to_man,
-        # we must do both this reflection and the next one at the same time.
+        # we must do both this reflection ad the next one at the same time.
         # Think of it this way, if you have limit 3:
         #   Apply at 1st step: You check that any of 2nd step for the first 3 of 1st step match
         #   Apply at 2nd step: You check that any of the first 3 of second step match for any 1st step
@@ -234,16 +234,11 @@ module ActiveRecordWhereAssoc
         relation = reflection.klass.unscoped.instance_exec(&callable)
 
         if callable != constraint_allowed_lim_off
-          # The only time there can be more than one constraint is when dealing with a :through relation
-          # So the only time this situation can happen is with a :through relation
-
-          if relation.limit_value
-            raise LimitFromThroughScopeError, "#limit from an association's scope is only supported on direct associations, not a through."
-          end
-
-          if relation.offset_value
-            raise OffsetFromThroughScopeError, "#offset from an association's scope is only supported on direct associations, not a through."
-          end
+          # I just want to remove the current values without screwing things in the merge below
+          # so we cannot use #unscope
+          relation.limit_value = nil
+          relation.offset_value = nil
+          relation.order_values = []
         end
 
         # Need to use merge to replicate the Last Equality Wins behavior of associations
@@ -259,6 +254,12 @@ module ActiveRecordWhereAssoc
       if Helpers.has_and_belongs_to_many?(reflection)
         reflection.scope
       else
+        # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
+        # whole has_* :through. For now, we only do th direct associations from one model to another.
+        #
+        # For :through associations, #actual_source_reflection returns final non-through
+        # reflection that is reached by following the :source.
+        # Otherwise, returns itself.
         reflection.send(:actual_source_reflection).scope
       end
     end
@@ -271,7 +272,7 @@ module ActiveRecordWhereAssoc
       # Order is useless without either limit or offset
       current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
 
-      return current_scope unless current_scope.limit_value
+      return current_scope unless current_scope.limit_value || current_scope.offset_value
       if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
         raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
       end
