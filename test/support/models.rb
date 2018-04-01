@@ -110,10 +110,10 @@ end
 
 class SchemaS0 < BaseTestModel
   self.table_name = "foo_schema.schema_s0s"
-  belongs_to :b1, class_name: "SchemaS1", foreign_key: "schema_s1_id"
-  has_many :m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
-  has_one :o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
-  has_and_belongs_to_many :z1, class_name: "SchemaS1", join_table: "spam_schema.schema_s0s_schema_s1s"
+  belongs_to :schema_b1, class_name: "SchemaS1", foreign_key: "schema_s1_id"
+  has_many :schema_m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+  has_one :schema_o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+  has_and_belongs_to_many :schema_z1, class_name: "SchemaS1", join_table: "spam_schema.schema_s0s_schema_s1s"
 end
 
 class SchemaS1 < BaseTestModel
