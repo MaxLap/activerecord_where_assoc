@@ -288,7 +288,7 @@ module ActiveRecordWhereAssoc
       # An argument could be made for it to maybe make sense for #where_assoc_count, not sure why that would
       # be useful.
 
-      if relation_klass.table_name.include?(".")
+      if reflection.klass.table_name.include?(".")
         # This works universally, but seems to sometimes have slower performances.. Need to test if there is an alternative way
         # of expressing this...
         # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?

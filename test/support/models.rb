@@ -55,6 +55,10 @@ class S0 < BaseTestModel
 
   testable_has_many :mp3mp1_mp3mp2, through: :mp1, source: :mp3mp2, class_name: "S3"
   testable_has_one :op3op1_op3op2, -> { order("s3s.id DESC") }, through: :op1, source: :op3op2, class_name: "S3"
+
+  belongs_to :schema_b1, class_name: "SchemaS1", foreign_key: "s1_id"
+  has_many :schema_m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+  has_one :schema_o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
 end
 
 class S1 < BaseTestModel
@@ -114,10 +118,26 @@ class SchemaS0 < BaseTestModel
   has_many :schema_m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
   has_one :schema_o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
   has_and_belongs_to_many :schema_z1, class_name: "SchemaS1", join_table: "spam_schema.schema_s0s_schema_s1s"
+
+  belongs_to :b1, class_name: "S1", foreign_key: "schema_s1_id"
+  has_many :m1, class_name: "S1", foreign_key: "s0_id"
+  has_one :o1, class_name: "S1", foreign_key: "s0_id"
 end
 
 class SchemaS1 < BaseTestModel
   self.table_name = "bar_schema.schema_s1s"
+
+  belongs_to :schema_b2, class_name: "SchemaS2", foreign_key: "schema_s2_id"
+  has_many :schema_m2, class_name: "SchemaS2", foreign_key: "schema_s1_id"
+  has_one :schema_o2, class_name: "SchemaS2", foreign_key: "schema_s1_id"
+
+  belongs_to :b2, class_name: "S2", foreign_key: "schema_s2_id"
+  has_many :m2, class_name: "S2", foreign_key: "schema_s1_id"
+  has_one :o2, class_name: "S2", foreign_key: "schema_s1_id"
+end
+
+class SchemaS2 < BaseTestModel
+  self.table_name = "bar_schema.schema_s2s"
 end
 
 

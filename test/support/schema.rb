@@ -101,9 +101,14 @@ ActiveRecord::Schema.define do
 
   create_table "bar_schema.schema_s1s" do |t|
     t.integer :schema_s0_id
+    t.integer :schema_s2_id
   end
 
   create_join_table "schema_s0s", "schema_s1s", table_name: "spam_schema.schema_s0s_schema_s1s"
+
+  create_table "bar_schema.schema_s2s" do |t|
+    t.integer :schema_s1_id
+  end
 
   create_table "sti_s0s" do |t|
     t.integer :sti_s1_id
