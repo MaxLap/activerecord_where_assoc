@@ -3,7 +3,7 @@
 require "active_record_where_assoc/version"
 require "active_record"
 
-require "active_record_where_assoc/refacted"
+require "active_record_where_assoc/core_logic"
 require "active_record_where_assoc/query_methods"
 require "active_record_where_assoc/querying"
 

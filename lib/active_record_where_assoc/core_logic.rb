@@ -2,7 +2,7 @@ require_relative "active_record_compat"
 require_relative "exceptions"
 
 module ActiveRecordWhereAssoc
-  module Refacted
+  module CoreLogic
     # Block used when nesting associations for a where_assoc_[not_]exists
     # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
     # exists_prefix: raw sql prefix to the EXISTS, ex: 'NOT '
