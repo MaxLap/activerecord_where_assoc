@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ActiveRecordWhereAssoc
-  module Helpers
+  module ActiveRecordCompat
     if ActiveRecord.gem_version >= Gem::Version.new("5.1")
       def self.join_keys(reflection)
         reflection.join_keys

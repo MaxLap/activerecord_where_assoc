@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "helpers"
+require_relative "active_record_compat"
 require_relative "exceptions"
 
 module ActiveRecordWhereAssoc

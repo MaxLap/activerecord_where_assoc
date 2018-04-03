@@ -1,4 +1,4 @@
-require_relative "helpers"
+require_relative "active_record_compat"
 require_relative "exceptions"
 
 module ActiveRecordWhereAssoc
@@ -151,7 +151,7 @@ module ActiveRecordWhereAssoc
       # Each step, we get all of the scoping lambdas that were defined on associations that apply for
       # the reflection's target
       # Basically, we start from the deepest part of the query and wrap it up
-      reflection_chain, constaints_chain = Helpers.chained_reflection_and_chained_constraints(final_reflection)
+      reflection_chain, constaints_chain = ActiveRecordCompat.chained_reflection_and_chained_constraints(final_reflection)
       skip_next = false
 
       reflection_chain.each_with_index do |reflection, i|
@@ -161,7 +161,7 @@ module ActiveRecordWhereAssoc
         end
 
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
-        skip_next = true if Helpers.has_and_belongs_to_many?(reflection)
+        skip_next = true if ActiveRecordCompat.has_and_belongs_to_many?(reflection)
 
         current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i], relation_klass)
 
@@ -183,7 +183,7 @@ module ActiveRecordWhereAssoc
     end
 
     def self.fetch_reflection(relation_klass, association_name)
-      association_name = Helpers.normalize_association_name(association_name)
+      association_name = ActiveRecordCompat.normalize_association_name(association_name)
       reflection = relation_klass._reflections[association_name]
 
       if reflection.nil?
@@ -200,7 +200,7 @@ module ActiveRecordWhereAssoc
     def self.initial_scope_from_reflection(reflection_chain, constraints, relation_klass)
       reflection = reflection_chain.first
       next_reflection = reflection_chain[1]
-      if Helpers.has_and_belongs_to_many?(reflection)
+      if ActiveRecordCompat.has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
         # This is the first of those secret has_many.
         #
@@ -251,7 +251,7 @@ module ActiveRecordWhereAssoc
     end
 
     def self.constraint_allowed_lim_off_from(reflection)
-      if Helpers.has_and_belongs_to_many?(reflection)
+      if ActiveRecordCompat.has_and_belongs_to_many?(reflection)
         reflection.scope
       else
         # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
@@ -318,7 +318,7 @@ module ActiveRecordWhereAssoc
     end
 
     def self.join_constraints(reflection, next_reflection, final_klass)
-      join_keys = Helpers.join_keys(reflection)
+      join_keys = ActiveRecordCompat.join_keys(reflection)
       key = join_keys.key
       foreign_key = join_keys.foreign_key
 
