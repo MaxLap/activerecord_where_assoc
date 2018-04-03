@@ -102,7 +102,7 @@ module ActiveRecordWhereAssoc
     # for example, filter for comments that have at least 2 matching posts
     def self.where_assoc_count(base_relation, left_operand, operator, association_name, given_scope = nil, &block)
       deepest_scope_mod = lambda do |deepest_scope|
-        deepest_scope = Helpers.apply_proc_scope(deepest_scope, block) if block
+        deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
@@ -169,7 +169,7 @@ module ActiveRecordWhereAssoc
 
         if i.zero?
           current_scope = current_scope.where(given_scope) if given_scope
-          current_scope = Helpers.apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
+          current_scope = apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
         end
 
         # Those make no sense since we are only limiting the value that would match, using conditions
@@ -215,17 +215,17 @@ module ActiveRecordWhereAssoc
         # would be great, except we cannot add a given_scope afterward because we are on the wrong "base class",
         # and we can't do #merge because of the LEW crap.
         # So we must do the joins ourself!
-        sub_join_contraints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
+        sub_join_contraints = join_constraints(reflection, next_reflection, relation_klass)
         current_scope = reflection.klass.default_scoped.joins(<<-SQL)
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
         SQL
 
         next_next_reflection = reflection_chain[2]
 
-        join_constaints = Helpers.join_constraints(next_reflection, next_next_reflection, relation_klass)
+        join_constaints = join_constraints(next_reflection, next_next_reflection, relation_klass)
       else
         current_scope = reflection.klass.default_scoped
-        join_constaints = Helpers.join_constraints(reflection, next_reflection, relation_klass)
+        join_constaints = join_constraints(reflection, next_reflection, relation_klass)
       end
 
       constraint_allowed_lim_off = constraint_allowed_lim_off_from(reflection)
@@ -304,6 +304,37 @@ module ActiveRecordWhereAssoc
         # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
         reflection.klass.unscoped.from("(#{current_scope.to_sql}) #{reflection.klass.table_name}")
       end
+    end
+
+    # Apply a proc used as scope
+    # If it can't receive arguments, call the proc with self set to the relation
+    # If it can receive arguments, call the proc the relation passed as argument
+    def self.apply_proc_scope(relation, proc_scope)
+      if proc_scope.arity == 0
+        relation.instance_exec(&proc_scope) || relation
+      else
+        proc_scope.call(relation) || relation
+      end
+    end
+
+    def self.join_constraints(reflection, next_reflection, final_klass)
+      join_keys = Helpers.join_keys(reflection)
+      key = join_keys.key
+      foreign_key = join_keys.foreign_key
+
+      table = reflection.klass.arel_table
+      foreign_klass = next_reflection ? next_reflection.klass : final_klass
+      foreign_table = foreign_klass.arel_table
+
+      # Using default_scope / unscoped / any scope comes with the STI constrain built-in for free!
+
+      constraints = table[key].eq(foreign_table[foreign_key])
+
+      if reflection.type
+        # Handing of the polymorphic has_many/has_one's type column
+        constraints = constraints.and(table[reflection.type].eq(foreign_klass.name))
+      end
+      constraints
     end
   end
 end
