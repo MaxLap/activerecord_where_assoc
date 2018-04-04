@@ -203,6 +203,9 @@ module ActiveRecordWhereAssoc
     def self.initial_scope_from_reflection(reflection_chain, constraints, relation_klass)
       reflection = reflection_chain.first
       next_reflection = reflection_chain[1]
+
+      current_scope = reflection.klass.default_scoped
+
       if has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
         # This is the first of those secret has_many.
@@ -219,7 +222,7 @@ module ActiveRecordWhereAssoc
         # and we can't do #merge because of the LEW crap.
         # So we must do the joins ourself!
         sub_join_contraints = join_constraints(reflection, next_reflection, relation_klass)
-        current_scope = reflection.klass.default_scoped.joins(<<-SQL)
+        current_scope = current_scope.joins(<<-SQL)
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
         SQL
 
@@ -227,7 +230,6 @@ module ActiveRecordWhereAssoc
 
         join_constaints = join_constraints(next_reflection, next_next_reflection, relation_klass)
       else
-        current_scope = reflection.klass.default_scoped
         join_constaints = join_constraints(reflection, next_reflection, relation_klass)
       end
 
