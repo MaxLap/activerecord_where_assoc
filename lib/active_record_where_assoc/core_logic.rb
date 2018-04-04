@@ -80,7 +80,7 @@ module ActiveRecordWhereAssoc
     #
     # If the second argument is blank-ish, it is ignored (as #where does).
     def self.where_assoc_exists(base_relation, association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(base_relation, association_name, given_scope, block, NestWithExistsBlock)
+      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation)
     end
 
@@ -90,7 +90,7 @@ module ActiveRecordWhereAssoc
     # See #where_assoc_exists for usage details. The only difference is that a record
     # is matched if no matching association record is found.
     def self.where_assoc_not_exists(base_relation, association_name, given_scope = nil, &block)
-      nested_relation = relation_on_association(base_relation, association_name, given_scope, block, NestWithExistsBlock)
+      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation, "NOT ")
     end
 
@@ -107,7 +107,7 @@ module ActiveRecordWhereAssoc
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      nested_relation = relation_on_association(base_relation, association_name, given_scope, deepest_scope_mod, NestWithSumBlock)
+      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, deepest_scope_mod, NestWithSumBlock)
       operator = case operator.to_s
                  when "=="
                    "="
@@ -120,14 +120,14 @@ module ActiveRecordWhereAssoc
       base_relation.where("(#{left_operand}) #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
     end
 
-    # Returns a relation meant to be nested in a relation on the receiver.
+    # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
     # association_names_path: can be an array of association names or a single one
     def self.relation_on_association(base_relation, association_names_path, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       association_names_path = Array.wrap(association_names_path)
 
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
-          nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, last_assoc_block, nest_assocs_block)
+          scope, nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, last_assoc_block, nest_assocs_block)
           nest_assocs_block.call(scope, nested_scope)
         end
 
@@ -137,7 +137,7 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    # Returns a relation meant to be nested in a relation on the received.
+    # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
     def self.relation_on_one_association(base_relation, association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
@@ -179,7 +179,7 @@ module ActiveRecordWhereAssoc
         nested_scope = current_scope
       end
 
-      current_scope
+      [base_relation, current_scope]
     end
 
     def self.fetch_reflection(relation_klass, association_name)
