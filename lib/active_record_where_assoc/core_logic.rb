@@ -161,7 +161,7 @@ module ActiveRecordWhereAssoc
         end
 
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
-        skip_next = true if ActiveRecordCompat.has_and_belongs_to_many?(reflection)
+        skip_next = true if has_and_belongs_to_many?(reflection)
 
         current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i], relation_klass)
 
@@ -200,7 +200,7 @@ module ActiveRecordWhereAssoc
     def self.initial_scope_from_reflection(reflection_chain, constraints, relation_klass)
       reflection = reflection_chain.first
       next_reflection = reflection_chain[1]
-      if ActiveRecordCompat.has_and_belongs_to_many?(reflection)
+      if has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
         # This is the first of those secret has_many.
         #
@@ -251,7 +251,7 @@ module ActiveRecordWhereAssoc
     end
 
     def self.constraint_allowed_lim_off_from(reflection)
-      if ActiveRecordCompat.has_and_belongs_to_many?(reflection)
+      if has_and_belongs_to_many?(reflection)
         reflection.scope
       else
         # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
@@ -335,6 +335,11 @@ module ActiveRecordWhereAssoc
         constraints = constraints.and(table[reflection.type].eq(foreign_klass.name))
       end
       constraints
+    end
+
+    def self.has_and_belongs_to_many?(reflection)
+      parent = ActiveRecordCompat.parent_reflection(reflection)
+      parent && parent.macro == :has_and_belongs_to_many
     end
   end
 end

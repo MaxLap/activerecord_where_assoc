@@ -39,11 +39,6 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    def self.has_and_belongs_to_many?(reflection)
-      parent = parent_reflection(reflection)
-      parent && parent.macro == :has_and_belongs_to_many
-    end
-
     if ActiveRecord.gem_version >= Gem::Version.new("5.0")
       def self.parent_reflection(reflection)
         reflection.parent_reflection
