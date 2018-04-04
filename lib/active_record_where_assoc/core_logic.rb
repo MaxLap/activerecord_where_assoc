@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "active_record_compat"
 require_relative "exceptions"
 
@@ -191,6 +193,7 @@ module ActiveRecordWhereAssoc
         raise ActiveRecord::AssociationNotFoundError.new(relation_klass.new, association_name)
       end
       if reflection.macro == :belongs_to && reflection.options[:polymorphic]
+        # TODO: We might want an option to indicate that using pluck is ok?
         raise NotImplementedError, "Can't deal with polymorphic belongs_to"
       end
 
@@ -337,7 +340,7 @@ module ActiveRecordWhereAssoc
       constraints
     end
 
-    def self.has_and_belongs_to_many?(reflection)
+    def self.has_and_belongs_to_many?(reflection) # rubocop:disable Naming/PredicateName
       parent = ActiveRecordCompat.parent_reflection(reflection)
       parent && parent.macro == :has_and_belongs_to_many
     end
