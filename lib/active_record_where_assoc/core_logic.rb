@@ -258,7 +258,8 @@ module ActiveRecordWhereAssoc
         reflection.scope
       else
         # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
-        # whole has_* :through. For now, we only do th direct associations from one model to another.
+        # whole has_* :through. For now, we only do the direct associations from one model to another
+        # that the :through uses and we ignore the limit from the scope of has_* :through.
         #
         # For :through associations, #actual_source_reflection returns final non-through
         # reflection that is reached by following the :source.
