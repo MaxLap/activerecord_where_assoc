@@ -30,7 +30,7 @@ describe "wa" do
     assert_wa(1, association)
   rescue Minitest::Assertion
     # Adding more of the backtrace to the message to make it easier to know where things failed.
-    raise $ERROR_INFO, "#{$ERROR_INFO}\n#{Minitest.filter_backtrace($ERROR_INFO.backtrace).join("\n")}", $ERROR_INFO.backtrace
+    raise $!, "#{$!}\n#{Minitest.filter_backtrace($!.backtrace).join("\n")}", $!.backtrace
   end
 
   it "always returns no result for belongs_to if no possible ones exists" do
