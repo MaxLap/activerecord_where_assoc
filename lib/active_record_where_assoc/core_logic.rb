@@ -165,7 +165,7 @@ module ActiveRecordWhereAssoc
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
         skip_next = true if has_and_belongs_to_many?(reflection)
 
-        current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i], relation_klass)
+        current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i])
 
         current_scope = process_association_step_limits(current_scope, reflection, relation_klass)
 
@@ -200,37 +200,35 @@ module ActiveRecordWhereAssoc
       reflection
     end
 
-    def self.initial_scope_from_reflection(reflection_chain, constraints, relation_klass)
+    def self.initial_scope_from_reflection(reflection_chain, constraints)
       reflection = reflection_chain.first
-      next_reflection = reflection_chain[1]
-
       current_scope = reflection.klass.default_scoped
 
       if has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
-        # This is the first of those secret has_many.
+        # This is the first of those two secret has_many through.
         #
         # In order to handle limit, offset, order correctly on has_and_belongs_to_man,
-        # we must do both this reflection ad the next one at the same time.
+        # we must do both this reflection and the next one at the same time.
         # Think of it this way, if you have limit 3:
-        #   Apply at 1st step: You check that any of 2nd step for the first 3 of 1st step match
-        #   Apply at 2nd step: You check that any of the first 3 of second step match for any 1st step
+        #   Apply only on 1st step: You check that any of 2nd step for the first 3 of 1st step match
+        #   Apply only on 2nd step: You check that any of the first 3 of second step match for any 1st step
         #   Apply over both (as we do): You check that only the first 3 of doing both step match,
 
         # To create the join, simply using next_reflection.klass.default_scoped.joins(reflection.name)
         # would be great, except we cannot add a given_scope afterward because we are on the wrong "base class",
         # and we can't do #merge because of the LEW crap.
         # So we must do the joins ourself!
-        sub_join_contraints = join_constraints(reflection, next_reflection, relation_klass)
+        sub_join_contraints = join_constraints(reflection)
+        next_reflection = reflection_chain[1]
+
         current_scope = current_scope.joins(<<-SQL)
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
         SQL
 
-        next_next_reflection = reflection_chain[2]
-
-        join_constaints = join_constraints(next_reflection, next_next_reflection, relation_klass)
+        join_constaints = join_constraints(next_reflection)
       else
-        join_constaints = join_constraints(reflection, next_reflection, relation_klass)
+        join_constaints = join_constraints(reflection)
       end
 
       constraint_allowed_lim_off = constraint_allowed_lim_off_from(reflection)
@@ -322,13 +320,14 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    def self.join_constraints(reflection, next_reflection, final_klass)
+    def self.join_constraints(reflection)
       join_keys = ActiveRecordCompat.join_keys(reflection)
+
       key = join_keys.key
       foreign_key = join_keys.foreign_key
 
       table = reflection.klass.arel_table
-      foreign_klass = next_reflection ? next_reflection.klass : final_klass
+      foreign_klass = reflection.send(:actual_source_reflection).active_record
       foreign_table = foreign_klass.arel_table
 
       # Using default_scope / unscoped / any scope comes with the STI constrain built-in for free!
