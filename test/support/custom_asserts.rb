@@ -18,7 +18,8 @@ module Minitest::Assertions
     # and the #define_method added an extra block which wasn't filtered.
     class_eval <<-RUBY, __FILE__, __LINE__ + 1
       def #{shortcut}(*args, &block)
-        #{shortcut}_from(S0, *args, &block)
+        from = respond_to?(:s0_from) ? s0_from : S0
+        #{shortcut}_from(from, *args, &block)
       end
     RUBY
   end
