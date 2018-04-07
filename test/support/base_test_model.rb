@@ -123,16 +123,21 @@ class BaseTestModel < ActiveRecord::Base
 
     target_model = reflection.klass
 
-    condition_value = target_model.test_condition_value_for(:default_scope) unless options[:skip_default]
+    if options[:skip_attributes]
+      attributes = {}
+    else
+      condition_value = target_model.test_condition_value_for(:default_scope) unless options[:skip_default]
 
-    if source_associations.present?
-      condition_value ||= 1
-      condition_value *= TestHelpers.condition_value_result_for(*source_associations)
+      if source_associations.present?
+        condition_value ||= 1
+        condition_value *= TestHelpers.condition_value_result_for(*source_associations)
+      end
+
+      attributes = { target_model.test_condition_column => condition_value,
+                     target_model.adhoc_column_name => options[:adhoc_value],
+      }
     end
 
-    attributes = { target_model.test_condition_column => condition_value,
-                   target_model.adhoc_column_name => options[:adhoc_value],
-    }
     case association_macro
     when /mp?l?/, "z"
       record = send(association_name).create!(attributes)
