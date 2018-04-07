@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+full_path = ARGV.first
+abort "You need to pass a file_path" unless full_path
+path_only = full_path.sub(/:\d+$/, "")
+abort "File #{path_only} doesn't exist" unless File.exist?(path_only)
+
+# ruby -I test test/unit/my_model_test.rb -n test_invalid_with_bad_attributes
+args = ["ruby", "-I", "test", path_only]
+if ARGV[1]
+  args << "-n"
+  args << "/#{ARGV[1]}/"
+end
+system(*args)
+# system({"TEST" => path_only}, "rake", "test")
+
+# /home/max/semi/gems/activerecord_where_assoc/test/tests/scoping/wa_with_no_possible_records_to_return_test.rb:24
