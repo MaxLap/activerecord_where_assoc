@@ -137,4 +137,14 @@ ActiveRecord::Schema.define do
   end
 
   create_join_table "lew_s0s", "lew_s1s", table_name: "lew_s0s_lew_s1s"
+
+  create_table :recursive_s do |t|
+    t.integer :recursive_s_column
+
+    t.integer :belongs_id
+    t.integer :belongs_type
+
+    t.integer :has_id
+    t.integer :has_type
+  end
 end
