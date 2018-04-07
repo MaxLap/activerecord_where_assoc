@@ -337,7 +337,7 @@ module ActiveRecordWhereAssoc
 
       if reflection.type
         # Handing of the polymorphic has_many/has_one's type column
-        constraints = constraints.and(table[reflection.type].eq(foreign_klass.name))
+        constraints = constraints.and(table[reflection.type].eq(foreign_klass.base_class.name))
       end
       constraints
     end

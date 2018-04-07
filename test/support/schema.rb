@@ -112,11 +112,13 @@ ActiveRecord::Schema.define do
 
   create_table "sti_s0s" do |t|
     t.integer :sti_s1_id
+    t.string :sti_s1_type
     t.string :type
   end
 
   create_table "sti_s1s" do |t|
     t.integer :sti_s0_id
+    t.string :sti_s0_type
     t.string :type
   end
 

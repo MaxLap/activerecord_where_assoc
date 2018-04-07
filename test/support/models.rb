@@ -154,6 +154,17 @@ class STIS0 < BaseTestModel
                                   join_table: "sti_s0s_sti_s1s",
                                   foreign_key: "sti_s0_id",
                                   association_foreign_key: "sti_s1_id"
+
+  has_many :mp1, class_name: "STIS1", as: "sti_s0"
+  has_one :op1, class_name: "STIS1", as: "sti_s0"
+end
+
+class STIS0Sub < STIS0
+  has_many :mp1_from_sub, class_name: "STIS1", as: "sti_s0"
+  has_one :op1_from_sub, class_name: "STIS1", as: "sti_s0"
+end
+
+class STIS0SubSub < STIS0Sub
 end
 
 class STIS1 < BaseTestModel

@@ -86,4 +86,71 @@ describe "wa" do
 
     assert_wa_from(STIS0, 0, :z1sub)
   end
+
+  it "polymorphic has_many works when defined and used from a root STI class" do
+    s0
+    assert_wa_from(STIS0, 0, :mp1)
+    s0.mp1.create!
+    s0.mp1.create!
+    assert_wa_from(STIS0, 2, :mp1)
+  end
+  it "polymorphic has_many works when defined on root STI class and used from a subclass" do
+    s0 = STIS0Sub.create!
+    assert_wa_from(STIS0, 0, :mp1)
+    assert_wa_from(STIS0Sub, 0, :mp1)
+    s0.mp1.create
+    s0.mp1.create
+    assert_wa_from(STIS0, 2, :mp1)
+    assert_wa_from(STIS0Sub, 2, :mp1)
+  end
+  it "polymorphic has_many works when defined and used on the same STI subclass" do
+    s0 = STIS0Sub.create!
+    assert_wa_from(STIS0Sub, 0, :mp1_from_sub)
+    s0.mp1_from_sub.create
+    s0.mp1_from_sub.create
+    assert_wa_from(STIS0Sub, 2, :mp1_from_sub)
+  end
+  it "polymorphic has_many works when defined on an STI subclass and used from a deeper subclass" do
+    s0 = STIS0SubSub.create!
+    assert_wa_from(STIS0SubSub, 0, :mp1_from_sub)
+    s0.mp1_from_sub.create
+    s0.mp1_from_sub.create
+    assert_wa_from(STIS0SubSub, 2, :mp1_from_sub)
+  end
+
+
+  it "polymorphic has_one works when defined and used from a root STI class" do
+    skip if Test::SelectedDBHelper == Test::MySQL
+    s0
+    assert_wa_from(STIS0, 0, :op1)
+    s0.create_has_one!(:op1)
+    s0.create_has_one!(:op1)
+    assert_wa_from(STIS0, 1, :op1)
+  end
+  it "polymorphic has_one works when defined on root STI class and used from a subclass" do
+    skip if Test::SelectedDBHelper == Test::MySQL
+    s0 = STIS0Sub.create!
+    assert_wa_from(STIS0, 0, :op1)
+    assert_wa_from(STIS0Sub, 0, :op1)
+    s0.create_has_one!(:op1)
+    s0.create_has_one!(:op1)
+    assert_wa_from(STIS0, 1, :op1)
+    assert_wa_from(STIS0Sub, 1, :op1)
+  end
+  it "polymorphic has_one works when defined and used on the same STI subclass" do
+    skip if Test::SelectedDBHelper == Test::MySQL
+    s0 = STIS0Sub.create!
+    assert_wa_from(STIS0Sub, 0, :op1_from_sub)
+    s0.create_has_one!(:op1)
+    s0.create_has_one!(:op1)
+    assert_wa_from(STIS0Sub, 1, :op1_from_sub)
+  end
+  it "polymorphic has_one works when defined on an STI subclass and used from a deeper subclass" do
+    skip if Test::SelectedDBHelper == Test::MySQL
+    s0 = STIS0SubSub.create!
+    assert_wa_from(STIS0SubSub, 0, :op1_from_sub)
+    s0.create_has_one!(:op1)
+    s0.create_has_one!(:op1)
+    assert_wa_from(STIS0SubSub, 1, :op1_from_sub)
+  end
 end
