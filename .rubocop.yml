@@ -134,6 +134,10 @@ Style/PercentLiteralDelimiters:
 Style/RedundantSelf:
   Enabled: false
 
+# For a gem, i don't think it's our job to require 'English'
+Style/SpecialGlobalVars:
+  Enabled: false
+
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
