@@ -44,12 +44,4 @@ describe "wa" do
       S0.where_assoc_count(1, :<, :bp1)
     end
   end
-
-  it "_exists raises MySQLIsTerribleError for has_one with MySQL" do
-    skip if Test::SelectedDBHelper != Test::MySQL
-
-    assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
-      S0.where_assoc_exists(:o1)
-    end
-  end
 end
