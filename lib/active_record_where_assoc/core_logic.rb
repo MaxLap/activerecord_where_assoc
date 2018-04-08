@@ -6,7 +6,7 @@ require_relative "exceptions"
 module ActiveRecordWhereAssoc
   module CoreLogic
     # Arel table used for aliasing when handling recursive associations (such as parent/children)
-    ALIAS_TABLE = Arel::Table.new('_ar_where_assoc_alias_')
+    ALIAS_TABLE = Arel::Table.new("_ar_where_assoc_alias_")
 
     # Block used when nesting associations for a where_assoc_[not_]exists
     # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
@@ -347,17 +347,11 @@ module ActiveRecordWhereAssoc
       foreign_table = foreign_klass.arel_table
 
       habtm_other_reflection = options[:habtm_other_reflection]
-      if habtm_other_reflection
-        habtm_other_table = habtm_other_reflection.klass.arel_table
-        if habtm_other_table.name == foreign_table.name
-          wrapper_scope = build_wrapper_scope_for_recursive_association(habtm_other_reflection)
-          foreign_table = ALIAS_TABLE
-        end
-      else
-        if table.name == foreign_table.name
-          wrapper_scope = build_wrapper_scope_for_recursive_association(reflection)
-          foreign_table = ALIAS_TABLE
-        end
+      habtm_other_table = habtm_other_reflection.klass.arel_table if habtm_other_reflection
+
+      if (habtm_other_table || table).name == foreign_table.name
+        wrapper_scope = build_wrapper_scope_for_recursive_association(habtm_other_reflection || reflection)
+        foreign_table = ALIAS_TABLE
       end
 
       constraints = table[key].eq(foreign_table[foreign_key])

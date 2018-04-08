@@ -10,26 +10,34 @@ describe "wa has_one" do
 
   it "matches with Arel condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
-    assert_wa(1, :o1, S1.arel_table[S1.adhoc_column_name].eq(1))
-    assert_wa(0, :o1, S1.arel_table[S1.adhoc_column_name].eq(2))
+    without_manual_wa_test do # Manual test only works with Hash
+      assert_wa(1, :o1, S1.arel_table[S1.adhoc_column_name].eq(1))
+      assert_wa(0, :o1, S1.arel_table[S1.adhoc_column_name].eq(2))
+    end
   end
 
   it "matches with Array-String condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
-    assert_wa(1, :o1, ["#{S1.adhoc_column_name} = ?", 1])
-    assert_wa(0, :o1, ["#{S1.adhoc_column_name} = ?", 2])
+    without_manual_wa_test do # Manual test only works with Hash
+      assert_wa(1, :o1, ["#{S1.adhoc_column_name} = ?", 1])
+      assert_wa(0, :o1, ["#{S1.adhoc_column_name} = ?", 2])
+    end
   end
 
   it "matches with a block condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
-    assert_wa(1, :o1) { |s| s.where(S1.adhoc_column_name => 1) }
-    assert_wa(0, :o1) { |s| s.where(S1.adhoc_column_name => 2) }
+    without_manual_wa_test do # Manual test doesn't handle blocks
+      assert_wa(1, :o1) { |s| s.where(S1.adhoc_column_name => 1) }
+      assert_wa(0, :o1) { |s| s.where(S1.adhoc_column_name => 2) }
+    end
   end
 
   it "matches with a no arg block condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
-    assert_wa(1, :o1) { where(S1.adhoc_column_name => 1) }
-    assert_wa(0, :o1) { where(S1.adhoc_column_name => 2) }
+    without_manual_wa_test do # Manual test doesn't handle blocks
+      assert_wa(1, :o1) { where(S1.adhoc_column_name => 1) }
+      assert_wa(0, :o1) { where(S1.adhoc_column_name => 2) }
+    end
   end
 
   it "matches with Hash condition" do
@@ -40,7 +48,9 @@ describe "wa has_one" do
 
   it "matches with String condition" do
     s0.create_assoc!(:o1, :S0_o1, adhoc_value: 1)
-    assert_wa(1, :o1, "#{S1.adhoc_column_name} = 1")
-    assert_wa(0, :o1, "#{S1.adhoc_column_name} = 2")
+    without_manual_wa_test do # Manual test only works with Hash
+      assert_wa(1, :o1, "#{S1.adhoc_column_name} = 1")
+      assert_wa(0, :o1, "#{S1.adhoc_column_name} = 2")
+    end
   end
 end

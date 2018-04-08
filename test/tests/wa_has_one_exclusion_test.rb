@@ -49,7 +49,9 @@ describe "wa has_one" do
     assert_wa(1, :o2o1)
 
     s0.create_assoc!(:o1, :S0_o1) # Shadows the intermediary association that would match
-    assert_wa(0, :o2o1)
+    without_manual_wa_test do # ActiveRecord checks every possible match of o1 instead of only the last one...
+      assert_wa(0, :o2o1)
+    end
   end
 
   it "only check against the last intermediary record when using an array for the association" do

@@ -238,9 +238,9 @@ class RecursiveS < BaseTestModel
   has_many :m1, class_name: "RecursiveS", foreign_key: "has_id"
   has_one :o1, class_name: "RecursiveS", foreign_key: "has_id"
   has_and_belongs_to_many :z1, class_name: "RecursiveS",
-                          join_table: "s0s_s1s",
-                          foreign_key: "s0_id",
-                          association_foreign_key: "s1_id"
+                               join_table: "s0s_s1s",
+                               foreign_key: "s0_id",
+                               association_foreign_key: "s1_id"
 
   has_many :mp1, class_name: "RecursiveS", as: "has"
   has_one :op1, class_name: "RecursiveS", as: "has"

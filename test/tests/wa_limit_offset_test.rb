@@ -13,15 +13,17 @@ describe "wa" do
     assert_wa_from(LimOffOrdS0, 0, :b1)
     assert_wa_from(LimOffOrdS0, 0, :bl1)
 
-    s0.create_b1!
-    s0.save!
-    assert_wa_from(LimOffOrdS0, 1, :b1)
-    assert_wa_from(LimOffOrdS0, 1, :bl1)
+    without_manual_wa_test do # ActiveRecord doesn't ignore offset for belongs_to...
+      s0.create_b1!
+      s0.save!
+      assert_wa_from(LimOffOrdS0, 1, :b1)
+      assert_wa_from(LimOffOrdS0, 1, :bl1)
 
-    s0.create_b1!
-    s0.save!
-    assert_wa_from(LimOffOrdS0, 1, :b1)
-    assert_wa_from(LimOffOrdS0, 1, :bl1)
+      s0.create_b1!
+      s0.save!
+      assert_wa_from(LimOffOrdS0, 1, :b1)
+      assert_wa_from(LimOffOrdS0, 1, :bl1)
+    end
   end
 
   it "Count with has_many follows limits and offsets" do
@@ -124,7 +126,9 @@ describe "wa" do
     s1.m2.create!
     s1.m2.create!
 
-    assert_wa_from(LimThroughS0, 3, :limited_m2m1)
+    without_manual_wa_test do # Different handling of limit on :through associations
+      assert_wa_from(LimThroughS0, 3, :limited_m2m1)
+    end
   end
 
 
@@ -148,7 +152,8 @@ describe "wa" do
     s0 = OffThroughS0.create!
     s1 = s0.m1.create!
     s1.m2.create!
-
-    assert_wa_from(OffThroughS0, 1, :offset_m2m1)
+    without_manual_wa_test do # Different handling of offset on :through associations
+      assert_wa_from(OffThroughS0, 1, :offset_m2m1)
+    end
   end
 end
