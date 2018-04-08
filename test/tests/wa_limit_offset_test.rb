@@ -53,6 +53,24 @@ describe "wa" do
     assert_wa_from(LimOffOrdS0, 2, :ml1)
   end
 
+  it "Count with has_many and options[:ignore_limit] ignores offsets and limits" do
+    with_wa_default_options(ignore_limit: true) do
+      without_manual_wa_test do
+        s0
+        assert_wa_from(LimOffOrdS0, 0, :m1)
+        assert_wa_from(LimOffOrdS0, 0, :ml1)
+
+        s0.m1.create!
+        assert_wa_from(LimOffOrdS0, 1, :m1)
+        assert_wa_from(LimOffOrdS0, 1, :ml1)
+
+        s0.m1.create!
+        assert_wa_from(LimOffOrdS0, 2, :m1)
+        assert_wa_from(LimOffOrdS0, 2, :ml1)
+      end
+    end
+  end
+
   it "Count with has_one follows offsets and limit is set to 1" do
     skip if Test::SelectedDBHelper == Test::MySQL
     s0
@@ -74,6 +92,24 @@ describe "wa" do
     s0.create_has_one!(:o1)
     assert_wa_from(LimOffOrdS0, 1, :o1)
     assert_wa_from(LimOffOrdS0, 1, :ol1)
+  end
+
+  it "Count with has_one and options[:ignore_limit] ignores offsets and limits and acts like has_many" do
+    with_wa_default_options(ignore_limit: true) do
+      without_manual_wa_test do
+        s0
+        assert_wa_from(LimOffOrdS0, 0, :o1)
+        assert_wa_from(LimOffOrdS0, 0, :ol1)
+
+        s0.create_has_one!(:o1)
+        assert_wa_from(LimOffOrdS0, 1, :o1)
+        assert_wa_from(LimOffOrdS0, 1, :ol1)
+
+        s0.create_has_one!(:o1)
+        assert_wa_from(LimOffOrdS0, 2, :o1)
+        assert_wa_from(LimOffOrdS0, 2, :ol1)
+      end
+    end
   end
 
   it "Count with has_and_belongs_to_many follows limits and offsets" do
@@ -101,6 +137,24 @@ describe "wa" do
     s0.z1.create!
     assert_wa_from(LimOffOrdS0, 3, :z1)
     assert_wa_from(LimOffOrdS0, 2, :zl1)
+  end
+
+  it "Count with has_and_belongs_to_many and options[:ignore_limit] ignores offsets and limits" do
+    with_wa_default_options(ignore_limit: true) do
+      without_manual_wa_test do
+        s0
+        assert_wa_from(LimOffOrdS0, 0, :z1)
+        assert_wa_from(LimOffOrdS0, 0, :zl1)
+
+        s0.z1.create!
+        assert_wa_from(LimOffOrdS0, 1, :z1)
+        assert_wa_from(LimOffOrdS0, 1, :zl1)
+
+        s0.z1.create!
+        assert_wa_from(LimOffOrdS0, 2, :z1)
+        assert_wa_from(LimOffOrdS0, 2, :zl1)
+      end
+    end
   end
 
   # Classes for the following tests only

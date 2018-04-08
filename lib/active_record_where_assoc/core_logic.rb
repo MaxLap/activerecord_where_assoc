@@ -26,6 +26,14 @@ module ActiveRecordWhereAssoc
       wrapping_scope.unscope(:select).select(sql)
     end
 
+    # List of available options, used for validation purposes.
+    VALID_OPTIONS_KEYS = ActiveRecordWhereAssoc.default_options.keys.freeze
+
+    # Gets the value from the options or fallback to default
+    def self.option_value(options, key)
+      options.fetch(key) { ActiveRecordWhereAssoc.default_options[key] }
+    end
+
     # Returns a new relation, which is the result of filtering the current relation
     # based on if a record for the specified association of the model exists. Conditions
     # the associated model must match can also be specified.
@@ -84,8 +92,8 @@ module ActiveRecordWhereAssoc
     #    Post.where_assoc_exists(:comments, ["spam_flag = ?", true])
     #
     # If the second argument is blank-ish, it is ignored (as #where does).
-    def self.where_assoc_exists(base_relation, association_name, given_scope = nil, &block)
-      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, block, NestWithExistsBlock)
+    def self.where_assoc_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
+      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation)
     end
 
@@ -94,8 +102,8 @@ module ActiveRecordWhereAssoc
     #
     # See #where_assoc_exists for usage details. The only difference is that a record
     # is matched if no matching association record is found.
-    def self.where_assoc_not_exists(base_relation, association_name, given_scope = nil, &block)
-      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, block, NestWithExistsBlock)
+    def self.where_assoc_not_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
+      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation, "NOT ")
     end
 
@@ -105,14 +113,14 @@ module ActiveRecordWhereAssoc
     #
     # #where_assoc_count is a generalization of #where_assoc_exists, allowing you to
     # for example, filter for comments that have at least 2 matching posts
-    def self.where_assoc_count(base_relation, left_operand, operator, association_name, given_scope = nil, &block)
+    def self.where_assoc_count(base_relation, left_operand, operator, association_name, given_scope = nil, options = {}, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, deepest_scope_mod, NestWithSumBlock)
+      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
       operator = case operator.to_s
                  when "=="
                    "="
@@ -127,23 +135,25 @@ module ActiveRecordWhereAssoc
 
     # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
     # association_names_path: can be an array of association names or a single one
-    def self.relation_on_association(base_relation, association_names_path, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
+    def self.relation_on_association(base_relation, association_names_path, given_scope = nil, options = {},
+                                     last_assoc_block = nil, nest_assocs_block = nil)
       association_names_path = Array.wrap(association_names_path)
 
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
-          scope, nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, last_assoc_block, nest_assocs_block)
+          scope, nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, options, last_assoc_block, nest_assocs_block)
           nest_assocs_block.call(scope, nested_scope)
         end
 
-        relation_on_one_association(base_relation, association_names_path.first, nil, recursive_scope_block, nest_assocs_block)
+        relation_on_one_association(base_relation, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
       else
-        relation_on_one_association(base_relation, association_names_path.first, given_scope, last_assoc_block, nest_assocs_block)
+        relation_on_one_association(base_relation, association_names_path.first, given_scope, options, last_assoc_block, nest_assocs_block)
       end
     end
 
     # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
-    def self.relation_on_one_association(base_relation, association_name, given_scope = nil, last_assoc_block = nil, nest_assocs_block = nil)
+    def self.relation_on_one_association(base_relation, association_name, given_scope = nil, options = {},
+                                         last_assoc_block = nil, nest_assocs_block = nil)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
 
@@ -170,7 +180,7 @@ module ActiveRecordWhereAssoc
 
         wrapper_scope, current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i])
 
-        current_scope = process_association_step_limits(current_scope, reflection, relation_klass)
+        current_scope = process_association_step_limits(current_scope, reflection, relation_klass, options)
 
         if i.zero?
           current_scope = current_scope.where(given_scope) if given_scope
@@ -272,17 +282,23 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    def self.process_association_step_limits(current_scope, reflection, relation_klass)
+    def self.process_association_step_limits(current_scope, reflection, relation_klass, options)
       return current_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
 
       current_scope = current_scope.limit(1) if reflection.macro == :has_one
+
+      current_scope = current_scope.unscope(:limit, :offset) if option_value(options, :ignore_limit)
 
       # Order is useless without either limit or offset
       current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
 
       return current_scope unless current_scope.limit_value || current_scope.offset_value
       if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
-        raise MySQLIsTerribleError, "Associations/default_scopes with a limit are not supported for MySQL"
+        msg = String.new
+        msg << "Associations and default_scopes with a limit or offset are not supported for MySQL (this includes has_many). "
+        msg << "Use ignore_limit: true to ignore both limit and offset, and treat has_one like has_many. "
+        msg << "See https://github.com/MaxLap/activerecord_where_assoc/tree/ignore_limits#mysql-is-terrible for details."
+        raise MySQLIsTerribleError, msg
       end
 
       # We only check the records that would be returned by the associations if called on the model. If:
@@ -303,7 +319,7 @@ module ActiveRecordWhereAssoc
         # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
         # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
 
-        reflection.klass.unscoped.where(id: current_scope)
+        reflection.klass.unscoped.where(reflection.klass.primary_key.to_sym => current_scope)
       else
         # This works as long as the table_name doesn't have a schema/database, since we need to use an alias
         # with the table name to make scopes and everything else work as expected.

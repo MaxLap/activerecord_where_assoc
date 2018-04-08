@@ -63,8 +63,8 @@ module ActiveRecordWhereAssoc
     #    Post.where_assoc_exists(:comments, ["spam_flag = ?", true])
     #
     # If the second argument is blank-ish, it is ignored (as #where does).
-    def where_assoc_exists(association_name, given_scope = nil, &block)
-      ActiveRecordWhereAssoc::CoreLogic.where_assoc_exists(self, association_name, given_scope, &block)
+    def where_assoc_exists(association_name, given_scope = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.where_assoc_exists(self, association_name, given_scope, options, &block)
     end
 
     # Returns a new relation, which is the result of filtering the current relation
@@ -72,8 +72,8 @@ module ActiveRecordWhereAssoc
     #
     # See #where_assoc_exists for usage details. The only difference is that a record
     # is matched if no matching association record is found.
-    def where_assoc_not_exists(association_name, given_scope = nil, &block)
-      ActiveRecordWhereAssoc::CoreLogic.where_assoc_not_exists(self, association_name, given_scope, &block)
+    def where_assoc_not_exists(association_name, given_scope = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.where_assoc_not_exists(self, association_name, given_scope, options, &block)
     end
 
     # Returns a new relation, which is the result of filtering the current relation
@@ -82,8 +82,8 @@ module ActiveRecordWhereAssoc
     #
     # #where_assoc_count is a generalization of #where_assoc_exists, allowing you to
     # for example, filter for comments that have at least 2 matching posts
-    def where_assoc_count(left_operand, operator, association_name, given_scope = nil, &block)
-      ActiveRecordWhereAssoc::CoreLogic.where_assoc_count(self, left_operand, operator, association_name, given_scope, &block)
+    def where_assoc_count(left_operand, operator, association_name, given_scope = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.where_assoc_count(self, left_operand, operator, association_name, given_scope, options, &block)
     end
   end
 end

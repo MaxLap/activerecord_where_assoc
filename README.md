@@ -187,6 +187,21 @@ All the methods always chain nested associations using an EXISTS when they have 
 On MySQL databases, it is not possible to use has_one associations and associations with a scope that apply either a limit or an offset.
 I do not know of a way to do a SQL query that can deal with all the specifics of has_one for MySQL. If you have one, then you may suggest it in an issue/pull request.
 
+In order to work around this, you must use the `ignore_limit: true` option. It makes `where_assoc_*` methods ignore both limit and offset from associations and default_scope, and it makes them treat has_one just like has_many. This behavior is less correct, but better than being unable to use the gem. The option can be set in 2 ways:
+
+* On a per-call basis:
+```ruby
+# Options are passed after the conditions argument
+Posts.where_assoc_exists(:last_status, nil, ignore_limit: true)
+Posts.where_assoc_count(1, :<, :last_status, nil, ignore_limit: true)
+```
+
+* As default for everywhere
+```ruby
+# Somewhere in your setup code, such as an initializer in Rails
+ActiveRecordWhereAssoc.default_options[:ignore_limit] = true
+```
+
 ### has_* :through vs limit/offset
 For `has_many` and `has_one` with the `:through` option, `#limit` and `#offset` are ignored. Note that `#limit` and `#offset` of the `:source` and of the `:through` side are applied correctly.
 

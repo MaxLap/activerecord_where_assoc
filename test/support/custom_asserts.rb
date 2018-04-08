@@ -5,6 +5,20 @@
 # testing the behavior of the not_exists variant at the same time.
 
 module Minitest::Assertions
+  # Just makes things more obvious in a test.
+  # Otherwise there is just code doing something and no assertions.
+  def assert_nothing_raised
+    yield
+  end
+
+  def with_wa_default_options(options, &block)
+    prev_values = ActiveRecordWhereAssoc.default_options.slice(*options.keys)
+    ActiveRecordWhereAssoc.default_options.merge!(options)
+    yield
+  ensure
+    ActiveRecordWhereAssoc.default_options.merge!(prev_values)
+  end
+
   [:assert_exists_with_matching,
    :assert_exists_without_matching,
    :assert_wa_count,

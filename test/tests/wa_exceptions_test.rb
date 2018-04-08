@@ -25,11 +25,34 @@ describe "wa" do
     end
   end
 
+  it "_exists doesn't raise MySQLIsTerribleError for has_one with MySQL if option[:ignore_limit]" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+    assert_nothing_raised do
+      S0.where_assoc_exists(:o1, nil, ignore_limit: true)
+
+      with_wa_default_options(ignore_limit: true) do
+        S0.where_assoc_exists(:o1)
+      end
+    end
+  end
+
   it "_count raises MySQLIsTerribleError for has_one with MySQL" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
       S0.where_assoc_count(1, :<, :o1)
+    end
+  end
+
+  it "_count doesn't raise MySQLIsTerribleError for has_one with MySQL if option[:ignore_limit]" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_nothing_raised do
+      S0.where_assoc_count(1, :<, :o1, nil, ignore_limit: true)
+
+      with_wa_default_options(ignore_limit: true) do
+        S0.where_assoc_count(1, :<, :o1)
+      end
     end
   end
 
@@ -41,11 +64,35 @@ describe "wa" do
     end
   end
 
+  it "_exists doesn't raise MySQLIsTerribleError for has_many with limit with MySQL  if option[:ignore_limit]" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_nothing_raised do
+      LimOffOrdS0.where_assoc_exists(:ml1, nil, ignore_limit: true)
+
+      with_wa_default_options(ignore_limit: true) do
+        LimOffOrdS0.where_assoc_exists(:ml1)
+      end
+    end
+  end
+
   it "_count raises MySQLIsTerribleError for has_many with limit with MySQL" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
       LimOffOrdS0.where_assoc_count(1, :<, :ml1)
+    end
+  end
+
+  it "_count doesn't raise MySQLIsTerribleError for has_many with limit with MySQL  if option[:ignore_limit]" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_nothing_raised do
+      LimOffOrdS0.where_assoc_count(1, :<, :ml1, nil, ignore_limit: true)
+
+      with_wa_default_options(ignore_limit: true) do
+        LimOffOrdS0.where_assoc_count(1, :<, :ml1)
+      end
     end
   end
 

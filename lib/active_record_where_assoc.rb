@@ -3,6 +3,15 @@
 require "active_record_where_assoc/version"
 require "active_record"
 
+module ActiveRecordWhereAssoc
+  # Default options for the gem. Meant to be modified in place by external code
+  def self.default_options
+    @default_options ||= {
+        ignore_limit: false,
+    }
+  end
+end
+
 require "active_record_where_assoc/core_logic"
 require "active_record_where_assoc/query_methods"
 require "active_record_where_assoc/querying"
