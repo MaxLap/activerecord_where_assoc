@@ -38,6 +38,12 @@ Layout/MultilineArrayBraceLayout:
 Layout/MultilineHashBraceLayout:
   EnforcedStyle: new_line
 
+Lint/EmptyWhen:
+  Enabled: false
+
+Lint/MissingCopEnableDirective:
+  Enabled: false
+
 # Annoying when used with some api that have blocks with sometimes useful parameters
 Lint/UnusedBlockArgument:
   Enabled: false
@@ -78,6 +84,12 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Naming/FileName:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
 Performance/RedundantBlockCall:
   Enabled: false
 
@@ -101,9 +113,6 @@ Style/EmptyElse:
   EnforcedStyle: empty
 
 Style/EmptyMethod:
-  Enabled: false
-
-Style/FileName:
   Enabled: false
 
 Style/FormatStringToken:
@@ -151,11 +160,11 @@ Style/SymbolArray:
 Style/TrailingCommaInArguments:
   Enabled: false
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: consistent_comma
 
-Style/VariableNumber:
-  Enabled: false
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
 
 Style/WordArray:
   Enabled: false

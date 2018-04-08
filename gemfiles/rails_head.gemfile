@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
+# rubocop:disable Bundler/DuplicatedGem
 source "https://rubygems.org"
 
 # In order to get the latest ref to rails, we use the github's API
 # We need to pass an access token when on Travis-CI because all requests to
 # github come from the same IP, going over the unauthenticated limits.
 
+require "json"
 require "net/http"
 require "uri"
-require "json"
 
 if ENV["GITHUB_ACCESS_TOKEN"]
   # Thnx to https://jhawthorn.github.io/curl-to-ruby/
@@ -20,11 +21,11 @@ if ENV["GITHUB_ACCESS_TOKEN"]
   response = Net::HTTP.get_response(uri)
   arel_commit_sha = JSON.parse(response.body)["commit"]["sha"]
 
-  gem "arel", git: "https://github.com/rails/arel.git", ref: arel_commit_sha
   gem "activerecord", git: "https://github.com/rails/rails.git", ref: rails_commit_sha
+  gem "arel", git: "https://github.com/rails/arel.git", ref: arel_commit_sha
 else
-  gem "arel", git: "https://github.com/rails/arel.git"
   gem "activerecord", git: "https://github.com/rails/rails.git"
+  gem "arel", git: "https://github.com/rails/arel.git"
 end
 
 gemspec path: "../"

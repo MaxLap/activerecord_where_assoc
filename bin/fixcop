@@ -40,7 +40,8 @@ COPS_TO_AUTO_CORRECT = [
 
                          # Hash & Array
                          "Layout/SpaceAfterComma",
-                         "Style/TrailingCommaInLiteral",
+                         "Style/TrailingCommaInArrayLiteral",
+                         "Style/TrailingCommaInHashLiteral",
 
                          # Block stuff
                          "Layout/SpaceBeforeBlockBraces",

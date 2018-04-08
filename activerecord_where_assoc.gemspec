@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-lib = File.expand_path("../lib", __FILE__)
+lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "active_record_where_assoc/version"
 
@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
 
   spec.add_development_dependency "coveralls"
-  spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "rubocop", "0.54.0"
   spec.add_development_dependency "simplecov"
 
   # Normally, testing with sqlite3 is good enough
