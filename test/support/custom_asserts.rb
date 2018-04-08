@@ -5,19 +5,6 @@
 # testing the behavior of the not_exists variant at the same time.
 
 module Minitest::Assertions
-  def with_manual_wa_test?
-    @with_manual_wa_test = true unless defined?(@with_manual_wa_test)
-    @with_manual_wa_test
-  end
-
-  def without_manual_wa_test(&block)
-    old = with_manual_wa_test?
-    @with_manual_wa_test = false
-    yield
-  ensure
-    @with_manual_wa_test = old
-  end
-
   [:assert_exists_with_matching,
    :assert_exists_without_matching,
    :assert_wa_count,
@@ -101,38 +88,42 @@ module Minitest::Assertions
     assert msgs.empty?, msgs.map { |s| "  #{s}" }.join("\n")
   end
 
+  # This is a helper to disable the "manual testing" done by some of the asserts in this file.
+  # See manual_testing_results_from for details on those manual tests
+  # The tests must be disabled when ActiveRecord has a different behavior than us.
+  # examples of when its needed: (limits / offset / has_one) with :through associations
+  def without_manual_wa_test(&block)
+    old = with_manual_wa_test?
+    @with_manual_wa_test = false
+    yield
+  ensure
+    @with_manual_wa_test = old
+  end
+
+  def with_manual_wa_test?
+    @with_manual_wa_test = true unless defined?(@with_manual_wa_test)
+    @with_manual_wa_test
+  end
+
+  # This does a "manual" test of the results, but using ActiveRecord and literally walking through the associations and
+  # counting the results, to make sure that the expected behavior is also what ActiveRecord does.
   def manual_testing_results_from(start_from, matching_nb, operator, association_name, conditions, &block)
     return unless with_manual_wa_test?
-
-    case conditions
-    when Hash
-      conditions = conditions.symbolize_keys if conditions.is_a?(Hash)
-    when nil
-      # nothing to do
-    else
-      raise "Unsupported conditions type for manual test: #{conditions.class.name}. Wrap the check with without_manual_wa_test{ ... }"
-    end
 
     record_sets = start_from.all.map { |record| [record] }
     association_name = [*association_name]
     association_name.each do |assoc|
-      record_sets = record_sets.map(&:flatten)
       record_sets = record_sets.map { |records| records.select(&:present?).map(&assoc) }
+      record_sets = record_sets.map(&:flatten).map(&:compact)
     end
 
     record_sets = record_sets.map do |records|
-      records.compact.map do |record|
-        raise "Manual test cannot handle blocks" if block_given?
-        next record unless conditions
-
-        if record.is_a?(ActiveRecord::Associations::CollectionProxy)
-          record.where(conditions)
-        elsif conditions.is_a?(Hash)
-          record if record.attributes.symbolize_keys.slice(*conditions.keys) == conditions
-        end
-      end
+      next records if records.blank?
+      scope = records.first.class.base_class.unscoped.where(id: records.map(&:id))
+      scope = scope.where(conditions)
+      scope = ActiveRecordWhereAssoc::CoreLogic.apply_proc_scope(scope, block) if block
+      scope.pluck(:id)
     end
-    record_sets = record_sets.map(&:flatten).map(&:compact)
 
     correct_result = record_sets.any? do |records|
       matching_nb.send(operator, records.size)
