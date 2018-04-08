@@ -33,6 +33,22 @@ describe "wa" do
     end
   end
 
+  it "_exists raises MySQLIsTerribleError for has_many with limit with MySQL" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
+      LimOffOrdS0.where_assoc_exists(:ml1)
+    end
+  end
+
+  it "_count raises MySQLIsTerribleError for has_many with limit with MySQL" do
+    skip if Test::SelectedDBHelper != Test::MySQL
+
+    assert_raises(ActiveRecordWhereAssoc::MySQLIsTerribleError) do
+      LimOffOrdS0.where_assoc_count(1, :<, :ml1)
+    end
+  end
+
   it "_exists raises NotImplementedError for polymorphic belongs_to" do
     assert_raises(NotImplementedError) do
       S0.where_assoc_exists(:bp1)
