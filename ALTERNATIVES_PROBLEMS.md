@@ -6,12 +6,13 @@ This is a list of some of those alternatives, explaining what issues they have o
 ## Too long; didn't read
 
 * Each alternative can work in some situations and can cause issues in others
-* The burden of choosing the correct alternative each time is on the developper
-* Using the alternatives in scopes hides from the developper which bad effect will happen
+* The burden of choosing the correct alternative each time is on the developer
+* Using the alternatives in scopes hides from the developer which bad effect will happen / when it can be used safely
 * More complex cases require manually writing a good chunk of SQL
 * It's easy to forget conditions from the association or default_scope when writing manual joins and manual sub-selects
-* If conditions from an association or default_scope are changed or added, you need to change every raw SQL for the association/model
-* Alternative gem is less powerful
+* When conditions from an association or default_scope are changed or added, you need to change every raw SQL for the association/model
+* It handles recursive associations correctly
+* The alternative gem is less powerful
 
 ## Common problems to most alternatives
 
@@ -26,15 +27,13 @@ And example to clarify:
 ```ruby
 class Person < ActiveRecord::Base
   has_many :addresses
-  has_one :current_address, -> {order("effective_date DESC")}, class_name: 'Address'
+  has_one :current_address, -> { order("effective_date DESC") }, class_name: 'Address'
 end
 
 # This correctly matches only those whose current_address is in Montreal
 Person.where_assoc_exists(:current_address, city: 'Montreal')
 
-# Every alternatives,
-#   other than a `where` with nested selects (which this gem does), 
-#   will actually do the following:
+# Every alternatives (except raw SQL):
 # Matches those that have had an address in Montreal, no matter when
 Person.where_assoc_exists(:addresses, city: 'Montreal')
 ```
@@ -60,6 +59,16 @@ class Comment < ActiveRecord::Base
   default_scope -> { where(deleted_at: nil) }
 end
 ```
+
+All of this is avoiced by where_assoc_* methods.
+
+### Unable to handle recursive associations
+
+When you have recursive associations such as parent/children, you must compare multiple rows of the same table. To do this, you have no choice but to write your own raw SQL to, at the very least, do a SQL join with an alias.
+
+This brings us back to the [raw SQL joins](#raw-sql-joins-or-sub-selects) problem.
+
+`where_assoc_*` methods handle this seemlessly.
 
 ## ActiveRecord only
 
@@ -101,6 +110,7 @@ Post.joins(:comments).where(comments: {is_spam: true})
 
 * Cannot be used with Rails 5's `or` unless both side do the same `joins`.
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
+* [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 
 ### Using `includes` (or `eager_load`) and `where`
 
@@ -119,6 +129,7 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
 * Cannot be used with Rails 5's `or` unless both side do the same `includes` or `eager_load`.
 
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
+* [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 
 * Simply cannot be used for complex cases.
 
@@ -177,7 +188,9 @@ Post.where_assoc_count(:comments, :>, 5)
 
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 
-* `where_exists` is short than `where_assoc_exists`, but it is also less obvious about what it does.  
+* [Can't handle recursive associations](#unable-to-handle-recursive-associations)
+
+* `where_exists` is shorter than `where_assoc_exists`, but it is also less obvious about what it does.  
   In any case, it is trivial to alias one name to the other one.
 
 * where_exists supports Rails 4.2 and up, while where_assoc supports Rails 4.1 and up.
