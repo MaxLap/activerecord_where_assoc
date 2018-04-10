@@ -112,6 +112,10 @@ Style/Documentation:
 Style/EmptyElse:
   EnforcedStyle: empty
 
+# Need String.new to have a non-freezed empty string supported down to 2.1
+Style/EmptyLiteral:
+  Enabled: false
+
 Style/EmptyMethod:
   Enabled: false
 
@@ -124,8 +128,7 @@ Style/FrozenStringLiteralComment:
 
 Style/InverseMethods:
   InverseMethods:
-    :present?: :blank?,
-    :include?: :exclude?
+    :present?: :blank?
   Exclude:
     - bin/*
     - gemfiles/*

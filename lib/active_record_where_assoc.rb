@@ -7,9 +7,9 @@ module ActiveRecordWhereAssoc
   # Default options for the gem. Meant to be modified in place by external code
   def self.default_options
     @default_options ||= {
-        ignore_limit: false,
-        never_alias_limit: false,
-    }
+                           ignore_limit: false,
+                           never_alias_limit: false,
+                         }
   end
 end
 
