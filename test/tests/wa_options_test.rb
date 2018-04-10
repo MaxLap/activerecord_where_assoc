@@ -17,4 +17,10 @@ describe "wa" do
       assert sql.include?("id")
     end
   end
+
+  it "raises an expection for invalid options" do
+    assert_raises(ArgumentError) do
+      S0.where_assoc_exists(:m1, nil, here_comes_a_bad_option: true).exists?
+    end
+  end
 end

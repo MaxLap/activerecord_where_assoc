@@ -29,6 +29,11 @@ module ActiveRecordWhereAssoc
     # List of available options, used for validation purposes.
     VALID_OPTIONS_KEYS = ActiveRecordWhereAssoc.default_options.keys.freeze
 
+    def self.validate_options(options)
+      invalid_keys = options.keys - VALID_OPTIONS_KEYS
+      raise ArgumentError, "Invalid option keys received: #{invalid_keys.join(', ')}" unless invalid_keys.empty?
+    end
+
     # Gets the value from the options or fallback to default
     def self.option_value(options, key)
       options.fetch(key) { ActiveRecordWhereAssoc.default_options[key] }
@@ -137,6 +142,7 @@ module ActiveRecordWhereAssoc
     # association_names_path: can be an array of association names or a single one
     def self.relation_on_association(base_relation, association_names_path, given_scope = nil, options = {},
                                      last_assoc_block = nil, nest_assocs_block = nil)
+      validate_options(options)
       association_names_path = Array.wrap(association_names_path)
 
       if association_names_path.size > 1
