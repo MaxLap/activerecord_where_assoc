@@ -72,7 +72,7 @@ The parameters are in the same order as in that query: number, operator, associa
 
 ## Supported Rails versions
 
-Rails 5.1, 5.0, 4.2 and 4.1 are supported with Ruby 2.1 and above.
+Rails 5.2, 5.1, 5.0, 4.2 and 4.1 are supported with Ruby 2.1 and above.
 
 ## More examples
 

@@ -15,6 +15,8 @@ _ruby_aliases:
   - &ru2_1 2.1.10
 
 _rails_aliases:
+  - &rails_head gemfiles/rails_head.gemfile
+  - &rails_5_2 gemfiles/rails_5_2.gemfile
   - &rails_5_1 gemfiles/rails_5_1.gemfile
   - &rails_5_0 gemfiles/rails_5_0.gemfile
   - &rails_4_2 gemfiles/rails_4_2.gemfile
@@ -22,13 +24,20 @@ _rails_aliases:
 
 matrix:
   include:
-    - gemfile: gemfiles/rails_head.gemfile
+    - gemfile: *rails_head
       rvm: ruby-head
-    - gemfile: gemfiles/rails_head.gemfile
+    - gemfile: *rails_head
       rvm: *ru2_5
 
-    - gemfile: *rails_5_1
+    - gemfile: *rails_5_2
       rvm: ruby-head
+    - gemfile: *rails_5_2
+      rvm: *ru2_5
+    - gemfile: *rails_5_2
+      rvm: *ru2_4
+    - gemfile: *rails_5_2
+      rvm: *ru2_3
+
     - gemfile: *rails_5_1
       rvm: *ru2_5
     - gemfile: *rails_5_1
