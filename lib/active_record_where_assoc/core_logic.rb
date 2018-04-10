@@ -98,7 +98,7 @@ module ActiveRecordWhereAssoc
     #
     # If the second argument is blank-ish, it is ignored (as #where does).
     def self.where_assoc_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
-      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
+      nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation)
     end
 
@@ -108,7 +108,7 @@ module ActiveRecordWhereAssoc
     # See #where_assoc_exists for usage details. The only difference is that a record
     # is matched if no matching association record is found.
     def self.where_assoc_not_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
-      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
+      nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation, "NOT ")
     end
 
@@ -125,7 +125,7 @@ module ActiveRecordWhereAssoc
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      base_relation, nested_relation = relation_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
+      nested_relation = relation_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
       operator = case operator.to_s
                  when "=="
                    "="
@@ -147,7 +147,7 @@ module ActiveRecordWhereAssoc
 
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
-          scope, nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, options, last_assoc_block, nest_assocs_block)
+          nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, options, last_assoc_block, nest_assocs_block)
           nest_assocs_block.call(scope, nested_scope)
         end
 
@@ -201,7 +201,7 @@ module ActiveRecordWhereAssoc
         nested_scope = current_scope
       end
 
-      [base_relation, current_scope]
+      current_scope
     end
 
     def self.fetch_reflection(relation_klass, association_name)
