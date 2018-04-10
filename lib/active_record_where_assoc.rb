@@ -8,6 +8,7 @@ module ActiveRecordWhereAssoc
   def self.default_options
     @default_options ||= {
         ignore_limit: false,
+        never_alias_limit: false,
     }
   end
 end
