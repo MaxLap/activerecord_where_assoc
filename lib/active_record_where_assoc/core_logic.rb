@@ -97,7 +97,7 @@ module ActiveRecordWhereAssoc
     #    Post.where_assoc_exists(:comments, ["spam_flag = ?", true])
     #
     # If the second argument is blank-ish, it is ignored (as #where does).
-    def self.where_assoc_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
+    def self.do_where_assoc_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
       nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation)
     end
@@ -107,7 +107,7 @@ module ActiveRecordWhereAssoc
     #
     # See #where_assoc_exists for usage details. The only difference is that a record
     # is matched if no matching association record is found.
-    def self.where_assoc_not_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
+    def self.do_where_assoc_not_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
       nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation, "NOT ")
     end
@@ -118,7 +118,7 @@ module ActiveRecordWhereAssoc
     #
     # #where_assoc_count is a generalization of #where_assoc_exists, allowing you to
     # for example, filter for comments that have at least 2 matching posts
-    def self.where_assoc_count(base_relation, left_operand, operator, association_name, given_scope = nil, options = {}, &block)
+    def self.do_where_assoc_count(base_relation, left_operand, operator, association_name, given_scope = nil, options = {}, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
