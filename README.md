@@ -193,10 +193,10 @@ Sometimes, there isn't a single association that goes deep enough. In that situa
 
 ```ruby
 # Find users that have a post that has a comment that was made by an admin.
-# Using &:is_admin to use the is_admin scope (or any other class method of comments)
+# Using &:admins to use the admins scope (or any other class method of comments)
 User.where_assoc_exists(:posts) { |posts|
     posts.where_assoc_exists(:comments) { |comments| 
-        comments.where_assoc_exists(:author, &:is_admin)
+        comments.where_assoc_exists(:author, &:admins)
     }
 }
 ```
@@ -205,7 +205,7 @@ If you don't need special conditions on any of the intermediary associations, th
 
 ```ruby
 # Same as above
-User.where_assoc_exists([:posts, :comments, :author], &:is_admin)
+User.where_assoc_exists([:posts, :comments, :author], &:admins)
 ```
 
 This shortcut can be used for every `where_assoc_*` methods. The conditions and the block will only be applied to the last association of the chain.
