@@ -15,12 +15,14 @@ my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
 Post.where_assoc_exists([:comments, :author], &:admins).where(...)
  
 # Find my_user's posts that have at least 5 non-spam comments
-my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }.where(...)
+my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.where(spam: false) }.where(...)
 ```
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
 
 You also avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
+
+Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-is-terrible). Untested with other DBMS.
 
 ## Feedback
 
@@ -54,29 +56,48 @@ Or install it yourself as:
 ## Usage
 
 ### `#where_assoc_exists` & `#where_assoc_not_exists`
- 
-* The first parameter is the association we are doing the condition on.
-* The second parameter (optional) is the condition to apply on the association. It can be anything that #where can receive, so: Hash, String and Array (string with binds).
-* The third argument is [options (described below)](#options) to alter some behaviors.
-* A block can also be passed. It can add conditions on the association's relation after all the conditions have been applied (association's scopes, default_scope, second parameter of the method).
+
+Returns a new relation, which is the result of filtering the current relation based on if a record for the specified association of the model exists (or not). Conditions the associated model must match to count as existing can also be specified.
+
+```ruby
+Post.where_assoc_exists(:comments, spam: true)
+Post.where_assoc_not_exists(:comments, spam: true)
+```
+
+* 1st parameter: the association we are doing the condition on.
+* 2nd parameter: (optional) the condition to apply on the association. It can be anything that #where can receive, so: Hash, String and Array (string with binds).
+* 3rd parameter: [options (listed below)](#options) to alter some behaviors.
+* block: adds more complex conditions by receiving a relation on the association. Can apply `#where`, `#where_assoc_*`, scopes, and other scoping methods.
   The block either:
-  * Receive no argument, in that case self is set to the relation, so you can do { where(id: 123) }
+
+  * Receive no argument, in that case self is set to the relation, so you can do `{ where(id: 123) }`
   * Receive arguments, in that case, the block is called with the relation as first parameter
+
   The block should return the new relation to use or `nil` to do as if there were no blocks
-  It's common to use where_assoc_*(..., &:scope_name) to apply a single scope quickly
-  
+  It's common to use `where_assoc_*(..., &:scope_name)` to apply a single scope quickly
+
 ### `#where_assoc_count`
 
-* The first parameter can be a number or any string of SQL to embed in the SQL that returns a number that can be used for the comparison.
-* The second parameter is the operator to use: `:<`, `:<=`, `:==`, `:>=`, `:>`
-* The third and fourth parameters and the block are the same as the first and second parameters of `#where_assoc_exists`.
-* The fifth argument is [options (described below)](#options) to alter some behaviors.
+This is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behave behaves the same way as them, but is more flexible as it allows you to be specific about how many matches there should be. To clarify, here are equivalent examples:
+
+```ruby
+Post.where_assoc_exists(:comments, spam: true)
+Post.where_assoc_count(1, :<=, :comments, spam: true)
+
+Post.where_assoc_not_exists(:comments, spam: true)
+Post.where_assoc_count(0, :==, :comments, spam: true)
+```
+
+* 1st parameter: a number or any string of SQL to embed in the query used for the leftoperand of the comparison.
+* 2nd parameter: the operator to use: `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`
+* 3rd, 4th, 5th parameters are the same as the 1st, 2nd and 3rd parameters of `#where_assoc_exists`.
+* block: same as `#where_assoc_exists`' block
 
 The order of the parameters may seem confusing. But you will get used to it. To help remember the order of the parameters, remember that the goal is to do:
 
     5 < (SELECT COUNT(*) FROM ...)
 
-The parameters are in the same order as in that query: number, operator, association
+The parameters are in the same order as in that query: number, operator, association.
 
 ### Options
 

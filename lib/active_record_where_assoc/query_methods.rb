@@ -10,9 +10,10 @@ module ActiveRecordWhereAssoc
     # the associated model must match to count as existing can also be specified.
     #
     # Here is a quick overview of the arguments received followed by a detailed explanation
-    # along with more examples. You may also consider viewing the gem's README, packaged
-    # with the gem and easily viewable on github:
+    # along with more examples. You may also consider viewing the gem's README. It contains
+    # known issues and some tips. The readme is packaged with the gem and viewable on github:
     # https://github.com/MaxLap/activerecord_where_assoc
+    #
     #
     # As 1st argument, you must specify the association to check against. This can be
     # any of the associations on the current relation's model.
@@ -27,7 +28,25 @@ module ActiveRecordWhereAssoc
     #
     # If your conditions are too complex or too long to be placed in the 2nd argument,
     # #where_assoc_* accepts a block in which you can do anything you want on the relation
-    # (any scoping method such as #where, #joins, nested #where_assoc_*).
+    # (any scoping method such as #where, #joins, nested #where_assoc_*, scopes of the model).
+    #
+    # === the association argument (1st argument)
+    #
+    # This is the association you want to check if records exists. If you want, you can pass
+    # an array of associations. They will be followed in order, just like a has_many :through
+    # would.
+    #
+    #    # Posts with at least one comment
+    #    Post.where_assoc_exists(:comments)
+    #
+    #    # Posts for which there is at least one reply to a comment.
+    #    Post.where_assoc_exists([:comments, :replies])
+    #
+    # Note that if you use conditions / blocks, they will only be applied to the last
+    # association of the array. If you want something else, you will need to use
+    # the block argument to nest multiple calls to #where_assoc_exists
+    #
+    #    # Post.where_assoc_exists(:comments) { where_assoc_exists(:replies) }
     #
     # === the condition argument (2nd argument)
     #
@@ -63,10 +82,10 @@ module ActiveRecordWhereAssoc
     # === the block
     #
     # The block is used to add more complex conditions. The result behaves the same way
-    # as the 2nd argument's conditions, but lets you do things such as #where, #joins,
-    # nested #where_assoc_*. Note that using #joins might lead to unexpected results when
-    # using where_assoc_count, since if the join changes the number of rows, it will change
-    # the resulting count.
+    # as the 2nd argument's conditions, but lets you use any scoping methods, such as
+    # #where, #joins, # nested #where_assoc_* and scopes of the model. Note that using
+    # #joins might lead to unexpected results when using #where_assoc_count, since if
+    # the joins adds rows, it will change the resulting count.
     #
     # There are 2 ways of using the block for adding conditions to the association.
     #
@@ -94,8 +113,8 @@ module ActiveRecordWhereAssoc
     #    # Applying a scope of the relation
     #    Post.where_assoc_exists(:comments) { spam_flagged }
     #
-    # The main reason not to use this and use a block with an argument is when you need to
-    # call methods on the real self around of the block, such as:
+    # The main reason to use a block with an argument instead of without is when you need
+    # to call methods on the self outside of the block, such as:
     #
     #    Post.where_assoc_exists(:comments) { |comments| comments.where(id: self.something) }
     #
@@ -105,6 +124,7 @@ module ActiveRecordWhereAssoc
 
     # Returns a new relation, which is the result of filtering the current relation
     # based on if a record for the specified association of the model doesn't exist.
+    # Conditions the associated model must match to count as existing can also be specified.
     #
     # The parameters and everything is identical to #where_assoc_exists. The only
     # difference is that a record is matched if no matching association record that
@@ -119,7 +139,7 @@ module ActiveRecordWhereAssoc
     #
     # #where_assoc_count is a generalization of #where_assoc_exists and #where_assoc_not_exists.
     # It behave behaves the same way as them, but is more flexible as it allows you to be
-    # specific about how many match there should be. To clarify, here are equivalent examples:
+    # specific about how many matches there should be. To clarify, here are equivalent examples:
     #
     #    Post.where_assoc_exists(:comments)
     #    Post.where_assoc_count(1, :<=, :comments)
@@ -130,9 +150,9 @@ module ActiveRecordWhereAssoc
     # The usage is the same as with #where_assoc_exists, however, 2 arguments are inserted
     # at the beginning.
     #
-    # 1st argument: a number or any string of SQL to embed in the SQL that returns a number
-    #               that can be used for the comparison.
-    # 2nd argument: the operator to use: `:<`, `:<=`, `:==`, `:>=`, `:>`
+    # 1st argument: a number or any string of SQL to embed in the query used for the left
+    #               operand of the comparison.
+    # 2nd argument: the operator to use: :<, :<=, :==, :!=, :>=, :>
     # 3rd, 4th and 5th arguments: same as #where_assoc_exists' 1st, 2nd and 3rd arguments
     # block: same as #where_assoc_exists' block
     #
@@ -140,6 +160,16 @@ module ActiveRecordWhereAssoc
     # remember the order of the parameters, remember that the goal is to do:
     #    5 < (SELECT COUNT(*) FROM ...)
     # So the parameters are in the same order as in that query: number, operator, association.
+    #
+    # To be clear, when you use multiple associations in an array, the count you will be
+    # comparing against is the total number of records of that last association.
+    #
+    #   # The users that have received at least 5 comments total on all of their posts
+    #   # So this can be one post that has 5 comments of 5 posts with 1 comments
+    #   User.where_assoc_count(5, :<=, [:posts, :comments])
+    #
+    #   # The users that have at least 5 posts with at least one comments
+    #   User.where_assoc_count(5, :<=, :posts) { where_assoc_exists(:comments) }
     def where_assoc_count(left_operand, operator, association_name, given_scope = nil, options = {}, &block)
       ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_count(self, left_operand, operator, association_name, given_scope, options, &block)
     end
