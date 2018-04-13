@@ -35,7 +35,7 @@ This gem is very new. If you have any feedback, good or bad, do not hesitate to 
 
 ## 0.1.0
 
-Since the gem is brand new, I'm releasing 0.1.0 as a public beta before bumping to 1.0.0.
+Since the gem is brand new, I'm releasing 0.1.0 as a public beta before bumping to 1.0.0 once I have some feedback.
 
 ## Installation
 

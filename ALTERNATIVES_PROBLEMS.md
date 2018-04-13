@@ -5,14 +5,13 @@ This is a list of some of those alternatives, explaining what issues they have o
 
 ## Too long; didn't read
 
-* Each alternative can work in some situations and can cause issues in others
-* The burden of choosing the correct alternative each time is on the developer
-* Using the alternatives in scopes hides from the developer which bad effect will happen / when it can be used safely
-* More complex cases require manually writing a good chunk of SQL
-* It's easy to forget conditions from the association or default_scope when writing manual joins and manual sub-selects
-* When conditions from an association or default_scope are changed or added, you need to change every raw SQL for the association/model
-* It handles recursive associations correctly
-* The alternative gem is less powerful
+**Use this gem, you will avoid problems and save time**
+
+* No more having to choose, case by case, which way has the less problems.  
+  Just use `#where_assoc_*` each time and avoid every problems.
+* Less raw SQL means less code, more clarity and less maintenance.
+* Powerful scopes without traps.
+* Handles recursive associations correctly.
 
 ## Common problems to most alternatives
 
