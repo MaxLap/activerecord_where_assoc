@@ -22,7 +22,7 @@ These allow for powerful, chainable, clear and easy to reuse queries. (Great for
 
 You also avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
 
-Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-is-terrible). Untested with other DBMS.
+Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-doesnt-support-sub-limit). Untested with other DBMS.
 
 ## Feedback
 
@@ -123,7 +123,7 @@ Here is a list of the available options:
 When this option is true, then `#limit` and `#offset` that are set either from default_scope or on associations are ignored. `#has_one` means `limit(1)`, so `#has_one` will behave like `#has_many` with this option.
 
 Main reasons to use this:
-* This is needed for MySQL to be able to do anything with `#has_one` associations because [MySQL is terrible](#mysql-is-terrible).
+* This is needed for MySQL to be able to do anything with `#has_one` associations because [MySQL doesn't support sub-limit](#mysql-doesnt-support-sub-limit).
 * You have a `#has_one` association which you know can never have more than one record. Using `:ignore_limit`, you will use the simpler query of `#has_many`, which can be more efficient.
 
 Why this isn't the default:
@@ -256,7 +256,7 @@ If you want to use a scope / condition which uses `#from`, then you need to use 
 
 ## Known issues/limitations
 
-### MySQL is terrible
+### MySQL doesn't support sub-limit
 On MySQL databases, it is not possible to use `has_one` associations and associations with a scope that apply either a limit or an offset.
 
 I do not know of a way to do a SQL query that can deal with all the specifics of `has_one` for MySQL. If you have one, then please suggest it in an issue/pull request.

@@ -246,8 +246,8 @@ module ActiveRecordWhereAssoc
         msg = String.new
         msg << "Associations and default_scopes with a limit or offset are not supported for MySQL (this includes has_many). "
         msg << "Use ignore_limit: true to ignore both limit and offset, and treat has_one like has_many. "
-        msg << "See https://github.com/MaxLap/activerecord_where_assoc/tree/ignore_limits#mysql-is-terrible for details."
-        raise MySQLIsTerribleError, msg
+        msg << "See https://github.com/MaxLap/activerecord_where_assoc/tree/ignore_limits#mysql-doesnt-support-sub-limit for details."
+        raise MySQLDoesntSupportSubLimitError, msg
       end
 
       # We only check the records that would be returned by the associations if called on the model. If:
