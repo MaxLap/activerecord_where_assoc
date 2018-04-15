@@ -55,13 +55,13 @@ module ActiveRecordWhereAssoc
     #
     #    # Posts that have at least one comment considered as spam
     #    # Using a Hash
-    #    Post.where_assoc_exists(:comments, spam_flag: true)
+    #    Post.where_assoc_exists(:comments, is_spam: true)
     #
     #    # Using a String
-    #    Post.where_assoc_exists(:comments, "spam_flag = true")
+    #    Post.where_assoc_exists(:comments, "is_spam = true")
     #
     #    # Using an Array (a string and its binds)
-    #    Post.where_assoc_exists(:comments, ["spam_flag = ?", true])
+    #    Post.where_assoc_exists(:comments, ["is_spam = ?", true])
     #
     # If the condition argument is blank, it is ignored (just like #where does).
     #
@@ -94,7 +94,7 @@ module ActiveRecordWhereAssoc
     # filters or may return nil to do nothing.
     #
     #    # Using a where for the added condition
-    #    Post.where_assoc_exists(:comments) { |comments| comments.where(spam_flag: true) }
+    #    Post.where_assoc_exists(:comments) { |comments| comments.where(is_spam: true) }
     #
     #    # Applying a scope of the relation
     #    Post.where_assoc_exists(:comments) { |comments| comments.spam_flagged }
@@ -108,7 +108,7 @@ module ActiveRecordWhereAssoc
     # the block. Everything else is identical to the block with one argument.
     #
     #    # Using a where for the added condition
-    #    Post.where_assoc_exists(:comments) { where(spam_flag: true) }
+    #    Post.where_assoc_exists(:comments) { where(is_spam: true) }
     #
     #    # Applying a scope of the relation
     #    Post.where_assoc_exists(:comments) { spam_flagged }

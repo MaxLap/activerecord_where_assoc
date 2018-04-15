@@ -59,7 +59,7 @@ class Comment < ActiveRecord::Base
 end
 ```
 
-All of this is avoiced by where_assoc_* methods.
+All of this is avoided by where_assoc_* methods.
 
 ### Unable to handle recursive associations
 
@@ -87,7 +87,7 @@ Post.joins(:comments).where(comments: {is_spam: true})
 
 ```ruby
 Post.where_assoc_not_exists(:comments, is_spam: true)
-Post.joins("LEFT JOIN comments ON posts.id = comments.post_id AND comments.id_spam = true").where(comments: {id: nil})
+Post.joins("LEFT JOIN comments ON posts.id = comments.post_id AND comments.is_spam = true").where(comments: {id: nil})
 ```
 
 Writing a raw join like that has yet more problems: [raw SQL joins](#raw-sql-joins-or-sub-selects)
@@ -161,22 +161,22 @@ An interesting gem that also does `EXISTS (SELECT ... )`behind the scene. Solves
   
 * Unable to use scopes of the association's model.
 ```ruby
-# There is no equivalent for this (by_admin is a scope on Comment)
-Post.where_assoc_exists(:comments, &:by_admin)
+# There is no equivalent for this (admins is a scope on User)
+Comment.where_assoc_exists(:author, &:admins)
 ```
 
 * Cannot use a block for more complex conditions
 ```ruby
-# There is no equivalent for this (by_admin and with_upvotes are scopes)
-Post.where_assoc_exists(:comment) { by_admin.with_upvotes }
+# There is no equivalent for this
+Comment.where_assoc_exists(:author) { admins.where("created_at <= ?", 1.month.ago) }
 ```
 
 * Unable to dig deeper in the associations  
   Note: it does follow :through associations so doing a custom associations for your need can be a workaround.
 
 ```ruby
-# There is no equivalent for this
-Post.where_assoc_exists([:comments, :votes])
+# There is no equivalent for this (Users that have posts with at least a comments)
+User.where_assoc_exists([:posts, :comments])
 ```
 
 * Has no equivalent to `where_assoc_count`

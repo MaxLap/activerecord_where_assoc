@@ -15,7 +15,7 @@ my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
 Post.where_assoc_exists([:comments, :author], &:admins).where(...)
  
 # Find my_user's posts that have at least 5 non-spam comments
-my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.where(spam: false) }.where(...)
+my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.where(is_spam: false) }.where(...)
 ```
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
@@ -60,8 +60,8 @@ Or install it yourself as:
 Returns a new relation, which is the result of filtering the current relation based on if a record for the specified association of the model exists (or not). Conditions that the associated model must match to count as existing can also be specified.
 
 ```ruby
-Post.where_assoc_exists(:comments, spam: true)
-Post.where_assoc_not_exists(:comments, spam: true)
+Post.where_assoc_exists(:comments, is_spam: true)
+Post.where_assoc_not_exists(:comments, is_spam: true)
 ```
 
 * 1st parameter: the association we are doing the condition on.
@@ -81,11 +81,11 @@ Post.where_assoc_not_exists(:comments, spam: true)
 This is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behave behaves the same way as them, but is more flexible as it allows you to be specific about how many matches there should be. To clarify, here are equivalent examples:
 
 ```ruby
-Post.where_assoc_exists(:comments, spam: true)
-Post.where_assoc_count(1, :<=, :comments, spam: true)
+Post.where_assoc_exists(:comments, is_spam: true)
+Post.where_assoc_count(1, :<=, :comments, is_spam: true)
 
-Post.where_assoc_not_exists(:comments, spam: true)
-Post.where_assoc_count(0, :==, :comments, spam: true)
+Post.where_assoc_not_exists(:comments, is_spam: true)
+Post.where_assoc_count(0, :==, :comments, is_spam: true)
 ```
 
 * 1st parameter: a number or any string of SQL to embed in the query used for the leftoperand of the comparison.
@@ -169,11 +169,11 @@ my_user.posts.where_assoc_exists([:comments, :author], &:admins).where(...)
 
 # Find my_user's posts that have at least 5 non-spam comments
 # Uses a block with a parameter to do a condition
-my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(spam: false) }
+my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(is_spam: false) }
 
 # Find my_user's posts that have at least 5 non-spam comments
 # Uses a block without parameters to do a condition
-my_user.posts.where_assoc_count(5, :>=, :comments) { where(spam: false) }
+my_user.posts.where_assoc_count(5, :>=, :comments) { where(is_spam: false) }
 
 # Find my_user's posts that have comments by an honest admin
 # Uses multiple associations.
