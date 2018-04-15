@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_record_where_assoc/version"
+require_relative "active_record_where_assoc/version"
 require "active_record"
 
 module ActiveRecordWhereAssoc
@@ -13,9 +13,9 @@ module ActiveRecordWhereAssoc
   end
 end
 
-require "active_record_where_assoc/core_logic"
-require "active_record_where_assoc/query_methods"
-require "active_record_where_assoc/querying"
+require_relative "active_record_where_assoc/core_logic"
+require_relative "active_record_where_assoc/query_methods"
+require_relative "active_record_where_assoc/querying"
 
 ActiveSupport.on_load(:active_record) do
   ActiveRecord.eager_load!

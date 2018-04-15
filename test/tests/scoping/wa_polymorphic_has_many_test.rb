@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require_relative "../../test_helper"
 
 describe "wa" do
   let(:s0) { S0.create_default! }

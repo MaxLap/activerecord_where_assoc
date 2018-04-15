@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require_relative "../test_helper"
 
 # Last Equality Wins is a special behavior in rails since 4.0
 # https://github.com/rails/rails/issues/7365

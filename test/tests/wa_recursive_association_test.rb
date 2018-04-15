@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require_relative "../test_helper"
 
 # Since the goal is to check only against the records that would be returned by the association,
 # we need to follow the expected behavior for limits, offset and order.

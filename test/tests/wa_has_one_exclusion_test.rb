@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require_relative "../test_helper"
 
 # Has_one associations should behave similarly to a belongs_to in that only
 # one record should be tested: the one that would be returned by using the

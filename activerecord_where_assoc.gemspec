@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-lib = File.expand_path("lib", __dir__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "active_record_where_assoc/version"
+require_relative "lib/active_record_where_assoc/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "activerecord_where_assoc"
