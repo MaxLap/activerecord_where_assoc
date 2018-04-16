@@ -8,6 +8,9 @@ require_relative "../lib/active_record_where_assoc"
 # with your gem easier. You can also use a different console, if you like.
 
 require_relative "../test/support/load_test_env"
+require_relative "../examples/schema"
+require_relative "../examples/models"
+require_relative "../examples/some_data"
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
 require "irb"

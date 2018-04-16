@@ -24,6 +24,8 @@ You also avoid many [problems with the alternative options](ALTERNATIVES_PROBLEM
 
 Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-doesnt-support-sub-limit). Untested with other DBMS.
 
+Here are [many examples](EXAMPLES.md), including the generated SQL queries.
+
 ## Feedback
 
 This gem is very new. If you have any feedback, good or bad, do not hesitate to write it here: [General feedback](https://github.com/MaxLap/activerecord_where_assoc/issues/3). If you find any bug, please create a new issue.
@@ -66,7 +68,7 @@ Post.where_assoc_not_exists(:comments, is_spam: true)
 
 * 1st parameter: the association we are doing the condition on.
 * 2nd parameter: (optional) the condition to apply on the association. It can be anything that `#where` can receive, so: Hash, String and Array (string with binds).
-* 3rd parameter: [options (listed below)](#options) to alter some behaviors.
+* 3rd parameter: [options (listed below)](#options) to alter some behaviors. (rarely necessary)
 * block: adds more complex conditions by receiving a relation on the association. Can apply `#where`, `#where_assoc_*`, scopes, and other scoping methods.
   The block either:
 
@@ -98,6 +100,10 @@ The order of the parameters may seem confusing, but you will get used to it. To 
     5 < (SELECT COUNT(*) FROM ...)
 
 The parameters are in the same order as in that query: number, operator, association.
+
+### More examples
+
+You can view [more usage examples](EXAMPLES.md).
 
 ### Options
 
@@ -153,38 +159,6 @@ These methods have many advantages over the alternative ways of achieving the si
 * Handles recursive associations (such as parent/children) seemlessly.
 * Can be used to quickly generate a SQL query that you can edit/use manually.
 
-## More examples
-
-High level explanation of various ways of using the methods. Also take a look at [usage tips](#usage-tips)
-
-```ruby
-# Find my_post's comments that were not made by an admin
-# Uses a Hash for the condition
-my_post.comments.where_assoc_not_exists(:author, is_admin: true)
-
-# Find my_user's posts that have comments by an admin
-# Uses an array as shortcut to go to a nested related
-# Uses the block shortcut to use a scope that exists on Author
-my_user.posts.where_assoc_exists([:comments, :author], &:admins).where(...)
-
-# Find my_user's posts that have at least 5 non-spam comments
-# Uses a block with a parameter to do a condition
-my_user.posts.where_assoc_count(5, :>=, :comments) { |s| s.where(is_spam: false) }
-
-# Find my_user's posts that have at least 5 non-spam comments
-# Uses a block without parameters to do a condition
-my_user.posts.where_assoc_count(5, :>=, :comments) { where(is_spam: false) }
-
-# Find my_user's posts that have comments by an honest admin
-# Uses multiple associations.
-# Uses a hash as 2nd parameter to do the conditions
-my_user.posts.where_assoc_exists([:comments, :author], honest: true, is_admin: true)
-
-# Find any post that has reached its maximum number of allowed comments
-# Uses a string on the left side (first parameter) to refer to a column in the previous table.
-Post.where_assoc_count("posts.max_comments_allowed", :==, :comments)
-```
-
 ## Usage tips
 
 ### Nested associations
@@ -216,10 +190,10 @@ This shortcut can be used for every `where_assoc_*` methods. The conditions and 
 The following have different meanings:
 
 ```ruby
-my_user.posts.where_assoc_exists(:comments_authors, is_admin: true, honest: true)
+my_user.posts.where_assoc_exists(:comments_authors, is_admin: true, is_honest: true)
 
 my_user.posts.where_assoc_exists(:comments_authors, is_admin: true)
-             .where_assoc_exists(:comments_authors, honest: true)
+             .where_assoc_exists(:comments_authors, is_honest: true)
 ```
 
 The first is the posts of `my_user` that have a comment made by an honest admin. It requires a single comment to match every conditions.

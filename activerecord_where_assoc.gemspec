@@ -27,6 +27,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop", "0.54.0"
   spec.add_development_dependency "simplecov"
 
+  # Useful for the examples
+  spec.add_development_dependency "niceql", "0.1.14"
+
   # Normally, testing with sqlite3 is good enough
   spec.add_development_dependency "sqlite3"
 
