@@ -9,9 +9,10 @@ This is a list of some of those alternatives, explaining what issues they have o
 
 * No more having to choose, case by case, which way has the less problems.  
   Just use `#where_assoc_*` each time and avoid every problems.
-* Less raw SQL means less code, more clarity and less maintenance.
-* Powerful scopes without traps.
+* Need less raw SQL, which means less code, more clarity and less maintenance.
+* Allows powerful scopes without traps.
 * Handles recursive associations correctly.
+* Handles has_one correctly.
 
 ## Short version
 
