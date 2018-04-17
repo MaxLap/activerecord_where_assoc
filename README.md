@@ -22,7 +22,7 @@ These allow for powerful, chainable, clear and easy to reuse queries. (Great for
 
 You also avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
 
-Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-doesnt-support-sub-limit). Untested with other DBMS.
+Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-doesnt-support-sub-limit). Untested with other RDBMS.
 
 Here are [many examples](EXAMPLES.md), including the generated SQL queries.
 
