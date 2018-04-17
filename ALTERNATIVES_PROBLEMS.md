@@ -32,7 +32,6 @@ Summary of the problems of the alternatives that `activerecord_where_assoc` solv
 * `includes`:
   * triggers eagerloading, which makes your `scope` have unexpected bad performances if it's not necessary.
   * when using a condition, the eagerloaded records are also filtered, which is very bug-prone when in a scope.
-  * can't do `not exists` with conditions.
 * raw SQL:
   * verbose, less clear on the goal of the queries (you don't even name the association the query is about).
   * need to repeat conditions from the association / default_scope.
