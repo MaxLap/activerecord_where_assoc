@@ -14,7 +14,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/MaxLap/activerecord_where_assoc"
   spec.license       = "MIT"
 
-  spec.files = Dir["{lib}/**/*", "LICENSE.txt", "README.md", "ALTERNATIVES_PROBLEMS.md", "EXAMPLES.md"]
+  lib_files = `git ls-files -z lib`.split("\x0")
+  spec.files = [*lib_files, "LICENSE.txt", "README.md", "ALTERNATIVES_PROBLEMS.md", "EXAMPLES.md"]
 
   spec.add_dependency "activerecord", ">= 4.1.0"
 
