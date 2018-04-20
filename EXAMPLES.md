@@ -1,6 +1,6 @@
 Here are some example usages of the gem, along with the generated SQL. Each of those can be chained with scoping methods.
 
-Models can be found in [examples/models.md](examples/models.md). Explanation is provided in that file to be able to run these queries.
+The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
 The content below is generated from running `ruby examples/examples.rb`
 
