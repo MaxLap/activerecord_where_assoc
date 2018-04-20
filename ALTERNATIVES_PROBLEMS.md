@@ -21,13 +21,13 @@ Summary of the problems of the alternatives that `activerecord_where_assoc` solv
 * every alternatives (except raw SQL):
   * treat `has_one` like a `has_many`.
   * can't handle recursive associations. (ex: parent/children)
-  * no simple way of checking for more complex counts. (such as less than 5)
+  * no simple way of checking for more complex counts. (such as `less than 5`)
 * `joins` / `includes`:
   * doing `not exists` with conditions requires a `LEFT JOIN` with the conditions as part of the `ON`, which requires raw SQL.
-  * checking for 2 sets of conditions on different records of the same association won't work. (so your scopes becomes incompatible)
+  * checking for 2 sets of conditions on different records of the same association won't work. (so your scopes can be incompatible)
   * can't be used with Rails 5's `or` unless both sides do the same `joins` / `includes` / `eager_load`.
 * `joins`:
-  * `has_many` may return duplicate rows per record.
+  * `has_many` may return duplicate records.
   * using `uniq` / `distinct` to solve duplicate rows is an unexpected side-effect when this is in a scope.
 * `includes`:
   * triggers eagerloading, which makes your `scope` have unexpected bad performances if it's not necessary.

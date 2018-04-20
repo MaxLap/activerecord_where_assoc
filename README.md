@@ -80,7 +80,7 @@ Post.where_assoc_not_exists(:comments, is_spam: true)
 
 ### `#where_assoc_count`
 
-This is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behave behaves the same way as them, but is more flexible as it allows you to be specific about how many matches there should be. To clarify, here are equivalent examples:
+This is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behaves the same way as them, but is more flexible as it allows you to be specific about how many matches there should be. To clarify, here are equivalent examples:
 
 ```ruby
 Post.where_assoc_exists(:comments, is_spam: true)
