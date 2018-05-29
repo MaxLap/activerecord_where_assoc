@@ -107,4 +107,14 @@ describe "wa" do
       S0.where_assoc_count(1, :<, :bp1)
     end
   end
+
+  it "_count refuses ranges with wrong operators" do
+    %w(< > <= >=).each do |operator|
+      exc = assert_raises(ArgumentError) do
+        S0.where_assoc_count(0..10, operator, :m1)
+      end
+
+      assert_includes exc.message, operator
+    end
+  end
 end

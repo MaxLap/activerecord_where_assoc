@@ -69,16 +69,9 @@ module ActiveRecordWhereAssoc
       end
 
       nested_relation = relation_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
-      operator = case operator.to_s
-                 when "=="
-                   "="
-                 when "!="
-                   "<>"
-                 else
-                   operator
-                 end
 
-      base_relation.where("(#{left_operand}) #{operator} COALESCE((#{nested_relation.to_sql}), 0)")
+      sql = sql_for_count_operator(left_operand, operator, "COALESCE((#{nested_relation.to_sql}), 0)")
+      base_relation.where(sql)
     end
 
     # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
@@ -332,6 +325,45 @@ module ActiveRecordWhereAssoc
     def self.has_and_belongs_to_many?(reflection) # rubocop:disable Naming/PredicateName
       parent = ActiveRecordCompat.parent_reflection(reflection)
       parent && parent.macro == :has_and_belongs_to_many
+    end
+
+    # Doing (SQL) BETWEEN v1 AND v2, where v2 is infinite means (SQL) >= v1. However,
+    # we place the SQL on the right side, so the operator is flipped to become v1 <= (SQL).
+    # Doing (SQL) NOT BETWEEN v1 AND v2 where v2 is infinite means (SQL) < v1. However,
+    # we place the SQL on the right side, so the operator is flipped to become v1 > (SQL).
+    RIGHT_INFINITE_RANGE_OPERATOR_MAP = { "=" => "<=", "<>" => ">" }.freeze
+    # We flip the operators to use when it's about the left-side of the range.
+    LEFT_INFINITE_RANGE_OPERATOR_MAP = Hash[RIGHT_INFINITE_RANGE_OPERATOR_MAP.map { |k, v| [k, v.tr("<>", "><")] }].freeze
+
+    RANGE_OPERATOR_MAP = { "=" => "BETWEEN", "<>" => "NOT BETWEEN" }.freeze
+
+    def self.sql_for_count_operator(left_operand, operator, right_sql)
+      operator = case operator.to_s
+                 when "=="
+                   "="
+                 when "!="
+                   "<>"
+                 else
+                   operator.to_s
+                 end
+
+      return "(#{left_operand}) #{operator} #{right_sql}" unless left_operand.is_a?(Range)
+
+      unless %w(= <>).include?(operator)
+        raise ArgumentError, "Operator should be one of '==', '=', '<>' or '!=' when using a Range not: #{operator.inspect}"
+      end
+
+      v1 = left_operand.begin || 0
+      v2 = left_operand.end || Float::INFINITY
+
+      v1 = 0 if v1 == -Float::INFINITY
+
+      return sql_for_count_operator(v1, RIGHT_INFINITE_RANGE_OPERATOR_MAP.fetch(operator), right_sql) if v2 == Float::INFINITY
+
+      # Its int or a float with no mantissa, exclude_end? means -1
+      v2 -= 1 if left_operand.exclude_end? && v2 % 1 == 0
+
+      "#{right_sql} #{RANGE_OPERATOR_MAP.fetch(operator)} #{v1} AND #{v2}"
     end
   end
 end

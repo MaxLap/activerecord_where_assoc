@@ -1,8 +1,4 @@
 * Add mutation testing?
-* Add a way of doing between for where_assoc_count.
-  Passing a range as 1st param and :== or :!= as 2nd
-  Post.where_assoc_count(3..6, :==, comments)
-  Post.where_assoc_count(3..6, :!=, comments)
 * Add a way of handling polymorphic belongs_to. Probably using an option to specify the class to use, or to pluck...
 
 Maybe:

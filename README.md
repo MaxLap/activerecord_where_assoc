@@ -90,7 +90,12 @@ Post.where_assoc_not_exists(:comments, is_spam: true)
 Post.where_assoc_count(0, :==, :comments, is_spam: true)
 ```
 
-* 1st parameter: a number or any string of SQL to embed in the query used for the leftoperand of the comparison.
+* 1st parameter: the left side of the comparison. One of:  
+  * a number  
+  * a string of SQL to embed in the query  
+  * a range (operator must be `:==` or `:!=`)  
+    will use SQL's `BETWEEN` or `NOT BETWEEN`  
+    supports infinite ranges and exclusive end
 * 2nd parameter: the operator to use: `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`
 * 3rd, 4th, 5th parameters are the same as the 1st, 2nd and 3rd parameters of `#where_assoc_exists`.
 * block: same as `#where_assoc_exists`' block

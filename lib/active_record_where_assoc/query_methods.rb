@@ -150,8 +150,11 @@ module ActiveRecordWhereAssoc
     # The usage is the same as with #where_assoc_exists, however, 2 arguments are inserted
     # at the beginning.
     #
-    # 1st argument: a number or any string of SQL to embed in the query used for the left
-    #               operand of the comparison.
+    # 1st argument: the left side of the comparison. One of:
+    #               a number
+    #               a string of SQL to embed in the query
+    #               a range (operator must be :== or :!=), will use BETWEEN or NOT BETWEEN
+    #                                                      supports infinite ranges and exclusive end
     # 2nd argument: the operator to use: :<, :<=, :==, :!=, :>=, :>
     # 3rd, 4th and 5th arguments: same as #where_assoc_exists' 1st, 2nd and 3rd arguments
     # block: same as #where_assoc_exists' block
