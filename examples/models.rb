@@ -24,7 +24,7 @@ class Post < ActiveRecord::Base
   # Easy and powerful scope examples
   scope :by_admin, -> { where_assoc_exists(:author, &:admins) }
   scope :commented_on_by_admin, -> { where_assoc_exists(:comments, &:by_admin) }
-  scope :with_many_reported_comments, lambda {|min_nb=5| where_assoc_count(min_nb, :<=, :comments, &:reported) }
+  scope :with_many_reported_comments, ->(min_nb = 5) { where_assoc_count(min_nb, :<=, :comments, &:reported) }
 end
 
 class Comment < ActiveRecord::Base
