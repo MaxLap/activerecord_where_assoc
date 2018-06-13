@@ -19,7 +19,7 @@ ActiveRecord::Schema.define do
 
   create_table :s1s do |t|
     t.integer :s0_id
-    t.integer :s1_id
+    t.integer :s2_id
 
     t.integer :has_s1s_poly_id
     t.string :has_s1s_poly_type

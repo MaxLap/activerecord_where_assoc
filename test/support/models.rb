@@ -34,7 +34,9 @@ class S0 < BaseTestModel
   testable_has_one :o2m1, -> { order("s2s.id DESC") }, through: :m1, source: :o2, class_name: "S2"
   testable_has_one :o2o1, -> { order("s2s.id DESC") }, through: :o1, source: :o2, class_name: "S2"
   testable_has_one :o2b1, -> { order("s2s.id DESC") }, through: :b1, source: :o2, class_name: "S2"
+
   testable_has_one :o2z1, -> { order("s2s.id DESC") }, through: :z1, source: :o2, class_name: "S2"
+  testable_has_one :ob2b1, -> { order("s2s.id DESC") }, through: :b1, source: :b2, class_name: "S2"
 
   testable_has_many :mp2mp1, through: :mp1, source: :mp2, class_name: "S2"
   testable_has_many :mp2op1, through: :op1, source: :mp2, class_name: "S2"
@@ -66,7 +68,7 @@ class S1 < BaseTestModel
 
   testable_has_many :m2, class_name: "S2"
   testable_has_one :o2, -> { order("s2s.id DESC") }, class_name: "S2"
-  testable_belongs_to :b2, class_name: "S2"
+  testable_belongs_to :b2, class_name: "S2", foreign_key: "s2_id"
   testable_has_and_belongs_to_many :z2, class_name: "S2"
 
   testable_has_many :mp2, class_name: "S2", as: "has_s2s_poly"

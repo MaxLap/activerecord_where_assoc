@@ -225,7 +225,7 @@ module ActiveRecordWhereAssoc
     end
 
     def self.process_association_step_limits(current_scope, reflection, relation_klass, options)
-      return current_scope.unscope(:limit, :offset, :order) if reflection.macro == :belongs_to
+      return current_scope.unscope(:limit, :offset, :order) if user_defined_actual_source_reflection(reflection).macro == :belongs_to
 
       current_scope = current_scope.limit(1) if reflection.macro == :has_one
 
@@ -325,6 +325,18 @@ module ActiveRecordWhereAssoc
     def self.has_and_belongs_to_many?(reflection) # rubocop:disable Naming/PredicateName
       parent = ActiveRecordCompat.parent_reflection(reflection)
       parent && parent.macro == :has_and_belongs_to_many
+    end
+
+    # Returns the deepest user-defined reflection using source_reflection.
+    # This is different from #send(:actual_source_reflection) because it stops on
+    # has_and_belongs_to_many associations, where as actual_source_reflection would continue
+    # down to the belongs_to that is used internally.
+    def self.user_defined_actual_source_reflection(reflection)
+      loop do
+        return reflection if reflection == reflection.source_reflection
+        return reflection if has_and_belongs_to_many?(reflection)
+        reflection = reflection.source_reflection
+      end
     end
 
     # Doing (SQL) BETWEEN v1 AND v2, where v2 is infinite means (SQL) >= v1. However,
