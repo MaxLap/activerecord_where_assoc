@@ -37,6 +37,7 @@ class S0 < BaseTestModel
 
   testable_has_one :o2z1, -> { order("s2s.id DESC") }, through: :z1, source: :o2, class_name: "S2"
   testable_has_one :ob2b1, -> { order("s2s.id DESC") }, through: :b1, source: :b2, class_name: "S2"
+  testable_has_many :mz2m1, -> { order("s2s.id DESC") }, through: :m1, source: :z2, class_name: "S2"
 
   testable_has_many :mp2mp1, through: :mp1, source: :mp2, class_name: "S2"
   testable_has_many :mp2op1, through: :op1, source: :mp2, class_name: "S2"
@@ -218,13 +219,18 @@ class LimOffOrdS0 < BaseTestModel
   has_many :m2ml1, class_name: "LimOffOrdS2", through: :ml1, source: :m2
   has_many :ml2ml1, class_name: "LimOffOrdS2", through: :ml1, source: :ml2
   has_many :l_ml2ml1, -> { limit(2).offset(2).reorder("s2s.id desc") }, class_name: "LimOffOrdS2", through: :ml1, source: :ml2
+
+  has_many :mzl2m1, through: :m1, source: :zl2, class_name: "LimOffOrdS2"
 end
 
 class LimOffOrdS1 < BaseTestModel
   self.table_name = "s1s"
   has_many :m2, class_name: "LimOffOrdS2", foreign_key: "s1_id"
   has_many :ml2, -> { limit(2).offset(2).reorder("s2s.id desc") }, class_name: "LimOffOrdS2", foreign_key: "s1_id"
-
+  has_and_belongs_to_many :zl2, -> { limit(2).offset(2).reorder("s2s.id desc") }, class_name: "LimOffOrdS2",
+                                                                                  join_table: "s1s_s2s",
+                                                                                  foreign_key: "s1_id",
+                                                                                  association_foreign_key: "s2_id"
 
   default_scope -> { limit(3).offset(1).order(:id) }
 end

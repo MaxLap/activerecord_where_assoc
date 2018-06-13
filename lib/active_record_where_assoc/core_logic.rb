@@ -118,7 +118,7 @@ module ActiveRecordWhereAssoc
         end
 
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
-        skip_next = true if has_and_belongs_to_many?(reflection)
+        skip_next = true if actually_has_and_belongs_to_many?(reflection)
 
         wrapper_scope, current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i])
 
@@ -160,11 +160,11 @@ module ActiveRecordWhereAssoc
       reflection = reflection_chain.first
       current_scope = reflection.klass.default_scoped
 
-      if has_and_belongs_to_many?(reflection)
+      if actually_has_and_belongs_to_many?(reflection)
         # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
         # This is the first of those two secret has_many through.
         #
-        # In order to handle limit, offset, order correctly on has_and_belongs_to_man,
+        # In order to handle limit, offset, order correctly on has_and_belongs_to_many,
         # we must do both this reflection and the next one at the same time.
         # Think of it this way, if you have limit 3:
         #   Apply only on 1st step: You check that any of 2nd step for the first 3 of 1st step match
@@ -210,18 +210,15 @@ module ActiveRecordWhereAssoc
     end
 
     def self.constraint_allowed_lim_off_from(reflection)
-      if has_and_belongs_to_many?(reflection)
-        reflection.scope
-      else
-        # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
-        # whole has_* :through. For now, we only do the direct associations from one model to another
-        # that the :through uses and we ignore the limit from the scope of has_* :through.
-        #
-        # For :through associations, #actual_source_reflection returns final non-through
-        # reflection that is reached by following the :source.
-        # Otherwise, returns itself.
-        reflection.send(:actual_source_reflection).scope
-      end
+      # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
+      # whole has_* :through. For now, we only apply those of the direct associations from one model
+      # to another that the :through uses and we ignore the limit/offset/order from the scope of has_* :through.
+      #
+      # The exception is for has_and_belongs_to_many, which behind the scene, use a has_many :through.
+      # For those, since we know there is no limits on the internal has_many and the belongs_to,
+      # we can do a special case and handle their limit. This way, we can treat them the same way we treat
+      # the other macros, we only apply the limit/offset/order of the deepest user-define association.
+      user_defined_actual_source_reflection(reflection).scope
     end
 
     def self.process_association_step_limits(current_scope, reflection, relation_klass, options)
@@ -325,6 +322,11 @@ module ActiveRecordWhereAssoc
     def self.has_and_belongs_to_many?(reflection) # rubocop:disable Naming/PredicateName
       parent = ActiveRecordCompat.parent_reflection(reflection)
       parent && parent.macro == :has_and_belongs_to_many
+    end
+
+    # Return true if #user_defined_actual_source_reflection is a has_and_belongs_to_many
+    def self.actually_has_and_belongs_to_many?(reflection)
+      has_and_belongs_to_many?(user_defined_actual_source_reflection(reflection))
     end
 
     # Returns the deepest user-defined reflection using source_reflection.
