@@ -9,6 +9,7 @@ require "active_support"
 require_relative "database_setup"
 require_relative "schema"
 require_relative "models"
+require "niceql"
 
 
 module TestHelpers
