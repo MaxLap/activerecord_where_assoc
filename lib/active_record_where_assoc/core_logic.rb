@@ -12,7 +12,7 @@ module ActiveRecordWhereAssoc
     # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
     # exists_prefix: raw sql prefix to the EXISTS, ex: 'NOT '
     NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, exists_prefix = ""|
-      sql = "#{exists_prefix}EXISTS (#{nested_scope.select('0').to_sql})"
+      sql = "#{exists_prefix}EXISTS (#{nested_scope.select('1').to_sql})"
 
       wrapping_scope.where(sql)
     end
