@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# To update the examples, run this from the project's root dir:
+#   `ruby examples/examples.rb > EXAMPLES.md`
+
 # Avoid a message about default database used
 ENV["DB"] ||= "sqlite3"
 
@@ -11,6 +14,17 @@ require "niceql"
 
 class Examples
   def puts_doc
+    puts <<-HEADER.strip_heredoc
+      Here are some example usages of the gem, along with the generated SQL. Each of those can be chained with scoping methods.
+
+      The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
+
+      The content of this file is generated from running `ruby examples/examples.rb`
+
+      -------
+
+    HEADER
+
     puts "## Simple examples"
     puts
 
@@ -66,9 +80,9 @@ class Examples
     RUBY
 
     output_example(<<-DESC, <<-RUBY)
-      Posts that have at least 5 reported comments (Using block with #where)
+      Posts that have 5 to 10 reported comments (Using block with #where and range for count)
     DESC
-      Post.where_assoc_count(5, :<=, :comments) { where(is_reported: true) }
+      Post.where_assoc_count(5..10, :==, :comments) { where(is_reported: true) }
     RUBY
 
     output_example(<<-DESC, <<-RUBY)
@@ -100,7 +114,7 @@ class Examples
       }
     RUBY
 
-    output_example(<<-DESC, <<-RUBY)
+    output_example(<<-DESC, <<-RUBY, footer: false)
       posts with a reported comment and a comment by an admin (can be different or same comments)
     DESC
       my_user.posts.where_assoc_exists(:comments, is_reported: true)
@@ -123,7 +137,7 @@ class Examples
     User.order(:id).first
   end
 
-  def output_example(description, ruby)
+  def output_example(description, ruby, footer: true)
     description = description.strip_heredoc
     ruby = ruby.strip_heredoc
 
@@ -139,9 +153,12 @@ class Examples
     puts ruby
     puts "```"
     puts "```sql\n#{sql}\n```"
-    puts
-    puts "---"
-    puts
+
+    if footer
+      puts
+      puts "---"
+      puts
+    end
   end
 end
 

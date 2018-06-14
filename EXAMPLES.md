@@ -2,7 +2,7 @@ Here are some example usages of the gem, along with the generated SQL. Each of t
 
 The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
-The content below is generated from running `ruby examples/examples.rb`
+The content of this file is generated from running `ruby examples/examples.rb`
 
 -------
 
@@ -13,9 +13,9 @@ The content below is generated from running `ruby examples/examples.rb`
 Post.where_assoc_exists(:comments)
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE (EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id"
   ))
 ```
@@ -27,9 +27,9 @@ SELECT "posts".* FROM "posts"
 Post.where_assoc_not_exists(:comments)
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE (NOT EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id"
   ))
 ```
@@ -41,9 +41,9 @@ SELECT "posts".* FROM "posts"
 Post.where_assoc_count(50, :<=, :comments)
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE ((50) <= COALESCE((
-    SELECT COUNT(*) FROM "comments" 
+    SELECT COUNT(*) FROM "comments"
     WHERE "comments"."post_id" = "posts"."id"
   ), 0))
 ```
@@ -57,9 +57,9 @@ SELECT "posts".* FROM "posts"
 my_post.comments.where_assoc_exists(:author, is_admin: true)
 ```
 ```sql
-SELECT "comments".* FROM "comments" 
+SELECT "comments".* FROM "comments"
   WHERE "comments"."post_id" = 1 AND (EXISTS (
-    SELECT 0 FROM "users" 
+    SELECT 1 FROM "users"
     WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
   ))
 ```
@@ -71,9 +71,9 @@ SELECT "comments".* FROM "comments"
 my_post.comments.where_assoc_not_exists(:author, &:admins)
 ```
 ```sql
-SELECT "comments".* FROM "comments" 
+SELECT "comments".* FROM "comments"
   WHERE "comments"."post_id" = 1 AND (NOT EXISTS (
-    SELECT 0 FROM "users" 
+    SELECT 1 FROM "users"
     WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
   ))
 ```
@@ -85,9 +85,9 @@ SELECT "comments".* FROM "comments"
 Post.where_assoc_count(5, :<=, :comments, ["is_reported = ?", true])
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE ((5) <= COALESCE((
-    SELECT COUNT(*) FROM "comments" 
+    SELECT COUNT(*) FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND (is_reported = 't')
   ), 0))
 ```
@@ -99,9 +99,9 @@ SELECT "posts".* FROM "posts"
 Post.where_assoc_exists(:author, "is_admin = 't'")
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE (EXISTS (
-    SELECT 0 FROM "users" 
+    SELECT 1 FROM "users"
     WHERE "users"."id" = "posts"."author_id" AND (is_admin = 't')
   ))
 ```
@@ -113,9 +113,9 @@ SELECT "posts".* FROM "posts"
 my_post.comments.where_assoc_not_exists(:author) { admins }
 ```
 ```sql
-SELECT "comments".* FROM "comments" 
+SELECT "comments".* FROM "comments"
   WHERE "comments"."post_id" = 1 AND (NOT EXISTS (
-    SELECT 0 FROM "users" 
+    SELECT 1 FROM "users"
     WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
   ))
 ```
@@ -123,15 +123,15 @@ SELECT "comments".* FROM "comments"
 ---
 
 ```ruby
-# Posts that have at least 5 reported comments (Using block with #where)
-Post.where_assoc_count(5, :<=, :comments) { where(is_reported: true) }
+# Posts that have 5 to 10 reported comments (Using block with #where and range for count)
+Post.where_assoc_count(5..10, :==, :comments) { where(is_reported: true) }
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
-  WHERE ((5) <= COALESCE((
-    SELECT COUNT(*) FROM "comments" 
+SELECT "posts".* FROM "posts"
+  WHERE (COALESCE((
+    SELECT COUNT(*) FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 't'
-  ), 0))
+  ), 0) BETWEEN 5 AND 10)
 ```
 
 ---
@@ -141,9 +141,9 @@ SELECT "posts".* FROM "posts"
 Comment.where_assoc_exists(:post, author_id: my_user.id)
 ```
 ```sql
-SELECT "comments".* FROM "comments" 
+SELECT "comments".* FROM "comments"
   WHERE (EXISTS (
-    SELECT 0 FROM "posts" 
+    SELECT 1 FROM "posts"
     WHERE "posts"."id" = "comments"."post_id" AND "posts"."author_id" = 1
   ))
 ```
@@ -157,11 +157,11 @@ SELECT "comments".* FROM "comments"
 Post.where_assoc_exists([:comments, :author], is_admin: true)
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE (EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND (EXISTS (
-      SELECT 0 FROM "users" 
+      SELECT 1 FROM "users"
       WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
     ))
   ))
@@ -174,9 +174,9 @@ SELECT "posts".* FROM "posts"
 Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE (EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND (posts.author_id = comments.author_id)
   ))
 ```
@@ -190,11 +190,11 @@ Post.where_assoc_exists(:comments, is_reported: true) {
 }
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE (EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 't' AND (EXISTS (
-      SELECT 0 FROM "users" 
+      SELECT 1 FROM "users"
       WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
     ))
   ))
@@ -208,14 +208,14 @@ my_user.posts.where_assoc_exists(:comments, is_reported: true)
              .where_assoc_exists([:comments, :author], is_admin: true)
 ```
 ```sql
-SELECT "posts".* FROM "posts" 
+SELECT "posts".* FROM "posts"
   WHERE "posts"."author_id" = 1 AND (EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 't'
   )) AND (EXISTS (
-    SELECT 0 FROM "comments" 
+    SELECT 1 FROM "comments"
     WHERE "comments"."post_id" = "posts"."id" AND (EXISTS (
-      SELECT 0 FROM "users" 
+      SELECT 1 FROM "users"
       WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
     ))
   ))
