@@ -365,7 +365,7 @@ module ActiveRecordWhereAssoc
         raise ArgumentError, "Operator should be one of '==', '=', '<>' or '!=' when using a Range not: #{operator.inspect}"
       end
 
-      v1 = left_operand.begin || 0
+      v1 = left_operand.begin
       v2 = left_operand.end || Float::INFINITY
 
       v1 = 0 if v1 == -Float::INFINITY
