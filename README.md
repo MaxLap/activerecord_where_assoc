@@ -35,9 +35,9 @@ This gem is very new. If you have any feedback, good or bad, do not hesitate to 
 * Suggestions to make the documentation easier to follow / more complete.
 
 
-## 0.1.0
+## 0.1
 
-Since the gem is brand new, I'm releasing 0.1.0 as a public beta before bumping to 1.0.0 once I have some feedback.
+Since the gem is brand new, I'm releasing as 0.1 before bumping to 1.0 once I have some feedback. There is an extensive test suite testing for lots of cases, making me quite confident that it can handle most of the cases you can throw at it.
 
 ## Installation
 
