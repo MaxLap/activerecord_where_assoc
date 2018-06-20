@@ -1,3 +1,10 @@
+
+* Use `SELECT 1` instead of `SELECT 0`...  
+  ... it just seems more natural that way.
+* Bugfixes
+
+# 0.1.2
+
 * It is now possible to pass a `Range` as first argument to `#where_assoc_count`.  
   Ex: Users that have between 10 and 20 posts
   `User.where_assoc_count(10..20, :==, :posts)`
