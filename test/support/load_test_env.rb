@@ -10,7 +10,7 @@ require_relative "database_setup"
 require_relative "schema"
 require_relative "models"
 
-require "niceql" if RUBY_VERSION >= '2.3.0'
+require "niceql" if RUBY_VERSION >= "2.3.0"
 
 
 module TestHelpers

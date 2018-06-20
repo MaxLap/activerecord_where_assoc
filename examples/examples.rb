@@ -154,11 +154,11 @@ class Examples
     puts "```"
     puts "```sql\n#{sql}\n```"
 
-    if footer
-      puts
-      puts "---"
-      puts
-    end
+    next unless footer
+
+    puts
+    puts "---"
+    puts
   end
 end
 
