@@ -43,7 +43,7 @@ module ActiveRecordWhereAssoc
     # based on if a record for the specified association of the model exists.
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.do_where_assoc_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
+    def self.do_where_assoc_exists(base_relation, association_name, given_scope, options, &block)
       nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation)
     end
@@ -52,7 +52,7 @@ module ActiveRecordWhereAssoc
     # based on if a record for the specified association of the model doesn't exist.
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.do_where_assoc_not_exists(base_relation, association_name, given_scope = nil, options = {}, &block)
+    def self.do_where_assoc_not_exists(base_relation, association_name, given_scope, options, &block)
       nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relation, "NOT ")
     end
@@ -61,7 +61,7 @@ module ActiveRecordWhereAssoc
     # based on how many records for the specified association of the model exists.
     #
     # See #where_assoc_exists and #where_assoc_count in query_methods.rb for usage details.
-    def self.do_where_assoc_count(base_relation, left_operand, operator, association_name, given_scope = nil, options = {}, &block)
+    def self.do_where_assoc_count(base_relation, left_operand, operator, association_name, given_scope, options, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
@@ -76,8 +76,7 @@ module ActiveRecordWhereAssoc
 
     # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
     # association_names_path: can be an array of association names or a single one
-    def self.relation_on_association(base_relation, association_names_path, given_scope = nil, options = {},
-                                     last_assoc_block = nil, nest_assocs_block = nil)
+    def self.relation_on_association(base_relation, association_names_path, given_scope, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
       association_names_path = Array.wrap(association_names_path)
 
@@ -94,8 +93,7 @@ module ActiveRecordWhereAssoc
     end
 
     # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
-    def self.relation_on_one_association(base_relation, association_name, given_scope = nil, options = {},
-                                         last_assoc_block = nil, nest_assocs_block = nil)
+    def self.relation_on_one_association(base_relation, association_name, given_scope, options, last_assoc_block, nest_assocs_block)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
 
