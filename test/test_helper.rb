@@ -5,14 +5,13 @@ coverage_config = proc do
 end
 
 if ENV["TRAVIS"]
+  require "deep_cover/builtin_takeover"
   require "coveralls"
   require "simplecov"
   SimpleCov.command_name "rake test-#{ENV['DB']}"
   Coveralls.wear_merged!(&coverage_config)
-elsif ENV["COVERAGE"]
-  require "simplecov"
-  SimpleCov.start(&coverage_config)
-  SimpleCov.command_name "rake test-#{ENV['DB']}" if ENV["COVERAGE"] == "multi"
+else
+  require "deep_cover"
 end
 
 
