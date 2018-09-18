@@ -35,7 +35,7 @@ describe "wa" do
 
   it "always returns no result for belongs_to if no possible ones exists" do
     check_association(:b1) do |b1|
-      s0.update_attributes!(s1_id: b1.id)
+      s0.update!(s1_id: b1.id)
     end
   end
 
@@ -47,20 +47,20 @@ describe "wa" do
 
   it "always returns no result for has_many if no possible ones exists" do
     check_association(:m1) do |m1|
-      m1.update_attributes!(s0_id: s0.id)
+      m1.update!(s0_id: s0.id)
     end
   end
 
   it "always returns no result for has_one if no possible ones exists" do
     skip if Test::SelectedDBHelper == Test::MySQL
     check_association(:o1) do |o1|
-      o1.update_attributes!(s0_id: s0.id)
+      o1.update!(s0_id: s0.id)
     end
   end
 
   it "always returns no result for polymorphic has_many if no possible ones exists" do
     check_association(:mp1) do |mp1|
-      mp1.update_attributes!(has_s1s_poly_id: s0.id, has_s1s_poly_type: "S0")
+      mp1.update!(has_s1s_poly_id: s0.id, has_s1s_poly_type: "S0")
     end
   end
 end

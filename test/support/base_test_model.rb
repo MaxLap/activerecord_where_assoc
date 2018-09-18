@@ -155,9 +155,9 @@ class BaseTestModel < ActiveRecord::Base
     if options[:use_bad_type]
       case association_macro
       when "mp", "op"
-        record.update_attributes(:"has_#{record.class.table_name}_poly_type" => "PolyBadRecord")
+        record.update(:"has_#{record.class.table_name}_poly_type" => "PolyBadRecord")
       when "bp"
-        update_attributes(:"#{self.class.table_name}_belongs_to_poly_type" => "PolyBadRecord")
+        update(:"#{self.class.table_name}_belongs_to_poly_type" => "PolyBadRecord")
       end
 
     end
