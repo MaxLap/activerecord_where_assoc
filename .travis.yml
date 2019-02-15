@@ -11,6 +11,7 @@ env:
     - secure: "OMVXtjv1t4dqxAa9wbeOwFRkMtln3WpHIrocie8bHxeiPjpMcqcYOBA9gljaOCPTKPN89ROuyGkSx0qcjvt2iQePC9wAcZRNjTFppgJdPGwpCqz633mSoryp5md20oXxx81rDzcg9Rzfw47/OxmdwqL6hI9OjjipfsQZOBcF5Yi9UU5Ng56w0MaKbzfevkm4s2/SB8fm7fObJhL/skQDAmoscdfm+pz/0On10kQx0b4AEPAXl8p3bVE+PR2/m9V6LwYeQ7VvOlsJGQVnlBO9LV/QPcFS2+CvSCs/nW+XLS1ItMom6h3OaiEjLi1xo/d+AcvNnkJWSI3p80EDpoBT7DI/lyMWJr/LgyzbUSHqMNwflOGdHWZHd8ihsgefLo8wU1p4+lVQisu0oCm+KgdZwkVOghw1XLn5sKR7Tzhj0jAMc21/jeBoFppgJyhgb1QaijOl1xpuUML6rE9+u3StnJkU9mgARHzwbaR+vIRHz6KaBbbiD7Mu8sKkgYWgTQr8yN1TlOKo4okCwNZYjO9VsDrVGtp1CrS+vWAvOmmgAM0fV7ITEPnAwlB4mnUpJUxSuy3UOuhxcADkM3cYH6rk/7FDupRYQo3rO+NQUO7FavG0WYIzBHsL+X7gnb/3oslxHQbf4HjzrVPUj5ibw/5nbL/4iOhR0v4xMQ7T2IMQeMs="
 
 _ruby_aliases:
+  - &ru2_6 2.6.0
   - &ru2_5 2.5.0
   - &ru2_4 2.4.1
   - &ru2_3 2.3.4
@@ -19,6 +20,7 @@ _ruby_aliases:
 
 _rails_aliases:
   - &rails_head gemfiles/rails_head.gemfile
+  - &rails_6_0 gemfiles/rails_6_0.gemfile
   - &rails_5_2 gemfiles/rails_5_2.gemfile
   - &rails_5_1 gemfiles/rails_5_1.gemfile
   - &rails_5_0 gemfiles/rails_5_0.gemfile
@@ -30,10 +32,17 @@ matrix:
     - gemfile: *rails_head
       rvm: ruby-head
     - gemfile: *rails_head
+      rvm: *ru2_6
+    - gemfile: *rails_6_0
+      rvm: ruby-head
+
+    - gemfile: *rails_6_0
+      rvm: *ru2_6
+    - gemfile: *rails_6_0
       rvm: *ru2_5
 
     - gemfile: *rails_5_2
-      rvm: ruby-head
+      rvm: *ru2_6
     - gemfile: *rails_5_2
       rvm: *ru2_5
     - gemfile: *rails_5_2
