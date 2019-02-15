@@ -75,7 +75,7 @@ matrix:
 
   allow_failures:
     - rvm: ruby-head
-    - gemfile: gemfiles/rails_head.gemfile
+    - gemfile: &rails_head
 
   # fast_finish makes Travis send multiple notification email when things fail.
   # https://github.com/travis-ci/travis-ci/issues/1696
