@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "niceql", ">= 0.1.23"
 
   # Normally, testing with sqlite3 is good enough
-  spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency "sqlite3", "~> 1.3.6"
 
   # Travis-CI takes care of the other ones
   # Using conditions because someone might not even be able to install the gems
