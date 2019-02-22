@@ -70,17 +70,8 @@ ActiveRecord::Schema.define do
       CREATE SCHEMA spam_schema;
     SQL
   elsif Test::SelectedDBHelper == Test::SQLite3
-    execute <<-SQL
-      ATTACH DATABASE ':memory:' AS foo_schema;
-    SQL
-
-    execute <<-SQL
-      ATTACH DATABASE ':memory:' AS bar_schema;
-    SQL
-
-    execute <<-SQL
-      ATTACH DATABASE ':memory:' AS spam_schema;
-    SQL
+    # ATTACH DATABASE (the equivalent) is not supported by active record.
+    # See https://github.com/rails/rails/pull/35339#issuecomment-466265426
   elsif Test::SelectedDBHelper == Test::MySQL
     execute <<-SQL
       CREATE DATABASE foo_schema;
@@ -95,19 +86,21 @@ ActiveRecord::Schema.define do
     SQL
   end
 
-  create_table "foo_schema.schema_s0s" do |t|
-    t.integer :schema_s1_id
-  end
+  if Test::SelectedDBHelper != Test::SQLite3
+    create_table "foo_schema.schema_s0s" do |t|
+      t.integer :schema_s1_id
+    end
 
-  create_table "bar_schema.schema_s1s" do |t|
-    t.integer :schema_s0_id
-    t.integer :schema_s2_id
-  end
+    create_table "bar_schema.schema_s1s" do |t|
+      t.integer :schema_s0_id
+      t.integer :schema_s2_id
+    end
 
-  create_join_table "schema_s0s", "schema_s1s", table_name: "spam_schema.schema_s0s_schema_s1s"
+    create_join_table "schema_s0s", "schema_s1s", table_name: "spam_schema.schema_s0s_schema_s1s"
 
-  create_table "bar_schema.schema_s2s" do |t|
-    t.integer :schema_s1_id
+    create_table "bar_schema.schema_s2s" do |t|
+      t.integer :schema_s1_id
+    end
   end
 
   create_table "sti_s0s" do |t|

@@ -3,7 +3,7 @@
 require_relative "../test_helper"
 
 describe "wa" do
-  let(:s0) { SchemaS0.create! }
+  let(:s0) { S0.create! }
 
   it "_exists raises ActiveRecord::AssociationNotFoundError if missing association" do
     assert_raises(ActiveRecord::AssociationNotFoundError) do

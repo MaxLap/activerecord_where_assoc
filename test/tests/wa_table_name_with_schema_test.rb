@@ -3,6 +3,7 @@
 require_relative "../test_helper"
 
 describe "wa" do
+  next if Test::SelectedDBHelper == Test::SQLite3
   describe "from a schema table" do
     let(:s0) { SchemaS0.create! }
 
