@@ -43,42 +43,42 @@ matrix:
 
     - gemfile: *rails_5_2
       rvm: *ru2_6
-    - gemfile: *rails_5_2
-      rvm: *ru2_5
-    - gemfile: *rails_5_2
-      rvm: *ru2_4
+    #- gemfile: *rails_5_2
+    #  rvm: *ru2_5
+    #- gemfile: *rails_5_2
+    #  rvm: *ru2_4
     - gemfile: *rails_5_2
       rvm: *ru2_3
 
     - gemfile: *rails_5_1
       rvm: *ru2_5
-    - gemfile: *rails_5_1
-      rvm: *ru2_4
-    - gemfile: *rails_5_1
-      rvm: *ru2_3
+    #- gemfile: *rails_5_1
+    #  rvm: *ru2_4
+    #- gemfile: *rails_5_1
+    #  rvm: *ru2_3
     - gemfile: *rails_5_1
       rvm: *ru2_2
 
     - gemfile: *rails_5_0
       rvm: *ru2_4
-    - gemfile: *rails_5_0
-      rvm: *ru2_3
+    #- gemfile: *rails_5_0
+    #  rvm: *ru2_3
     - gemfile: *rails_5_0
       rvm: *ru2_2
 
     - gemfile: *rails_4_2
       rvm: *ru2_4
-    - gemfile: *rails_4_2
-      rvm: *ru2_3
-    - gemfile: *rails_4_2
-      rvm: *ru2_2
+    #- gemfile: *rails_4_2
+    #  rvm: *ru2_3
+    #- gemfile: *rails_4_2
+    #  rvm: *ru2_2
     - gemfile: *rails_4_2
       rvm: *ru2_1
 
     - gemfile: *rails_4_1
       rvm: *ru2_3
-    - gemfile: *rails_4_1
-      rvm: *ru2_2
+    #- gemfile: *rails_4_1
+    #  rvm: *ru2_2
     - gemfile: *rails_4_1
       rvm: *ru2_1
 
