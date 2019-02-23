@@ -135,9 +135,9 @@ ActiveRecord::Schema.define do
     t.integer :recursive_s_column
 
     t.integer :belongs_id
-    t.integer :belongs_type
+    t.string :belongs_type
 
     t.integer :has_id
-    t.integer :has_type
+    t.string :has_type
   end
 end
