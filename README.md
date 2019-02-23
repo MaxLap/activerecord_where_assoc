@@ -255,7 +255,7 @@ Note that the support of `#limit` and `#offset` for the `:source` and `:through`
 
 After checking out the repo, run `bundle install` to install dependencies.
 
-Run `rake test` to run the tests for the latest version of rails
+Run `rake test` to run the tests for the latest version of rails. If you want SQL queries printed when you have failures, use `SQL_WITH_FAILURES=1 rake test`.
 
 Run `bin/console` for an interactive prompt that will allow you to experiment in the same environment as the tests.
 
