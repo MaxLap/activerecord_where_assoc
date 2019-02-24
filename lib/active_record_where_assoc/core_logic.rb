@@ -118,7 +118,7 @@ module ActiveRecordWhereAssoc
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
         skip_next = true if actually_has_and_belongs_to_many?(reflection)
 
-        wrapper_scope, current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i])
+        alias_scope, current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i])
 
         current_scope = process_association_step_limits(current_scope, reflection, relation_klass, options)
 
@@ -130,7 +130,7 @@ module ActiveRecordWhereAssoc
         # Those make no sense since we are only limiting the value that would match, using conditions
         current_scope = current_scope.unscope(:limit, :order, :offset)
         current_scope = nest_assocs_block.call(current_scope, nested_scope) if nested_scope
-        current_scope = nest_assocs_block.call(wrapper_scope, current_scope) if wrapper_scope
+        current_scope = nest_assocs_block.call(alias_scope, current_scope) if alias_scope
 
         nested_scope = current_scope
       end
@@ -179,9 +179,9 @@ module ActiveRecordWhereAssoc
             INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
         SQL
 
-        wrapper_scope, join_constaints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
+        alias_scope, join_constaints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
       else
-        wrapper_scope, join_constaints = wrapper_and_join_constraints(reflection)
+        alias_scope, join_constaints = wrapper_and_join_constraints(reflection)
       end
 
       assoc_scope_allowed_lim_off = assoc_scope_to_keep_lim_off_from(reflection)
@@ -203,7 +203,7 @@ module ActiveRecordWhereAssoc
         current_scope = current_scope.merge(relation)
       end
 
-      [wrapper_scope, current_scope.where(join_constaints)]
+      [alias_scope, current_scope.where(join_constaints)]
     end
 
     def self.assoc_scope_to_keep_lim_off_from(reflection)
@@ -274,15 +274,15 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    def self.build_wrapper_scope_for_recursive_association(reflection)
+    def self.build_alias_scope_for_recursive_association(reflection)
       table = reflection.klass.arel_table
       primary_key = reflection.klass.primary_key
       foreign_klass = reflection.send(:actual_source_reflection).active_record
 
-      wrapper_scope = foreign_klass.base_class.unscoped
-      wrapper_scope = wrapper_scope.from("#{table.name} #{ALIAS_TABLE.name}")
-      wrapper_scope = wrapper_scope.where(table[primary_key].eq(ALIAS_TABLE[primary_key]))
-      wrapper_scope
+      alias_scope = foreign_klass.base_class.unscoped
+      alias_scope = alias_scope.from("#{table.name} #{ALIAS_TABLE.name}")
+      alias_scope = alias_scope.where(table[primary_key].eq(ALIAS_TABLE[primary_key]))
+      alias_scope
     end
 
     def self.wrapper_and_join_constraints(reflection, options = {})
@@ -299,7 +299,7 @@ module ActiveRecordWhereAssoc
       habtm_other_table = habtm_other_reflection.klass.arel_table if habtm_other_reflection
 
       if (habtm_other_table || table).name == foreign_table.name
-        wrapper_scope = build_wrapper_scope_for_recursive_association(habtm_other_reflection || reflection)
+        alias_scope = build_alias_scope_for_recursive_association(habtm_other_reflection || reflection)
         foreign_table = ALIAS_TABLE
       end
 
@@ -310,7 +310,7 @@ module ActiveRecordWhereAssoc
         constraints = constraints.and(table[reflection.type].eq(foreign_klass.base_class.name))
       end
 
-      [wrapper_scope, constraints]
+      [alias_scope, constraints]
     end
 
     def self.has_and_belongs_to_many?(reflection) # rubocop:disable Naming/PredicateName
