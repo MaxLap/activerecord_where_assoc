@@ -74,7 +74,7 @@ module ActiveRecordWhereAssoc
       base_relation.where(sql)
     end
 
-    # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
+    # Returns a relation on the associated model(s) meant to be embedded in a query
     # association_names_path: can be an array of association names or a single one
     def self.relation_on_association(base_relation, association_names_path, given_scope, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
@@ -92,7 +92,7 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    # Returns the receiver (with possible alterations) and a relation meant to be embed in the received.
+    # Returns a relation on the associated model meant to be embedded in a query
     def self.relation_on_one_association(base_relation, association_name, given_scope, options, last_assoc_block, nest_assocs_block)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
