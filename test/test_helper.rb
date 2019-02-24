@@ -56,17 +56,9 @@ class MyMinitestSpec < Minitest::Spec
       logged_string = @my_logged_string_io.read
       if logged_string.present?
         exc = test_case.failure
-        if exc.is_a?(Minitest::UnexpectedError)
-          wrapper = exc
-          exc = exc.exception
-        end
-        new_exc = exc.class.new("#{exc.message}\n#{logged_string}")
-        new_exc.set_backtrace(exc.backtrace)
-
-        if wrapper
-          wrapper.exception = new_exc
-        else
-          test_case.failures[0] = new_exc
+        orig_message = exc.message
+        exc.define_singleton_method(:message) do
+          "#{orig_message}\n#{logged_string}"
         end
       end
     end
