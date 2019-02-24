@@ -145,7 +145,7 @@ module Minitest::Assertions
 
     return if correct_result
 
-    "Doing the operations manually through ActiveRecord doesn't give thes expected result. " \
+    "Doing the operations manually through ActiveRecord doesn't give the expected result. " \
         "Expected to find a result with size #{operator.to_s.tr('<>', '><')} to #{matching_nb}, " \
         "but got these sizes: #{record_sets.map(&:size).uniq.sort}."
   end
