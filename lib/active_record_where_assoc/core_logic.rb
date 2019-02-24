@@ -153,7 +153,7 @@ module ActiveRecordWhereAssoc
       reflection
     end
 
-    def self.initial_scope_from_reflection(reflection_chain, constraints)
+    def self.initial_scope_from_reflection(reflection_chain, assoc_scopes)
       reflection = reflection_chain.first
       current_scope = reflection.klass.default_scoped
 
@@ -184,12 +184,12 @@ module ActiveRecordWhereAssoc
         wrapper_scope, join_constaints = wrapper_and_join_constraints(reflection)
       end
 
-      constraint_allowed_lim_off = constraint_allowed_lim_off_from(reflection)
+      assoc_scope_allowed_lim_off = assoc_scope_to_keep_lim_off_from(reflection)
 
-      constraints.each do |callable|
+      assoc_scopes.each do |callable|
         relation = reflection.klass.unscoped.instance_exec(&callable)
 
-        if callable != constraint_allowed_lim_off
+        if callable != assoc_scope_allowed_lim_off
           # I just want to remove the current values without screwing things in the merge below
           # so we cannot use #unscope
           relation.limit_value = nil
@@ -206,7 +206,7 @@ module ActiveRecordWhereAssoc
       [wrapper_scope, current_scope.where(join_constaints)]
     end
 
-    def self.constraint_allowed_lim_off_from(reflection)
+    def self.assoc_scope_to_keep_lim_off_from(reflection)
       # For :through associations, it's pretty hard/tricky to apply limit/offset/order of the
       # whole has_* :through. For now, we only apply those of the direct associations from one model
       # to another that the :through uses and we ignore the limit/offset/order from the scope of has_* :through.
