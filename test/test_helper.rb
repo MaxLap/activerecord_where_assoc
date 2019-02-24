@@ -53,7 +53,12 @@ class MyMinitestSpec < Minitest::Spec
       next if test_case.passed? || test_case.skipped?
 
       @my_logged_string_io.rewind
-      logged_string = @my_logged_string_io.read
+      logged_lines = @my_logged_string_io.readlines
+
+      # Ignore lines that are about the savepoints. Need to remove color codes first.
+      logged_lines.reject! { |line| line.gsub(/\e\[[0-9;]*m/, '')[/\)\s*(?:RELEASE )?SAVEPOINT/i] }
+
+      logged_string = logged_lines.join
       if logged_string.present?
         exc = test_case.failure
         orig_message = exc.message
