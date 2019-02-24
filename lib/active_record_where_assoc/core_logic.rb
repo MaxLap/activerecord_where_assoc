@@ -147,7 +147,6 @@ module ActiveRecordWhereAssoc
         raise ActiveRecord::AssociationNotFoundError.new(relation_klass.new, association_name)
       end
       if reflection.macro == :belongs_to && reflection.options[:polymorphic]
-        # TODO: We might want an option to indicate that using pluck is ok?
         raise NotImplementedError, "Can't deal with polymorphic belongs_to"
       end
 
@@ -250,10 +249,7 @@ module ActiveRecordWhereAssoc
       # be useful.
 
       if reflection.klass.table_name.include?(".") || option_value(options, :never_alias_limit)
-        # This works universally, but seems to sometimes have slower performances.. Need to test if there is an alternative way
-        # of expressing this...
-        # TODO: Investigate a way to improve performances, or maybe require a flag to do it this way?
-        # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless if it
+        # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless it
         # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
 
         reflection.klass.unscoped.where(reflection.klass.primary_key.to_sym => current_scope)
