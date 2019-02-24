@@ -121,7 +121,7 @@ class BaseTestModel < ActiveRecord::Base
     reflection = self.class.reflections[association_name]
     raise "Didn't find association: #{association_name}" unless reflection
 
-    target_model = reflection.klass
+    target_model = options[:target_model] || reflection.klass
 
     if options[:skip_attributes]
       attributes = {}
@@ -148,6 +148,9 @@ class BaseTestModel < ActiveRecord::Base
     when "b"
       record = send("create_#{association_name}!", attributes)
       save! # Must save that our id that just changed
+    when "bp"
+      record = target_model.create(attributes)
+      update_attributes!(reflection.foreign_key => record.id, reflection.foreign_type => target_model.base_class.name)
     else
       raise "Unexpected macro: #{association_macro}"
     end
@@ -159,7 +162,6 @@ class BaseTestModel < ActiveRecord::Base
       when "bp"
         update(:"#{self.class.table_name}_belongs_to_poly_type" => "PolyBadRecord")
       end
-
     end
 
     record
@@ -168,6 +170,8 @@ class BaseTestModel < ActiveRecord::Base
   # Receives the same parameters as #create_assoc!, but creates a record for every
   # combinations missing one of the source models and the default scope
   def create_bad_assocs!(association_name, *source_associations, &block)
+    options = source_associations.extract_options!
+
     source_models = source_associations.compact
     assocs_options = []
 
@@ -182,7 +186,7 @@ class BaseTestModel < ActiveRecord::Base
     records = []
 
     assocs_options.each do |assoc_options|
-      records << create_assoc!(*assoc_options)
+      records << create_assoc!(*assoc_options[0...-1], options.merge(assoc_options[-1]))
       if block
         yield records.last
         records.last.destroy

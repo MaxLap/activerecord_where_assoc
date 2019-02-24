@@ -11,17 +11,21 @@ module ActiveRecordWhereAssoc
     # Block used when nesting associations for a where_assoc_[not_]exists
     # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
     # exists_prefix: raw sql prefix to the EXISTS, ex: 'NOT '
-    NestWithExistsBlock = lambda do |wrapping_scope, nested_scope, exists_prefix = ""|
-      sql = "#{exists_prefix}EXISTS (#{nested_scope.select('1').to_sql})"
+    NestWithExistsBlock = lambda do |wrapping_scope, nested_scopes, exists_prefix = ""|
+      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
+      sql = nested_scopes.map { |ns| "EXISTS (#{ns.select('1').to_sql})" }.join(" OR ")
+      sql = "(#{sql})" if nested_scopes.size > 1
+      sql = sql.presence || "0=1"
 
-      wrapping_scope.where(sql)
+      wrapping_scope.where(exists_prefix + sql)
     end
 
     # Block used when nesting associations for a where_assoc_count
     # Will apply the nested scope to the wrapping_scope with: select("SUM(SELECT... *nested_scope*)")
-    NestWithSumBlock = lambda do |wrapping_scope, nested_scope|
+    NestWithSumBlock = lambda do |wrapping_scope, nested_scopes|
+      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
       # Need the double parentheses
-      sql = "SUM((#{nested_scope.to_sql}))"
+      sql = nested_scopes.map { |ns| "SUM((#{ns.to_sql}))" }.join(" + ").presence || "0"
 
       wrapping_scope.unscope(:select).select(sql)
     end
@@ -44,8 +48,8 @@ module ActiveRecordWhereAssoc
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
     def self.do_where_assoc_exists(base_relation, association_name, given_scope, options, &block)
-      nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
-      NestWithExistsBlock.call(base_relation, nested_relation)
+      nested_relations = relations_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
+      NestWithExistsBlock.call(base_relation, nested_relations)
     end
 
     # Returns a new relation, which is the result of filtering base_relation
@@ -53,8 +57,8 @@ module ActiveRecordWhereAssoc
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
     def self.do_where_assoc_not_exists(base_relation, association_name, given_scope, options, &block)
-      nested_relation = relation_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
-      NestWithExistsBlock.call(base_relation, nested_relation, "NOT ")
+      nested_relations = relations_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
+      NestWithExistsBlock.call(base_relation, nested_relations, "NOT ")
     end
 
     # Returns a new relation, which is the result of filtering base_relation
@@ -68,37 +72,43 @@ module ActiveRecordWhereAssoc
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      nested_relation = relation_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
+      nested_relations = relations_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
 
-      sql = sql_for_count_operator(left_operand, operator, "COALESCE((#{nested_relation.to_sql}), 0)")
+      right_sql = nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
+
+      sql = sql_for_count_operator(left_operand, operator, right_sql)
       base_relation.where(sql)
     end
 
-    # Returns a relation on the associated model(s) meant to be embedded in a query
+    # Returns relations on the associated model meant to be embedded in a query
+    # Will return more than one association only for polymorphic belongs_to
     # association_names_path: can be an array of association names or a single one
-    def self.relation_on_association(base_relation, association_names_path, given_scope, options, last_assoc_block, nest_assocs_block)
+    def self.relations_on_association(base_relation, association_names_path, given_scope, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
       association_names_path = Array.wrap(association_names_path)
 
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
-          nested_scope = relation_on_association(scope, association_names_path[1..-1], given_scope, options, last_assoc_block, nest_assocs_block)
+          nested_scope = relations_on_association(scope, association_names_path[1..-1], given_scope, options, last_assoc_block, nest_assocs_block)
           nest_assocs_block.call(scope, nested_scope)
         end
 
-        relation_on_one_association(base_relation, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
+        relations_on_one_association(base_relation, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
       else
-        relation_on_one_association(base_relation, association_names_path.first, given_scope, options, last_assoc_block, nest_assocs_block)
+        relations_on_one_association(base_relation, association_names_path.first, given_scope, options, last_assoc_block, nest_assocs_block)
       end
     end
 
-    # Returns a relation on the associated model meant to be embedded in a query
-    def self.relation_on_one_association(base_relation, association_name, given_scope, options, last_assoc_block, nest_assocs_block)
+    # Returns relations on the associated model meant to be embedded in a query
+    # Will return more than one association only for polymorphic belongs_to
+    def self.relations_on_one_association(base_relation, association_name, given_scope, options, last_assoc_block, nest_assocs_block)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
 
-      nested_scope = nil
-      current_scope = nil
+      check_reflection_validity!(final_reflection)
+
+      nested_scopes = nil
+      current_scopes = nil
 
       # Chain deals with through stuff
       # We will start with the reflection that points on the final model, and slowly move back to the reflection
@@ -118,24 +128,35 @@ module ActiveRecordWhereAssoc
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
         skip_next = true if actually_has_and_belongs_to_many?(reflection)
 
-        alias_scope, current_scope = initial_scope_from_reflection(reflection_chain[i..-1], constaints_chain[i])
+        init_scopes = initial_scopes_from_reflection(reflection_chain[i..-1], constaints_chain[i], options)
+        current_scopes = init_scopes.map do |alias_scope, current_scope, klass_scope|
+          current_scope = process_association_step_limits(current_scope, reflection, relation_klass, options)
 
-        current_scope = process_association_step_limits(current_scope, reflection, relation_klass, options)
+          if i.zero?
+            current_scope = current_scope.where(given_scope) if given_scope
+            if klass_scope
+              if klass_scope.respond_to?(:call)
+                current_scope = apply_proc_scope(current_scope, klass_scope)
+              else
+                current_scope = current_scope.where(klass_scope)
+              end
+            end
+            current_scope = apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
+          end
 
-        if i.zero?
-          current_scope = current_scope.where(given_scope) if given_scope
-          current_scope = apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
+          # Those make no sense since at this point, we are only limiting the value that would match using conditions
+          # Those could have been added by the received block, so just remove them
+          current_scope = current_scope.unscope(:limit, :order, :offset)
+
+          current_scope = nest_assocs_block.call(current_scope, nested_scopes) if nested_scopes
+          current_scope = nest_assocs_block.call(alias_scope, current_scope) if alias_scope
+          current_scope
         end
 
-        # Those make no sense since we are only limiting the value that would match, using conditions
-        current_scope = current_scope.unscope(:limit, :order, :offset)
-        current_scope = nest_assocs_block.call(current_scope, nested_scope) if nested_scope
-        current_scope = nest_assocs_block.call(alias_scope, current_scope) if alias_scope
-
-        nested_scope = current_scope
+        nested_scopes = current_scopes
       end
 
-      current_scope
+      current_scopes
     end
 
     def self.fetch_reflection(relation_klass, association_name)
@@ -146,64 +167,72 @@ module ActiveRecordWhereAssoc
         # Need to use build because this exception expects a record...
         raise ActiveRecord::AssociationNotFoundError.new(relation_klass.new, association_name)
       end
-      if reflection.macro == :belongs_to && reflection.options[:polymorphic]
-        raise NotImplementedError, "Can't deal with polymorphic belongs_to"
-      end
 
       reflection
     end
 
-    def self.initial_scope_from_reflection(reflection_chain, assoc_scopes)
+    # Can return multiple pairs for polymorphic belongs_to, one per table to look into
+    def self.initial_scopes_from_reflection(reflection_chain, assoc_scopes, options)
       reflection = reflection_chain.first
-      current_scope = reflection.klass.default_scoped
+      actual_source_reflection = user_defined_actual_source_reflection(reflection)
 
-      if actually_has_and_belongs_to_many?(reflection)
-        # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
-        # This is the first of those two secret has_many through.
-        #
-        # In order to handle limit, offset, order correctly on has_and_belongs_to_many,
-        # we must do both this reflection and the next one at the same time.
-        # Think of it this way, if you have limit 3:
-        #   Apply only on 1st step: You check that any of 2nd step for the first 3 of 1st step match
-        #   Apply only on 2nd step: You check that any of the first 3 of second step match for any 1st step
-        #   Apply over both (as we do): You check that only the first 3 of doing both step match,
+      on_poly_belongs_to = option_value(options, :poly_belongs_to) if poly_belongs_to?(actual_source_reflection)
 
-        # To create the join, simply using next_reflection.klass.default_scoped.joins(reflection.name)
-        # would be great, except we cannot add a given_scope afterward because we are on the wrong "base class",
-        # and we can't do #merge because of the LEW crap.
-        # So we must do the joins ourself!
-        _wrapper, sub_join_contraints = wrapper_and_join_constraints(reflection)
-        next_reflection = reflection_chain[1]
-
-        current_scope = current_scope.joins(<<-SQL)
-            INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
-        SQL
-
-        alias_scope, join_constaints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
-      else
-        alias_scope, join_constaints = wrapper_and_join_constraints(reflection)
-      end
+      classes_with_scope = classes_with_scope_for_reflection(reflection, options)
 
       assoc_scope_allowed_lim_off = assoc_scope_to_keep_lim_off_from(reflection)
 
-      assoc_scopes.each do |callable|
-        relation = reflection.klass.unscoped.instance_exec(&callable)
+      classes_with_scope.map do |klass, klass_scope|
+        current_scope = klass.default_scoped
 
-        if callable != assoc_scope_allowed_lim_off
-          # I just want to remove the current values without screwing things in the merge below
-          # so we cannot use #unscope
-          relation.limit_value = nil
-          relation.offset_value = nil
-          relation.order_values = []
+        if actually_has_and_belongs_to_many?(actual_source_reflection)
+          # has_and_belongs_to_many, behind the scene has a secret model and uses a has_many through.
+          # This is the first of those two secret has_many through.
+          #
+          # In order to handle limit, offset, order correctly on has_and_belongs_to_many,
+          # we must do both this reflection and the next one at the same time.
+          # Think of it this way, if you have limit 3:
+          #   Apply only on 1st step: You check that any of 2nd step for the first 3 of 1st step match
+          #   Apply only on 2nd step: You check that any of the first 3 of second step match for any 1st step
+          #   Apply over both (as we do): You check that only the first 3 of doing both step match,
+
+          # To create the join, simply using next_reflection.klass.default_scoped.joins(reflection.name)
+          # would be great, except we cannot add a given_scope afterward because we are on the wrong "base class",
+          # and we can't do #merge because of the LEW crap.
+          # So we must do the joins ourself!
+          _wrapper, sub_join_contraints = wrapper_and_join_constraints(reflection)
+          next_reflection = reflection_chain[1]
+
+          current_scope = current_scope.joins(<<-SQL)
+              INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
+          SQL
+
+          alias_scope, join_constaints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
+        elsif on_poly_belongs_to
+          alias_scope, join_constaints = wrapper_and_join_constraints(reflection, poly_belongs_to_klass: klass)
+        else
+          alias_scope, join_constaints = wrapper_and_join_constraints(reflection)
         end
 
-        # Need to use merge to replicate the Last Equality Wins behavior of associations
-        # https://github.com/rails/rails/issues/7365
-        # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
-        current_scope = current_scope.merge(relation)
-      end
+        assoc_scopes.each do |callable|
+          relation = klass.unscoped.instance_exec(nil, &callable)
 
-      [alias_scope, current_scope.where(join_constaints)]
+          if callable != assoc_scope_allowed_lim_off
+            # I just want to remove the current values without screwing things in the merge below
+            # so we cannot use #unscope
+            relation.limit_value = nil
+            relation.offset_value = nil
+            relation.order_values = []
+          end
+
+          # Need to use merge to replicate the Last Equality Wins behavior of associations
+          # https://github.com/rails/rails/issues/7365
+          # See also the test/tests/wa_last_equality_wins_test.rb for an explanation
+          current_scope = current_scope.merge(relation)
+        end
+
+        [alias_scope, current_scope.where(join_constaints), klass_scope]
+      end
     end
 
     def self.assoc_scope_to_keep_lim_off_from(reflection)
@@ -218,12 +247,60 @@ module ActiveRecordWhereAssoc
       user_defined_actual_source_reflection(reflection).scope
     end
 
+    def self.classes_with_scope_for_reflection(reflection, options)
+      actual_source_reflection = user_defined_actual_source_reflection(reflection)
+
+      if poly_belongs_to?(actual_source_reflection)
+        on_poly_belongs_to = option_value(options, :poly_belongs_to)
+
+        if reflection.options[:source_type]
+          [reflection.options[:source_type].safe_constantize].compact
+        else
+          case on_poly_belongs_to
+          when :pluck
+            class_names = actual_source_reflection.active_record.distinct.pluck(actual_source_reflection.foreign_type)
+            class_names.compact.map!(&:safe_constantize).compact
+          when Array, Hash
+            array = on_poly_belongs_to.to_a
+            bad_class = array.detect { |c, _p| !c.is_a?(Class) || !(c < ActiveRecord::Base) }
+            if bad_class.is_a?(ActiveRecord::Base)
+              raise ArgumentError, "Must receive the Class of the model, not an instance. This is wrong: #{bad_class.inspect}"
+            elsif bad_class
+              raise ArgumentError, "Expected #{bad_class.inspect} to be a subclass of ActiveRecord::Base"
+            end
+            array
+          when :raise
+            msg = String.new
+            if actual_source_reflection == reflection
+              msg << "Association #{reflection.name.inspect} is a polymorphic belongs_to. "
+            else
+              msg << "Association #{reflection.name.inspect} is a :through relation that uses a polymorphic belongs_to"
+              msg << "#{actual_source_reflection.name.inspect} as source without without a source_type. "
+            end
+            msg << "This is not supported by ActiveRecord when doing joins, but it is by WhereAssoc. However, "
+            msg << "you must pass the :poly_belongs_to option to specify what to do in this case.\n"
+            msg << "See https://github.com/MaxLap/activerecord_where_assoc#poly_belongs_to"
+            raise ActiveRecordWhereAssoc::PolymorphicBelongsToWithoutClasses, msg
+          else
+            if on_poly_belongs_to.is_a?(Class) && on_poly_belongs_to < ActiveRecord::Base
+              [on_poly_belongs_to]
+            else
+              raise ArgumentError, "Received a bad value for :poly_belongs_to: #{on_poly_belongs_to.inspect}"
+            end
+          end
+        end
+      else
+        [reflection.klass]
+      end
+    end
+
+    # Creates a sub_query that the current_scope gets nested into if there is limit/offset to apply
     def self.process_association_step_limits(current_scope, reflection, relation_klass, options)
-      return current_scope.unscope(:limit, :offset, :order) if user_defined_actual_source_reflection(reflection).macro == :belongs_to
+      if user_defined_actual_source_reflection(reflection).macro == :belongs_to || option_value(options, :ignore_limit)
+        return current_scope.unscope(:limit, :offset, :order)
+      end
 
       current_scope = current_scope.limit(1) if reflection.macro == :has_one
-
-      current_scope = current_scope.unscope(:limit, :offset) if option_value(options, :ignore_limit)
 
       # Order is useless without either limit or offset
       current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
@@ -268,15 +345,16 @@ module ActiveRecordWhereAssoc
     # If it can receive arguments, call the proc the relation passed as argument
     def self.apply_proc_scope(relation, proc_scope)
       if proc_scope.arity == 0
-        relation.instance_exec(&proc_scope) || relation
+        relation.instance_exec(nil, &proc_scope) || relation
       else
         proc_scope.call(relation) || relation
       end
     end
 
-    def self.build_alias_scope_for_recursive_association(reflection)
-      table = reflection.klass.arel_table
-      primary_key = reflection.klass.primary_key
+    def self.build_alias_scope_for_recursive_association(reflection, poly_belongs_to_klass)
+      klass = poly_belongs_to_klass || reflection.klass
+      table = klass.arel_table
+      primary_key = klass.primary_key
       foreign_klass = reflection.send(:actual_source_reflection).active_record
 
       alias_scope = foreign_klass.base_class.unscoped
@@ -286,12 +364,13 @@ module ActiveRecordWhereAssoc
     end
 
     def self.wrapper_and_join_constraints(reflection, options = {})
-      join_keys = ActiveRecordCompat.join_keys(reflection)
+      poly_belongs_to_klass = options[:poly_belongs_to_klass]
+      join_keys = ActiveRecordCompat.join_keys(reflection, poly_belongs_to_klass)
 
       key = join_keys.key
       foreign_key = join_keys.foreign_key
 
-      table = reflection.klass.arel_table
+      table = (poly_belongs_to_klass || reflection.klass).arel_table
       foreign_klass = reflection.send(:actual_source_reflection).active_record
       foreign_table = foreign_klass.arel_table
 
@@ -299,23 +378,34 @@ module ActiveRecordWhereAssoc
       habtm_other_table = habtm_other_reflection.klass.arel_table if habtm_other_reflection
 
       if (habtm_other_table || table).name == foreign_table.name
-        alias_scope = build_alias_scope_for_recursive_association(habtm_other_reflection || reflection)
+        alias_scope = build_alias_scope_for_recursive_association(habtm_other_reflection || reflection, poly_belongs_to_klass)
         foreign_table = ALIAS_TABLE
       end
 
       constraints = table[key].eq(foreign_table[foreign_key])
 
       if reflection.type
-        # Handing of the polymorphic has_many/has_one's type column
+        # Handling of the polymorphic has_many/has_one's type column
         constraints = constraints.and(table[reflection.type].eq(foreign_klass.base_class.name))
+      end
+
+      if poly_belongs_to_klass
+        constraints = constraints.and(foreign_table[reflection.foreign_type].eq(poly_belongs_to_klass.base_class.name))
       end
 
       [alias_scope, constraints]
     end
 
+    # Because we work using Model._reflections, we don't actually get the :has_and_belongs_to_many.
+    # Instead, we get a has_many :through, which is was ActiveRecord created behind the scene.
+    # This code detects that a :through is actually a has_and_belongs_to_many.
     def self.has_and_belongs_to_many?(reflection) # rubocop:disable Naming/PredicateName
       parent = ActiveRecordCompat.parent_reflection(reflection)
       parent && parent.macro == :has_and_belongs_to_many
+    end
+
+    def self.poly_belongs_to?(reflection)
+      reflection.macro == :belongs_to && reflection.options[:polymorphic]
     end
 
     # Return true if #user_defined_actual_source_reflection is a has_and_belongs_to_many
@@ -332,6 +422,26 @@ module ActiveRecordWhereAssoc
         return reflection if reflection == reflection.source_reflection
         return reflection if has_and_belongs_to_many?(reflection)
         reflection = reflection.source_reflection
+      end
+    end
+
+    def self.check_reflection_validity!(reflection)
+      if ActiveRecordCompat.through_reflection?(reflection)
+        # Copied from ActiveRecord
+        if reflection.through_reflection.polymorphic?
+          # Since deep_cover/builtin_takeover lacks some granularity,
+          # it can sometimes happen that it won't display 100% coverage while a regular would
+          # be 100%. This happens when multiple banches are on in a single line.
+          # For this reason, I split this condition in 2
+          if ActiveRecord.const_defined?(:HasOneAssociationPolymorphicThroughError)
+            if reflection.has_one?
+              raise ActiveRecord::HasOneAssociationPolymorphicThroughError.new(reflection.active_record.name, reflection)
+            end
+          end
+          raise ActiveRecord::HasManyThroughAssociationPolymorphicThroughError.new(reflection.active_record.name, reflection)
+        end
+        check_reflection_validity!(reflection.through_reflection)
+        check_reflection_validity!(reflection.source_reflection)
       end
     end
 

@@ -149,6 +149,23 @@ Main reasons to use this:
 * You have to use `#from` as condition for `#where_assoc_*` method (possibly because a scope needs it).
 * This might result in a difference execution plan for the query since the query ends up being quite different.
 
+#### :poly_belongs_to
+Polymorphic belongs_to are tricky because the query can end up searching in multiple tables, and just knowing which Models to look into can require an expensive query. It's also frequent that you don't want to query every options but just a few that match your needs.
+
+This option allows to choose to do the expensive query or to specify which tables (Models) to query for a polymorphic belongs_to. When you specify the model, you can even specify additional scoping specific to that model.
+
+Can be:
+* `:pluck` to do a `#pluck` of the `*_type` column to detect to possible choices. This can have a performance cost for big tables
+* a model or an `Array` of model to specify which models to consider. This avoids the performance cost of `:pluck` and allows you to only consider specific models, ignoring the other ones.  
+  Note, this is not instances, it's actual models, ex: `[Post, Comment]`
+* a Hash to do the same as Array, placing the models in the keys of the Hash, but this also allows to apply specific conditions for the model as keys.  
+  The conditions are either a proc (behaves like the block) or the same thing `#where` accepts (String, Hash, Array, nil). Ex:
+  List.where_assoc_exists(:items,
+                          nil,
+                          poly_belongs_to: {Car => "color = blue",
+                                            Computer => proc { brand_new.where(core: 4) } })
+* :raise to raise an exception when this happens. This is the default
+
 ## Supported Rails versions
 
 Rails 4.1 to 5.2 are supported with Ruby 2.1 to 2.5.

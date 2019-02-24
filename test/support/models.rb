@@ -43,6 +43,14 @@ class S0 < BaseTestModel
   testable_has_many :mp2op1, through: :op1, source: :mp2, class_name: "S2"
   testable_has_one :op2mp1, -> { order("s2s.id DESC") }, through: :mp1, source: :op2, class_name: "S2"
   testable_has_one :op2op1, -> { order("s2s.id DESC") }, through: :op1, source: :op2, class_name: "S2"
+  # Somewhat confusing name.. it's a has_many but the relation used as source is a poly belongs_to...
+  # ActiveRecord needs a source_type with the poly belongs_to source. But we don't, so here's a relation for each.
+  testable_has_many :mbp2mp1, through: :mp1, source: :bp2
+  testable_has_many :mbp2mp1_st, through: :mp1, source: :bp2, source_type: "S2"
+
+  # Those are bad associations, we just want to check the error message generated
+  has_many :mp2bp1, through: :bp1, source: :mp2
+  has_one :op2bp1, through: :bp1, source: :mp2
 
   # 2 different ways of doing 3 steps:
   # one through after the other
@@ -109,10 +117,6 @@ end
 
 class S3 < BaseTestModel
   setup_test_default_scope
-end
-
-class PolyBadRecord < BaseTestModel
-  # Used for testing polymorphic associations
 end
 
 class SchemaS0 < BaseTestModel

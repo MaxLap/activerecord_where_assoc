@@ -79,6 +79,28 @@ module ActiveRecordWhereAssoc
     #                    Note, #has_one means #limit(1), so it will also use #from unless this
     #                    option is activated.
     #
+    # poly_belongs_to: Allows to specify what to do when a polymorphic belongs_to is
+    #                  encountered. Things are tricky because the query can end up searching
+    #                  in multiple Models, and just knowing which ones to look into can
+    #                  require an expensive query. It's also possible that you only want to
+    #                  search for those that match some specific Models, ignoring the other ones.
+    #                  Can be:
+    #                  * :pluck to do a pluck in the column to detect to possible choices.
+    #                    this option can have a performance cost for big tables
+    #                  * a model or an array of model to specify which models to consider.
+    #                    This avoids the performance cost of pluck, and can allow to filter
+    #                    some of the choices out that don't interest you. Note, this is not
+    #                    instances, it's actual models, ex: [Post, Comment]
+    #                  * a Hash to do the same as Array, placing the models in the keys of the Hash,
+    #                    but this also allows to apply specific conditions for the model.
+    #                    The conditions are either a proc (behaves like the block) or the same thing
+    #                    #where accepts (String, Hash, Array, nil). Ex:
+    #                      List.where_assoc_exists(:items,
+    #                                              nil,
+    #                                              poly_belongs_to: {Car => "color = blue",
+    #                                                                Computer => proc { brand_new.where(core: 4) } })
+    #                  * :raise to raise an exception when this happens. This is the default
+    #
     # === the block
     #
     # The block is used to add more complex conditions. The result behaves the same way

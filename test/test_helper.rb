@@ -56,7 +56,7 @@ class MyMinitestSpec < Minitest::Spec
       logged_lines = @my_logged_string_io.readlines
 
       # Ignore lines that are about the savepoints. Need to remove color codes first.
-      logged_lines.reject! { |line| line.gsub(/\e\[[0-9;]*m/, '')[/\)\s*(?:RELEASE )?SAVEPOINT/i] }
+      logged_lines.reject! { |line| line.gsub(/\e\[[0-9;]*m/, "")[/\)\s*(?:RELEASE )?SAVEPOINT/i] }
 
       logged_string = logged_lines.join
       if logged_string.present?

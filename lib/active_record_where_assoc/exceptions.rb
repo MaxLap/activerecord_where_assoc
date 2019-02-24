@@ -3,4 +3,7 @@
 module ActiveRecordWhereAssoc
   class MySQLDoesntSupportSubLimitError < StandardError
   end
+
+  class PolymorphicBelongsToWithoutClasses < StandardError
+  end
 end

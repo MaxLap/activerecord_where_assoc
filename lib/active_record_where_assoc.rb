@@ -9,6 +9,7 @@ module ActiveRecordWhereAssoc
     @default_options ||= {
                            ignore_limit: false,
                            never_alias_limit: false,
+                           poly_belongs_to: :raise,
                          }
   end
 end
