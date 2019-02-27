@@ -4,7 +4,15 @@ require_relative "active_record_where_assoc/version"
 require "active_record"
 
 module ActiveRecordWhereAssoc
-  # Default options for the gem. Meant to be modified in place by external code
+  # Default options for the gem. Meant to be modified in place by external code, such as in
+  # an initializer.
+  # Ex:
+  #   ActiveRecordWhereAssoc[:ignore_limit] = true
+  #
+  # A description for each can be found in ActiveRecordWhereAssoc::QueryMethods#where_assoc_exists.
+  #
+  # The only one that truly makes sense to change is :ignore_limit, when you are using MySQL, since
+  # limit are never supported on it.
   def self.default_options
     @default_options ||= {
                            ignore_limit: false,
