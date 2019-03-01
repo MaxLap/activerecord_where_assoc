@@ -126,6 +126,12 @@ Style/FormatStringToken:
 Style/FrozenStringLiteralComment:
   EnforcedStyle: always
 
+Style/GuardClause:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
 Style/InverseMethods:
   InverseMethods:
     :present?: :blank?
