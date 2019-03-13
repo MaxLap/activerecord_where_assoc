@@ -162,6 +162,7 @@ class STIS0 < BaseTestModel
                                   foreign_key: "sti_s0_id",
                                   association_foreign_key: "sti_s1_id"
 
+  belongs_to :bp1, polymorphic: true, foreign_key: "sti_s1_id", foreign_type: "sti_s1_type"
   has_many :mp1, class_name: "STIS1", as: "sti_s0"
   has_one :op1, class_name: "STIS1", as: "sti_s0"
 end
@@ -179,6 +180,9 @@ class STIS1 < BaseTestModel
 end
 
 class STIS1Sub < STIS1
+end
+
+class STIS1SubSub < STIS1Sub
 end
 
 # LEW for Last Equality Wins

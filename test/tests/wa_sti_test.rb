@@ -153,4 +153,46 @@ describe "wa" do
     s0.create_has_one!(:op1)
     assert_wa_from(STIS0SubSub, 1, :op1_from_sub)
   end
+
+  it "polymorphic belongs_to to a STI top class works the same as in ActiveRecord" do
+    s0
+    assert_wa_from(STIS0, 0, :bp1, nil, poly_belongs_to: :pluck)
+    s1 = STIS1.create!
+    s0.bp1 = s1
+    s0.save!
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: :pluck)
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: [STIS1])
+    # Using such a subclass like that is basically a condition which we don't compare in manual testing
+    without_manual_wa_test do
+      assert_wa_from(STIS0, 0, :bp1, nil, poly_belongs_to: [STIS1Sub])
+      assert_wa_from(STIS0, 0, :bp1, nil, poly_belongs_to: [STIS1SubSub])
+    end
+  end
+
+  it "polymorphic belongs_to to a STI single subclass works the same as in ActiveRecord" do
+    s0
+    assert_wa_from(STIS0, 0, :bp1, nil, poly_belongs_to: :pluck)
+    s1 = STIS1Sub.create!
+    s0.bp1 = s1
+    s0.save!
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: :pluck)
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: [STIS1])
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: [STIS1Sub])
+    # Using such a subclass like that is basically a condition which we don't compare in manual testing
+    without_manual_wa_test do
+      assert_wa_from(STIS0, 0, :bp1, nil, poly_belongs_to: [STIS1SubSub])
+    end
+  end
+
+  it "polymorphic belongs_to to a STI double subclass works the same as in ActiveRecord" do
+    s0
+    assert_wa_from(STIS0, 0, :bp1, nil, poly_belongs_to: :pluck)
+    s1 = STIS1SubSub.create!
+    s0.bp1 = s1
+    s0.save!
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: :pluck)
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: [STIS1])
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: [STIS1Sub])
+    assert_wa_from(STIS0, 1, :bp1, nil, poly_belongs_to: [STIS1SubSub])
+  end
 end
