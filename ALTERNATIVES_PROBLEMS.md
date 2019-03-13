@@ -13,6 +13,7 @@ This is a list of some of those alternatives, explaining what issues they have o
 * Allows powerful scopes without traps.
 * Handles recursive associations correctly.
 * Handles has_one correctly.
+* Handles polymorphic belongs_to
 
 ## Short version
 
@@ -26,6 +27,7 @@ Summary of the problems of the alternatives that `activerecord_where_assoc` solv
   * doing `not exists` with conditions requires a `LEFT JOIN` with the conditions as part of the `ON`, which requires raw SQL.
   * checking for 2 sets of conditions on different records of the same association won't work. (so your scopes can be incompatible)
   * can't be used with Rails 5's `or` unless both sides do the same `joins` / `includes` / `eager_load`.
+  * Doesn't work for polymorphic belongs_to.
 * `joins`:
   * `has_many` may return duplicate records.
   * using `uniq` / `distinct` to solve duplicate rows is an unexpected side-effect when this is in a scope.
@@ -95,6 +97,10 @@ This brings us back to the [raw SQL joins](#raw-sql-joins-or-sub-selects) proble
 
 `where_assoc_*` methods handle this seemlessly.
 
+### Unable to handle polymorphic belongs_to
+
+When you have a polymorphic belongs_to, you can't use `joins` or `includes` in order to do queries on it. You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a gem that provides the feature, such as `activerecord_where_assoc`.
+
 ## ActiveRecord only
 
 Those are the common ways given in stack overflow answers.
@@ -136,6 +142,7 @@ Post.joins(:comments).where(comments: {is_spam: true})
 * Cannot be used with Rails 5's `or` unless both side do the same `joins`.
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
+* [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
 
 ### Using `includes` (or `eager_load`) and `where`
 
@@ -155,6 +162,7 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
 
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
+* [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
 
 * Simply cannot be used for complex cases.
 
@@ -180,10 +188,9 @@ This is what is gem does behind the scene, but doing it manually can lead to tro
 
 https://github.com/EugZol/where_exists
 
-An interesting gem that also does `EXISTS (SELECT ... )`behind the scene. Solves most issues from ActiveRecord only alternatives, but appears less powerful than where_assoc_exists.
+An interesting gem that also does `EXISTS (SELECT ... )` behind the scene. Solves most issues from ActiveRecord only alternatives, but appears less powerful than where_assoc_exists.
 
-* where_exists supports polymorphic belongs_to. This is something that where_assoc doesn't do at the moment.  
-  However, the way it does this is by doing a pluck on the type column, which in some situation could be a slow query if there is a lots of rows to scan.
+* where_exists supports polymorphic belongs_to only by always doing a `pluck` everytime. In some situation could be a slow query if there is a lots of rows to scan. where_assoc also allows directly specifying the classes manually, avoiding the pluck and possibly filtering the choices.
   
 * Unable to use scopes of the association's model.
 ```ruby
