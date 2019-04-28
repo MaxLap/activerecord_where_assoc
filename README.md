@@ -5,7 +5,7 @@
 [![Code Climate](https://codeclimate.com/github/MaxLap/activerecord_where_assoc/badges/gpa.svg)](https://codeclimate.com/github/MaxLap/activerecord_where_assoc)
 [![Issue Count](https://codeclimate.com/github/MaxLap/activerecord_where_assoc/badges/issue_count.svg)](https://codeclimate.com/github/MaxLap/activerecord_where_assoc)
 
-This gem provides powerful methods to add conditions based on the associations of your records. (Using SQL's `EXISTS` operator)
+This gem makes it easy to do conditions based on the associations of your records in ActiveRecord (Rails). (Using SQL's `EXISTS` operator)
 
 ```ruby
 # Find my_post's comments that were not made by an admin
@@ -20,9 +20,9 @@ my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.where(i
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
 
-You also avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
+You avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
 
-Works with SQLite3, PostgreSQL and MySQL. [MySQL has one limitation](#mysql-doesnt-support-sub-limit). Untested with other RDBMS.
+Works with SQLite3, PostgreSQL and MySQL. Untested with other RDBMS.
 
 Here are [many examples](EXAMPLES.md), including the generated SQL queries.
 
@@ -34,13 +34,9 @@ This gem is very new. If you have any feedback, good or bad, do not hesitate to 
 * Success stories, if you are using it and things are going great, I wanna hear this too.
 * Suggestions to make the documentation easier to follow / more complete.
 
-
-## 0.1
-
-Since the gem is brand new, I'm releasing as 0.1 before bumping to 1.0 once I have some feedback. There is an extensive test suite testing for lots of cases, making me quite confident that it can handle most of the cases you can throw at it.
-
 ## Installation
 
+Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.6.
 Add this line to your application's Gemfile:
 
 ```ruby
@@ -165,10 +161,6 @@ Can be:
                           poly_belongs_to: {Car => "color = blue",
                                             Computer => proc { brand_new.where(core: 4) } })
 * :raise to raise an exception when this happens. This is the default
-
-## Supported Rails versions
-
-Rails 4.1 to 5.2 are supported with Ruby 2.1 to 2.5.
 
 ## Advantages
 

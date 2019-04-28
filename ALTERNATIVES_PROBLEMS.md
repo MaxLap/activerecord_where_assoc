@@ -12,7 +12,7 @@ This is a list of some of those alternatives, explaining what issues they have o
 * Need less raw SQL, which means less code, more clarity and less maintenance.
 * Allows powerful scopes without traps.
 * Handles recursive associations correctly.
-* Handles has_one correctly.
+* Handles has_one correctly (Except [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit)).
 * Handles polymorphic belongs_to
 
 ## Short version
@@ -66,6 +66,8 @@ Person.where_assoc_exists(:addresses, city: 'Montreal')
 ```
 
 The general version of this problem is the handling of `limit` and `offset` on associations and in default_scopes. where_assoc_exists handle those correctly and only checks the records that match the limit and the offset.
+
+Note: [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit), this makes handling has_one correctly not possible with MySQL.
 
 ### Raw SQL joins or sub-selects
 
