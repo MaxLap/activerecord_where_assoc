@@ -474,11 +474,12 @@ module ActiveRecordWhereAssoc
       v1 = left_operand.begin
       v2 = left_operand.end || Float::INFINITY
 
+      # We are doing a count and summing them, the lowest possible is 0, so just use that instead of changing the SQL used.
       v1 = 0 if v1 == -Float::INFINITY
 
       return sql_for_count_operator(v1, RIGHT_INFINITE_RANGE_OPERATOR_MAP.fetch(operator), right_sql) if v2 == Float::INFINITY
 
-      # Its int or a float with no mantissa, exclude_end? means -1
+      # Its int or a rounded float. Since we are comparing to integer values (count), exclude_end? just means -1
       v2 -= 1 if left_operand.exclude_end? && v2 % 1 == 0
 
       "#{right_sql} #{RANGE_OPERATOR_MAP.fetch(operator)} #{v1} AND #{v2}"
