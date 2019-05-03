@@ -55,18 +55,7 @@
   
 
   <div id="class-metadata">
-    <div id="sections-section" class="nav-section">
-  <h3>Sections</h3>
-
-  <ul class="link-list" role="directory">
     
-      <li><a href="#5Buntitled-5D"></a></li>
-    
-      <li><a href="#The+title">The title</a></li>
-    
-  </ul>
-</div>
-
     
     
     
@@ -95,8 +84,6 @@
 
   <section class="description">
     
-<p>Hello</p>
-
   </section>
 
   
@@ -212,7 +199,7 @@ association.</p>
 
           
           <div class="method-source-code" id="where_assoc_count-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 221</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 219</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_count</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -370,15 +357,15 @@ specific Models, ignoring the other ones.</p>
 <p>Do a <code>#pluck</code> in the column to detect to possible choices. This
 option can have a performance cost for big tables or when the query if done
 often, as the <code>#pluck</code> will be executed each time</p>
-</dd><dt>model or Array of models
+</dd><dt>model or array of models
 <dd>
 <p>Specify which models to search for. This avoids the performance cost of
 <code>#pluck</code> and can allow to filter some of the choices out that
 don&#39;t interest you. <br> Note, these are not instances, it&#39;s actual
 models, ex: <code>[Post, Comment]</code></p>
-</dd><dt>a Hash
+</dd><dt>a hash
 <dd>
-<p>The keys must be models (same behavior as an Array of models). <br> The
+<p>The keys must be models (same behavior as an array of models). <br> The
 values are conditions to apply only for key&#39;s model. The conditions are
 either a proc (behaves like the block, but only for that model) or the same
 things <code>#where</code> can receive. (String, Hash, Array, nil). Ex:</p>
@@ -442,7 +429,7 @@ you need to call methods on the self outside of the block, such as:</p>
 
           
           <div class="method-source-code" id="where_assoc_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 156</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 154</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -483,7 +470,7 @@ record that fulfill the conditions are found.</p>
 
           
           <div class="method-source-code" id="where_assoc_not_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 167</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 165</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_not_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -499,29 +486,6 @@ record that fulfill the conditions are found.</p>
     
     </section>
   
-  </section>
-
-  
-  
-  <section id="The+title" class="documentation-section">
-    
-    <header class="documentation-section-title">
-      <h2>
-        The title
-      </h2>
-      <span class="section-click-top">
-        <a href="#top">&uarr; top</a>
-      </span>
-    </header>
-    
-
-    
-
-    
-
-    
-
-    
   </section>
 </main>
 
