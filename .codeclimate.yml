@@ -9,4 +9,12 @@ ratings:
    - "**.rb"
 
 exclude_patterns:
-  - 'docs/**/*'
+  - 'docs/'
+  # These are the defaults that need to be re-applied because I need a custom choice.
+  - 'script/'
+  - '**/spec/'
+  - '**/test/'
+  - '**/tests/'
+  - '**/vendor/'
+  - '**/*_test.go'
+  - '**/*.d.ts'
