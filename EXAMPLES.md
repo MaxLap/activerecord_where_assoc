@@ -2,7 +2,7 @@ Here are some example usages of the gem, along with the generated SQL. Each of t
 
 The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
-The content of this file is generated from running `ruby examples/examples.rb`
+The content of this file is generated from running `ruby examples/examples.rb > EXAMPLES.md`
 
 -------
 
@@ -46,6 +46,37 @@ SELECT "posts".* FROM "posts"
     SELECT COUNT(*) FROM "comments"
     WHERE "comments"."post_id" = "posts"."id"
   ), 0))
+```
+
+---
+
+```ruby
+# Users that have made posts
+User.where_assoc_exists(:posts)
+```
+```sql
+SELECT "users".* FROM "users"
+  WHERE (EXISTS (
+    SELECT 1 FROM "posts"
+    WHERE "posts"."author_id" = "users"."id"
+  ))
+```
+
+---
+
+```ruby
+# Users that have made posts that have comments
+User.where_assoc_exists([:posts, :comments])
+```
+```sql
+SELECT "users".* FROM "users"
+  WHERE (EXISTS (
+    SELECT 1 FROM "posts"
+    WHERE "posts"."author_id" = "users"."id" AND (EXISTS (
+      SELECT 1 FROM "comments"
+      WHERE "comments"."post_id" = "posts"."id"
+    ))
+  ))
 ```
 
 ---
@@ -170,7 +201,7 @@ SELECT "posts".* FROM "posts"
 ---
 
 ```ruby
-# posts where the author also commented on the post (use conditions between posts)
+# posts where the author also commented on the post (uses a conditions between tables)
 Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
 ```
 ```sql

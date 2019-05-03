@@ -19,7 +19,7 @@ class Examples
 
       The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
-      The content of this file is generated from running `ruby examples/examples.rb`
+      The content of this file is generated from running `ruby examples/examples.rb > EXAMPLES.md`
 
       -------
 
@@ -44,6 +44,18 @@ class Examples
       Posts that have a least 50 comment
     DESC
       Post.where_assoc_count(50, :<=, :comments)
+    RUBY
+
+    output_example(<<-DESC, <<-RUBY)
+      Users that have made posts
+    DESC
+      User.where_assoc_exists(:posts)
+    RUBY
+
+    output_example(<<-DESC, <<-RUBY)
+      Users that have made posts that have comments
+    DESC
+      User.where_assoc_exists([:posts, :comments])
     RUBY
 
     puts "## Examples with condition / scope"
@@ -101,7 +113,7 @@ class Examples
     RUBY
 
     output_example(<<-DESC, <<-RUBY)
-      posts where the author also commented on the post (use conditions between posts)
+      posts where the author also commented on the post (uses a conditions between tables)
     DESC
       Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
     RUBY
@@ -154,7 +166,7 @@ class Examples
     puts "```"
     puts "```sql\n#{sql}\n```"
 
-    next unless footer
+    return unless footer
 
     puts
     puts "---"
