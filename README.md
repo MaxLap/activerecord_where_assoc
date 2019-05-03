@@ -55,7 +55,7 @@ Or install it yourself as:
 
 ### `#where_assoc_exists` & `#where_assoc_not_exists`
 
-Returns a new relation, which is the result of filtering the current relation based on if a record for the specified association of the model exists (or not). Conditions that the associated model must match to count as existing can also be specified.
+Returns a new relation, which is the result of filtering the current relation based on if a record for the specified association of the model exists (or not). Conditions the associated model must match can can also be specified.
 
 ```ruby
 Post.where_assoc_exists(:comments, is_spam: true)
@@ -234,7 +234,7 @@ Doing the same thing but with less associations between `address` and `posts` wo
 
 ### The opposite of multiple nested EXISTS...
 
-... is a single `NOT EXISTS` with then nested ones still using `EXISTS`.
+... is a single `NOT EXISTS` with the nested ones still using `EXISTS`.
 
 All the methods always chain nested associations using an `EXISTS` when they have to go through multiple hoops. Only the outer-most, or first, association will have a `NOT EXISTS` when using `#where_assoc_not_exists` or a `COUNT` when using `#where_assoc_count`. This is the logical way of doing it.
 

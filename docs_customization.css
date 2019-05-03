@@ -1,0 +1,63 @@
+
+/* This css is used to customize the documentation */
+
+main {
+  /* Seems like a good size */
+  max-width: 1024px;
+}
+
+main .method-args {
+  font-weight: normal;
+  font-size: 90%;
+}
+
+main .method-detail {
+  cursor: initial;
+}
+
+main .method-heading {
+  cursor: pointer;
+}
+
+main ul, main ol {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+main p {
+  margin: 0;
+}
+
+main p+p {
+  margin-top: 0.5em;
+}
+
+main li > p {
+  margin: 0;
+}
+
+main li > p+p {
+  margin-top: 0.5em;
+}
+
+main dl, main dt {
+  margin: 0;
+}
+
+main dd {
+  margin-left: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+code {
+  /* Similar formatting to Github's */
+  background-color: rgba(27,31,35,.03);
+  border-radius: 3px;
+  font-size: 85%;
+  margin: 0;
+  padding: .2em .4em;
+}
+
+.ruby-comment {
+  color: #ff0000
+}
