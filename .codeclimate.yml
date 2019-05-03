@@ -7,3 +7,6 @@ ratings:
    paths:
    - "lib/**/*"
    - "**.rb"
+
+exclude_patterns:
+  - 'docs/**/*'
