@@ -152,8 +152,8 @@ module ActiveRecordWhereAssoc
     #
     #        Post.where_assoc_exists(:comments) { |comments| comments.where(id: self.something) }
     #
-    def where_assoc_exists(association_name, given_scope = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_exists(self, association_name, given_scope, options, &block)
+    def where_assoc_exists(association_name, conditions = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_exists(self, association_name, conditions, options, &block)
     end
 
     # Returns a new relation, which is the result of filtering the current relation
@@ -163,8 +163,8 @@ module ActiveRecordWhereAssoc
     # The parameters and everything is identical to #where_assoc_exists. The only
     # difference is that a record is matched if no matching association record that
     # fulfill the conditions are found.
-    def where_assoc_not_exists(association_name, given_scope = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_not_exists(self, association_name, given_scope, options, &block)
+    def where_assoc_not_exists(association_name, conditions = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_not_exists(self, association_name, conditions, options, &block)
     end
 
     # Returns a new relation, which is the result of filtering the current relation
@@ -217,8 +217,8 @@ module ActiveRecordWhereAssoc
     #
     #   # The users that have at least 5 posts with at least one comments
     #   User.where_assoc_count(5, :<=, :posts) { where_assoc_exists(:comments) }
-    def where_assoc_count(left_operand, operator, association_name, given_scope = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_count(self, left_operand, operator, association_name, given_scope, options, &block)
+    def where_assoc_count(left_operand, operator, association_name, conditions = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_count(self, left_operand, operator, association_name, conditions, options, &block)
     end
   end
 end

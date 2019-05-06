@@ -47,8 +47,8 @@ module ActiveRecordWhereAssoc
     # based on if a record for the specified association of the model exists.
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.do_where_assoc_exists(base_relation, association_name, given_scope, options, &block)
-      nested_relations = relations_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
+    def self.do_where_assoc_exists(base_relation, association_name, given_conditions, options, &block)
+      nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relations)
     end
 
@@ -56,8 +56,8 @@ module ActiveRecordWhereAssoc
     # based on if a record for the specified association of the model doesn't exist.
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.do_where_assoc_not_exists(base_relation, association_name, given_scope, options, &block)
-      nested_relations = relations_on_association(base_relation, association_name, given_scope, options, block, NestWithExistsBlock)
+    def self.do_where_assoc_not_exists(base_relation, association_name, given_conditions, options, &block)
+      nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, block, NestWithExistsBlock)
       NestWithExistsBlock.call(base_relation, nested_relations, "NOT ")
     end
 
@@ -65,14 +65,14 @@ module ActiveRecordWhereAssoc
     # based on how many records for the specified association of the model exists.
     #
     # See #where_assoc_exists and #where_assoc_count in query_methods.rb for usage details.
-    def self.do_where_assoc_count(base_relation, left_operand, operator, association_name, given_scope, options, &block)
+    def self.do_where_assoc_count(base_relation, left_operand, operator, association_name, given_conditions, options, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      nested_relations = relations_on_association(base_relation, association_name, given_scope, options, deepest_scope_mod, NestWithSumBlock)
+      nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, deepest_scope_mod, NestWithSumBlock)
 
       right_sql = nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
 
@@ -83,25 +83,30 @@ module ActiveRecordWhereAssoc
     # Returns relations on the associated model meant to be embedded in a query
     # Will return more than one association only for polymorphic belongs_to
     # association_names_path: can be an array of association names or a single one
-    def self.relations_on_association(base_relation, association_names_path, given_scope, options, last_assoc_block, nest_assocs_block)
+    def self.relations_on_association(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
       association_names_path = Array.wrap(association_names_path)
 
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
-          nested_scope = relations_on_association(scope, association_names_path[1..-1], given_scope, options, last_assoc_block, nest_assocs_block)
+          nested_scope = relations_on_association(scope,
+                                                  association_names_path[1..-1],
+                                                  given_conditions,
+                                                  options,
+                                                  last_assoc_block,
+                                                  nest_assocs_block)
           nest_assocs_block.call(scope, nested_scope)
         end
 
         relations_on_one_association(base_relation, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
       else
-        relations_on_one_association(base_relation, association_names_path.first, given_scope, options, last_assoc_block, nest_assocs_block)
+        relations_on_one_association(base_relation, association_names_path.first, given_conditions, options, last_assoc_block, nest_assocs_block)
       end
     end
 
     # Returns relations on the associated model meant to be embedded in a query
     # Will return more than one association only for polymorphic belongs_to
-    def self.relations_on_one_association(base_relation, association_name, given_scope, options, last_assoc_block, nest_assocs_block)
+    def self.relations_on_one_association(base_relation, association_name, given_conditions, options, last_assoc_block, nest_assocs_block)
       relation_klass = base_relation.klass
       final_reflection = fetch_reflection(relation_klass, association_name)
 
@@ -133,7 +138,7 @@ module ActiveRecordWhereAssoc
           current_scope = process_association_step_limits(current_scope, reflection, relation_klass, options)
 
           if i.zero?
-            current_scope = current_scope.where(given_scope) if given_scope
+            current_scope = current_scope.where(given_conditions) if given_conditions
             if klass_scope
               if klass_scope.respond_to?(:call)
                 current_scope = apply_proc_scope(current_scope, klass_scope)
@@ -197,7 +202,7 @@ module ActiveRecordWhereAssoc
           #   Apply over both (as we do): You check that only the first 3 of doing both step match,
 
           # To create the join, simply using next_reflection.klass.default_scoped.joins(reflection.name)
-          # would be great, except we cannot add a given_scope afterward because we are on the wrong "base class",
+          # would be great, except we cannot add a given_conditions afterward because we are on the wrong "base class",
           # and we can't do #merge because of the LEW crap.
           # So we must do the joins ourself!
           _wrapper, sub_join_contraints = wrapper_and_join_constraints(reflection)
