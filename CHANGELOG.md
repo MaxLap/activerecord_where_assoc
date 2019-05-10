@@ -1,4 +1,10 @@
 
+# 1.0.0
+
+* Now supports polymorphic belongs_to
+
+# 0.1.3
+
 * Use `SELECT 1` instead of `SELECT 0`...  
   ... it just seems more natural that way.
 * Bugfixes
