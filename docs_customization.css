@@ -65,3 +65,7 @@ code {
 .ruby-comment {
   color: #ff0000
 }
+
+.method-section > header:first-child {
+  display: none;
+}

@@ -53,9 +53,33 @@
   </div>
 
   
+<div class="nav-section">
+  <h3>Table of Contents</h3>
+
+  <ul class="link-list" role="directory">
+    <li><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Association">Association</a>
+    <li><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Condition">Condition</a>
+    <li><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Block">Block</a>
+    <li><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Options">Options</a>
+  </ul>
+</div>
+
 
   <div id="class-metadata">
+    <div id="sections-section" class="nav-section">
+  <h3>Sections</h3>
+
+  <ul class="link-list" role="directory">
     
+      <li><a href="#5Buntitled-5D"></a></li>
+    
+      <li><a href="#Basic+methods">Basic methods</a></li>
+    
+      <li><a href="#Complex+method">Complex method</a></li>
+    
+  </ul>
+</div>
+
     
     
     
@@ -84,219 +108,184 @@
 
   <section class="description">
     
-  </section>
+<p>This module adds new variations of <code>#where</code> to your
+Models/relations/associations/scopes. These variations check if an
+association has records, so you can check if a <code>Post</code> has any
+<code>Comments</code>.</p>
 
-  
-  
-  
-  <section id="5Buntitled-5D" class="documentation-section">
-    
+<p>These variations return a new relation (just like <code>#where</code>) so
+you can chain them with other scoping methods such as <code>#where</code>,
+<code>#order</code>, <code>#limit</code>, more of these variations, etc.</p>
 
-    
+<p>The arguments common to all methods are documented here at the top.</p>
 
-    
-
-    
-
-    
-     <section id="public-instance-5Buntitled-5D-method-details" class="method-section">
-       <header>
-         <h3>Public Instance Methods</h3>
-       </header>
-
-    
-      <div id="method-i-where_assoc_count" class="method-detail ">
-        
-        <div class="method-heading">
-          <span class="method-name">where_assoc_count</span><span
-            class="method-args">(left_operand, operator, association_name, given_scope = nil, options = {}, &block)</span>
-          
-          <span class="method-click-advice">click to toggle source</span>
-          
-        </div>
-        
-
-        <div class="method-description">
-          
-          <p>Returns a new relation, which is the result of filtering the current
-relation based on how many records for the specified association of the
-model exists. Conditions the associated model must match can also be
-specified.</p>
-
-<p>This method is a generalization of <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>
-and <a
-href="QueryMethods.html#method-i-where_assoc_not_exists">#where_assoc_not_exists</a>.
-Read <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>
-first as this doc only describe the increased flexibility/power of <a
-href="QueryMethods.html#method-i-where_assoc_count">#where_assoc_count</a>.</p>
-
-<p>It behave behaves the same way as them, but is more flexible as it allows
-you to be specific about how many matches there should be. To clarify, here
-are equivalent examples:</p>
-
-<pre class="ruby"><span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>)
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">1</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">comments</span>)
-
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_not_exists</span>(:<span class="ruby-identifier">comments</span>)
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">0</span>, :<span class="ruby-operator">==</span>, :<span class="ruby-identifier">comments</span>)
-</pre>
-
-<p>The usage is the same as with <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>,
-however, 2 arguments are inserted at the beginning.</p>
-<dl class="rdoc-list label-list"><dt>left_operand
-<dd>
-<p>1st argument, the left side of the comparison. <br> One of:</p>
+<p>For brevity, the examples are all directly on models, such as User, Post,
+Comment, but the methods are available and behave the same on:</p>
 <ul><li>
-<p>a number</p>
+<p>associations: <code>my_user.posts.where_assoc_exists(:comments)</code></p>
 </li><li>
-<p>a string of SQL to embed in the query</p>
+<p>relations: <code>Posts.where(serious:
+true).where_assoc_exists(:comments)</code></p>
 </li><li>
-<p>a range (operator must be :== or :!=), will use BETWEEN or NOT BETWEEN<br>
-supports infinite ranges and exclusive end</p>
-</li></ul>
-</dd><dt>operator
-<dd>
-<p>The operator to use, one of these symbols: <code>  :&lt;  :&lt;=  :==  :!= 
-:&gt;=  :&gt;  </code></p>
-</dd><dt>association_name, condition, options
-<dd>
-<p>Same as <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>&#39;
-<code>association_name</code>, <code>condition</code>, <code>options</code>
-arguments</p>
-</dd><dt>&amp;block
-<dd>
-<p>Same as <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>&#39;
-block</p>
-</dd></dl>
-
-<p>The order of the parameters may seem confusing. But you will get used to
-it. To help remember the order of the parameters, remember that the goal is
-to do:</p>
-
-<pre>5 &lt; (SELECT COUNT(*) FROM ...)</pre>
-
-<p>So the parameters are in the same order as in that query: number, operator,
-association.</p>
-
-<p>To be clear, when you use multiple associations in an array, the count you
-will be comparing against is the total number of records of that last
-association.</p>
-
-<pre class="ruby"><span class="ruby-comment"># The users that have received at least 5 comments total on all of their posts</span>
-<span class="ruby-comment"># So this can be one post that has 5 comments of 5 posts with 1 comments</span>
-<span class="ruby-constant">User</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, [:<span class="ruby-identifier">posts</span>, :<span class="ruby-identifier">comments</span>])
-
-<span class="ruby-comment"># The users that have at least 5 posts with at least one comments</span>
-<span class="ruby-constant">User</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">posts</span>) { <span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) }
-</pre>
-          
-          
-
-          
-          <div class="method-source-code" id="where_assoc_count-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 219</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
-  <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_count</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
-<span class="ruby-keyword">end</span></pre>
-          </div>
-          
-        </div>
-
-        
-
-        
-      </div>
-
-    
-      <div id="method-i-where_assoc_exists" class="method-detail ">
-        
-        <div class="method-heading">
-          <span class="method-name">where_assoc_exists</span><span
-            class="method-args">(association_name, given_scope = nil, options = {}, &block)</span>
-          
-          <span class="method-click-advice">click to toggle source</span>
-          
-        </div>
-        
-
-        <div class="method-description">
-          
-          <p>Returns a new relation, which is the result of filtering the current
-relation based on if a record for the specified association of the model
-exists. Conditions the associated model must match can can also be
-specified.</p>
-
-<p>Quick overview of arguments, more details after:</p>
-<ul><li>
-<p><strong>association_name</strong>: The association to check against</p>
+<p>scopes: (On the Post model) <code>scope :with_comments, -&gt; {
+where_assoc_exists(:comments) }</code></p>
 </li><li>
-<p><strong>condition</strong>: Filtering the associated record must match</p>
-</li><li>
-<p><strong>options</strong>: Options to alter the generated query</p>
-</li><li>
-<p><strong>&amp;block</strong>: More complex filtering the associated record
-must match</p>
+<p>models: <code>Post.where_assoc_exists(:comments)</code></p>
 </li></ul>
 
 <p>You may also consider viewing the gem&#39;s README. It contains known
 issues and some tips. You can view the <a
 href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/README.md">README
 on github</a>.</p>
-<dl class="rdoc-list label-list"><dt>association_name
-<dd>
-<p>This is the association you want to check if records exists. If you want,
-you can pass an array of associations. They will be followed in order, just
-like a has_many :through would.</p>
+
+<p>If you need extra convincing to try this gem, I have a whole document with
+the problems of the other ways of doing this kind of filtering: <a
+href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/ALTERNATIVES_PROBLEMS.md">alternatives’
+problems</a>.</p>
+
+<h3 id="module-ActiveRecordWhereAssoc::QueryMethods-label-Association">Association<span><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Association">&para;</a> <a href="#top">&uarr;</a></span></h3>
+
+<p>The associations referred here are the links between your different models.
+They are your <code>#belongs_to</code>, <code>#has_many</code>,
+<code>#has_one</code>, <code>#has_and_belongs_to_many</code>.</p>
+
+<p>This gem is about getting records from your database if their associations
+match (or don&#39;t match) a certain condition (which by default is just to
+exist).</p>
+
+<p>Every method here has an <strong>association_name</strong> parameter. This
+is the association you want to check if records exists.</p>
 
 <pre class="ruby"><span class="ruby-comment"># Posts with at least one comment</span>
 <span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>)
 
-<span class="ruby-comment"># Posts for which there is at least one reply to a comment.</span>
+<span class="ruby-comment"># Posts with no comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_not_exists</span>(:<span class="ruby-identifier">comments</span>)
+</pre>
+
+<p>If you want, you can pass an array of associations. They will be followed
+in order, just like a has_many :through would.</p>
+
+<pre class="ruby"><span class="ruby-comment"># Posts which have at least one comment with a reply</span>
+<span class="ruby-comment"># In other words: Posts which have at least one reply reachable through his comments</span>
 <span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>([:<span class="ruby-identifier">comments</span>, :<span class="ruby-identifier">replies</span>])
 </pre>
 
-<p>Note that if you use conditions / blocks, they will only be applied to the
-last association of the array. If you want something else, you will need to
-use the block argument to nest multiple calls to <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a></p>
+<h3 id="module-ActiveRecordWhereAssoc::QueryMethods-label-Condition">Condition<span><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Condition">&para;</a> <a href="#top">&uarr;</a></span></h3>
 
-<pre class="ruby"><span class="ruby-comment"># Posts with a flagged comment that has a reply</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) {
-  <span class="ruby-identifier">where</span>(<span class="ruby-identifier">flagged</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>).<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">replies</span>)
+<p>After the <code>association_name</code> argument, you can pass additional
+conditions the associated record must also match to be considered as
+existing.</p>
+
+<p>This <code>condition</code> argument is passed directly to
+<code>#where</code>, so you can pass in the following:</p>
+
+<pre># Posts that have at least one comment considered as spam
+# Using a Hash
+Post.where_assoc_exists(:comments, is_spam: true)
+
+# Using a String
+Post.where_assoc_exists(:comments, &quot;is_spam = true&quot;)
+
+# Using an Array (a string and its binds)
+Post.where_assoc_exists(:comments, [&quot;is_spam = ?&quot;, true])
+
+If the condition is blank, it is ignored (just like +#where+ does).</pre>
+
+<p>Note, if you specify multiple associations using an Array, the conditions
+will only be applied to the last association.</p>
+
+<pre class="ruby"><span class="ruby-comment"># Users which have a post that has a comment marked as spam.</span>
+<span class="ruby-comment"># is_spam is only checked on the comment.</span>
+<span class="ruby-constant">User</span>.<span class="ruby-identifier">where_assoc_exists</span>([:<span class="ruby-identifier">posts</span>, :<span class="ruby-identifier">comments</span>], <span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
+</pre>
+
+<p>If you want something else, you will need to use a block (see below) to
+nest multiple calls.</p>
+
+<pre class="ruby"><span class="ruby-comment"># Users which have a post made in the last 5 days which has comments</span>
+<span class="ruby-constant">User</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">posts</span>) {
+  <span class="ruby-identifier">where</span>(<span class="ruby-string">&quot;created_at &gt; ?&quot;</span>, <span class="ruby-value">5</span>.<span class="ruby-identifier">days</span>.<span class="ruby-identifier">ago</span>).<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>)
 }
 </pre>
-</dd><dt>condition
+
+<h3 id="module-ActiveRecordWhereAssoc::QueryMethods-label-Block">Block<span><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Block">&para;</a> <a href="#top">&uarr;</a></span></h3>
+
+<p>The block is used to add more complex conditions. The effect is the same as
+the condition parameter, in that these conditions must be matched for the
+association to be considered to exist, but lets you use any scoping
+methods, such as <code>#where</code>, <code>#joins</code>, nested
+<code>#where_assoc_*</code>, scopes on the model, etc.</p>
+
+<p>Note that using <code>#joins</code> might lead to unexpected results when
+using <a
+href="QueryMethods.html#method-i-where_assoc_count">#where_assoc_count</a>,
+since if the joins adds rows, it will change the resulting count. It
+probably makes more sense to, again, use one of the
+<code>where_assoc_*</code> methods.</p>
+
+<p>There are 2 ways of using the block for adding conditions to the
+association.</p>
+<dl class="rdoc-list label-list"><dt>A block that receives one argument
 <dd>
-<p>This argument is additional conditions the association&#39;s records must
-fulfill to be considered as “existing”. The argument is passed directly to
-<code>#where</code>.</p>
+<p>The block receives a relation on the target association and return a
+relation with added filters or may return nil to do nothing.</p>
 
-<pre class="ruby"><span class="ruby-comment"># Posts that have at least one comment considered as spam</span>
-<span class="ruby-comment"># Using a Hash</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
+<pre class="ruby"><span class="ruby-comment"># These are all equivalent. Posts which have a comment marked as spam</span>
+<span class="ruby-comment"># Using a where for the added condition</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments_scope</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments_scope</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>) }
 
-<span class="ruby-comment"># Using a String</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-string">&quot;is_spam = true&quot;</span>)
+<span class="ruby-comment"># Applying a scope of the relation</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments_scope</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments_scope</span>.<span class="ruby-identifier">spam_flagged</span> }
 
-<span class="ruby-comment"># Using an Array (a string and its binds)</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, [<span class="ruby-string">&quot;is_spam = ?&quot;</span>, <span class="ruby-keyword">true</span>])
+<span class="ruby-comment"># Applying a scope of the relation, using the &amp;:shortcut for procs</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-operator">&amp;</span>:<span class="ruby-identifier">spam_flagged</span>)
+</pre>
+</dd><dt>A block that receives no argument
+<dd>
+<p>Instead of receiving the relation as argument, the relation is used as the
+“self” of the block. Everything else is identical to the block with one
+argument.</p>
+
+<pre class="ruby"><span class="ruby-comment"># These are all equivalent. Posts which have a comment marked as spam</span>
+<span class="ruby-comment"># Using a where for the added condition</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-identifier">where</span>(<span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>) }
+
+<span class="ruby-comment"># Applying a scope of the relation</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-identifier">spam_flagged</span> }
+</pre>
+</dd></dl>
+
+<p>The main reason to use a block with an argument instead of without one is
+when you need to call methods on the self outside of the block, such as:</p>
+
+<pre class="ruby"><span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">author_id</span><span class="ruby-operator">:</span> <span class="ruby-identifier">foo</span>(:<span class="ruby-identifier">bar</span>)) }
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">author_id</span><span class="ruby-operator">:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">foo</span>(:<span class="ruby-identifier">bar</span>)) }
+<span class="ruby-comment"># In both cases, using the version without arguments would not work, since the #foo</span>
+<span class="ruby-comment"># would be called on the scope that was given to the block, instead of on the caller</span>
+<span class="ruby-comment"># of the #where_assoc_exists method.</span>
+
+<span class="ruby-comment"># THESE ARE WRONG!</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-identifier">where</span>(<span class="ruby-identifier">author_id</span><span class="ruby-operator">:</span> <span class="ruby-identifier">foo</span>(:<span class="ruby-identifier">bar</span>)) }
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-identifier">where</span>(<span class="ruby-identifier">author_id</span><span class="ruby-operator">:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">foo</span>(:<span class="ruby-identifier">bar</span>)) }
+<span class="ruby-comment"># THESE ARE WRONG!</span>
 </pre>
 
-<p>If the condition argument is blank, it is ignored (just like
-<code>#where</code> does).</p>
-</dd><dt>options
-<dd>
-<p>Some options are available to tweak how things queries are generated.</p>
+<h3 id="module-ActiveRecordWhereAssoc::QueryMethods-label-Options">Options<span><a href="#module-ActiveRecordWhereAssoc::QueryMethods-label-Options">&para;</a> <a href="#top">&uarr;</a></span></h3>
 
-<p>Their default values can be changed globally:</p>
+<p>Some options are available to tweak how queries are generated. The default
+values of the options can be changed globally:</p>
 
 <pre class="ruby"><span class="ruby-comment"># Somewhere in your setup code, such as an initializer in Rails</span>
 <span class="ruby-constant">ActiveRecordWhereAssoc</span>.<span class="ruby-identifier">default_options</span>[:<span class="ruby-identifier">ignore_limit</span>] = <span class="ruby-keyword">true</span>
+</pre>
+
+<p>Or you can pass them as arguments after the <code>condition</code>
+argument.</p>
+
+<pre class="ruby"><span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-string">&quot;is_spam = TRUE&quot;</span>, <span class="ruby-identifier">ignore_limit</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
+<span class="ruby-comment"># Because this is 2 consecutive hashes, must use the +{}+</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, {<span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>}, <span class="ruby-identifier">ignore_limit</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
 </pre>
 
 <p>Note, if you don&#39;t need a condition, you must pass nil as condition to
@@ -378,60 +367,115 @@ things <code>#where</code> can receive. (String, Hash, Array, nil). Ex:</p>
 <p>(default) raise an exception when a polymorphic belongs_to is encountered.</p>
 </dd></dl>
 </dd></dl>
+
+  </section>
+
+  
+  
+  
+  <section id="5Buntitled-5D" class="documentation-section">
+    
+
+    
+
+    
+
+    
+
+    
+  </section>
+
+  
+  
+  <section id="Basic+methods" class="documentation-section">
+    
+    <header class="documentation-section-title">
+      <h2>
+        Basic methods
+      </h2>
+      <span class="section-click-top">
+        <a href="#top">&uarr; top</a>
+      </span>
+    </header>
+    
+
+    
+
+    
+
+    
+
+    
+     <section id="public-instance-Basic+methods-method-details" class="method-section">
+       <header>
+         <h3>Public Instance Methods</h3>
+       </header>
+
+    
+      <div id="method-i-where_assoc_exists" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">where_assoc_exists</span><span
+            class="method-args">(association_name, conditions = nil, options = {}, &block)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Returns a new relation with a condition added (a <code>#where</code>) that
+checks if an association of the model exists. Extra conditions the
+associated model must match can also be specified.</p>
+
+<p>You could say this is a way of doing a <code>#select</code> that uses
+associations of your model on the SQL side, but faster and more concise.</p>
+
+<p>Examples (with an equivalent ruby <code>#select</code>)</p>
+
+<pre class="ruby"><span class="ruby-comment"># Posts that have comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">exists?</span> }
+
+<span class="ruby-comment"># Posts that have comments marked as spam</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">any?</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">comment</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comment</span>.<span class="ruby-identifier">is_spam</span> } }
+
+<span class="ruby-comment"># Posts that have comments that have replies</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>([:<span class="ruby-identifier">comments</span>, :<span class="ruby-identifier">replies</span>])
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">any?</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">comment</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comment</span>.<span class="ruby-identifier">replies</span>.<span class="ruby-identifier">exists?</span> } }
+</pre>
+<dl class="rdoc-list label-list"><dt>association_name
+<dd>
+<p>The association that must exist <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Association">Association at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>condition
+<dd>
+<p>Extra conditions the association must match <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Condition">Condition at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>options
+<dd>
+<p>Options to alter the generated query <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Options">Options at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
 </dd><dt>&amp;block
 <dd>
-<p>The block is used to add more complex conditions. The result behaves the
-same way as the 2nd argument&#39;s conditions, but lets you use any scoping
-methods, such as <code>#where</code>, <code>#joins</code>, nested
-<code>#where_assoc_*</code> and scopes of the model. Note that using
-<code>#joins</code> might lead to unexpected results when using <a
-href="QueryMethods.html#method-i-where_assoc_count">#where_assoc_count</a>,
-since if the joins adds rows, it will change the resulting count.</p>
-
-<p>There are 2 ways of using the block for adding conditions to the
-association.</p>
-<dl class="rdoc-list label-list"><dt>A block that receives one argument
-<dd>
-<p>The block receives a relation on the target association and return a
-relation with added filters or may return nil to do nothing.</p>
-
-<pre class="ruby"><span class="ruby-comment"># Using a where for the added condition</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>) }
-
-<span class="ruby-comment"># Applying a scope of the relation</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments</span>.<span class="ruby-identifier">spam_flagged</span> }
-
-<span class="ruby-comment"># Applying a scope of the relation, using the &amp;:shortcut for procs</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-operator">&amp;</span>:<span class="ruby-identifier">spam_flagged</span>)
-</pre>
-</dd><dt>A block that receives no argument
-<dd>
-<p>Instead of receiving the relation as argument, the relation is used as the
-“self” of the block. Everything else is identical to the block with one
-argument.</p>
-
-<pre class="ruby"><span class="ruby-comment"># Using a where for the added condition</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-identifier">where</span>(<span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>) }
-
-<span class="ruby-comment"># Applying a scope of the relation</span>
-<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-identifier">spam_flagged</span> }
-</pre>
-
-<p>The main reason to use a block with an argument instead of without is when
-you need to call methods on the self outside of the block, such as:</p>
-
-<pre class="ruby"><span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">comments</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comments</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">id</span><span class="ruby-operator">:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">something</span>) }
-</pre>
-</dd></dl>
+<p>More complex conditions the associated record must match (can also use
+scopes of the association&#39;s model) <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Block">Block at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
 </dd></dl>
           
           
 
           
           <div class="method-source-code" id="where_assoc_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 154</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
-  <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 238</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
           
@@ -447,7 +491,7 @@ you need to call methods on the self outside of the block, such as:</p>
         
         <div class="method-heading">
           <span class="method-name">where_assoc_not_exists</span><span
-            class="method-args">(association_name, given_scope = nil, options = {}, &block)</span>
+            class="method-args">(association_name, conditions = nil, options = {}, &block)</span>
           
           <span class="method-click-advice">click to toggle source</span>
           
@@ -456,23 +500,238 @@ you need to call methods on the self outside of the block, such as:</p>
 
         <div class="method-description">
           
-          <p>Returns a new relation, which is the result of filtering the current
-relation based on if a record for the specified association of the model
-doesn&#39;t exist. Conditions the associated model must match to count as
-existing can also be specified.</p>
+          <p>Returns a new relation with a condition added (a <code>#where</code>) that
+checks if an association of the model does not exist. Extra conditions the
+associated model that exists must not match can also be specified.</p>
 
-<p>The parameters and everything is identical to <a
-href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>.
-The only difference is that a record is matched if no matching association
-record that fulfill the conditions are found.</p>
+<p>This the exact opposite of what <a
+href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>
+does, so a <a
+href="QueryMethods.html#method-i-where_assoc_not_exists">#where_assoc_not_exists</a>
+with the same arguments will keep every records that were rejected by the
+<a
+href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>.</p>
+
+<p>You could say this is a way of doing a <code>#reject</code> that uses
+associations of your model on the SQL side, but faster and more concise.</p>
+
+<p>Examples (with an equivalent ruby <code>#reject</code>)</p>
+
+<pre class="ruby"><span class="ruby-comment"># Posts that have no comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_not_exists</span>(:<span class="ruby-identifier">comments</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">reject</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">exists?</span> }
+
+<span class="ruby-comment"># Posts that don&#39;t have comments marked as spam (but might have unmarked comments)</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_not_exists</span>(:<span class="ruby-identifier">comments</span>, <span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">reject</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">any?</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">comment</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comment</span>.<span class="ruby-identifier">is_spam</span> } }
+
+<span class="ruby-comment"># Posts that don&#39;t have comments that have replies (but can have comments that have no replies)</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>([:<span class="ruby-identifier">comments</span>, :<span class="ruby-identifier">replies</span>])
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">reject</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">any?</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">comment</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comment</span>.<span class="ruby-identifier">replies</span>.<span class="ruby-identifier">exists?</span> } }
+</pre>
+<dl class="rdoc-list label-list"><dt>association_name
+<dd>
+<p>The association that must exist <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Association">Association at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>condition
+<dd>
+<p>Extra conditions the association must not match <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Condition">Condition at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>options
+<dd>
+<p>Options to alter the generated query <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Options">Options at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>&amp;block
+<dd>
+<p>More complex conditions the associated record must match (can also use
+scopes of the association&#39;s model) <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Block">Block at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd></dl>
           
           
 
           
           <div class="method-source-code" id="where_assoc_not_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 165</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
-  <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_not_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">given_scope</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 282</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_not_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+    </section>
+  
+  </section>
+
+  
+  
+  <section id="Complex+method" class="documentation-section">
+    
+    <header class="documentation-section-title">
+      <h2>
+        Complex method
+      </h2>
+      <span class="section-click-top">
+        <a href="#top">&uarr; top</a>
+      </span>
+    </header>
+    
+
+    
+
+    
+
+    
+
+    
+     <section id="public-instance-Complex+method-method-details" class="method-section">
+       <header>
+         <h3>Public Instance Methods</h3>
+       </header>
+
+    
+      <div id="method-i-where_assoc_count" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">where_assoc_count</span><span
+            class="method-args">(left_operand, operator, association_name, conditions = nil, options = {}, &block)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Returns a new relation with a condition added (a <code>#where</code>) that
+checks how many records an association of the model has. Extra conditions
+the associated model must match can also be specified.</p>
+
+<p>This method is a generalization of <a
+href="QueryMethods.html#method-i-where_assoc_exists">#where_assoc_exists</a>
+and <a
+href="QueryMethods.html#method-i-where_assoc_not_exists">#where_assoc_not_exists</a>.
+It does the same thing, but can be more precise over how many records
+should exist (and match the extra conditions) To clarify, here are
+equivalent examples:</p>
+
+<pre class="ruby"><span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">1</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">comments</span>)
+
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_not_exists</span>(:<span class="ruby-identifier">comments</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">0</span>, :<span class="ruby-operator">==</span>, :<span class="ruby-identifier">comments</span>)
+</pre>
+
+<p>But these have no equivalent:</p>
+
+<pre class="ruby"><span class="ruby-comment"># Posts with at least 5 comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">comments</span>)
+
+<span class="ruby-comment"># Posts with less than 5 comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&gt;</span>, :<span class="ruby-identifier">comments</span>)
+</pre>
+
+<p>You could say this is a way of doing a <code>#select</code> that
+<code>#count</code> the associations of your model on the SQL side, but
+faster and more concise.</p>
+
+<p>Examples (with an equivalent ruby <code>#select</code> and
+<code>#count</code>)</p>
+
+<pre class="ruby"><span class="ruby-comment"># Posts with at least 5 comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">comments</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">count</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value">5</span> }
+
+<span class="ruby-comment"># Posts that have at least 5 comments marked as spam</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">comments</span>, <span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>)
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">where</span>(<span class="ruby-identifier">is_spam</span><span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>).<span class="ruby-identifier">count</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value">5</span> }
+
+<span class="ruby-comment"># Posts that have at least 10 replies spread over their comments</span>
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">10</span>, :<span class="ruby-operator">&lt;=</span>, [:<span class="ruby-identifier">comments</span>, :<span class="ruby-identifier">replies</span>])
+<span class="ruby-constant">Post</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">post</span><span class="ruby-operator">|</span> <span class="ruby-identifier">post</span>.<span class="ruby-identifier">comments</span>.<span class="ruby-identifier">sum</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">comment</span><span class="ruby-operator">|</span> <span class="ruby-identifier">comment</span>.<span class="ruby-identifier">replies</span>.<span class="ruby-identifier">count</span> } <span class="ruby-operator">&gt;=</span> <span class="ruby-value">5</span> }
+</pre>
+<dl class="rdoc-list label-list"><dt>left_operand
+<dd>
+<p>1st argument, the left side of the comparison. <br> One of:</p>
+<ul><li>
+<p>a number</p>
+</li><li>
+<p>a string of SQL to embed in the query</p>
+</li><li>
+<p>a range (operator must be :== or :!=), will use BETWEEN or NOT BETWEEN<br>
+supports infinite ranges and exclusive end</p>
+
+<p># Posts with 5 to 10 comments Post.where_assoc_count(5..10, :==, :comments)</p>
+
+<p># Posts with less than 5 or more than 10 comments
+Post.where_assoc_count(5..10, :!=, :comments)</p>
+</li></ul>
+</dd><dt>operator
+<dd>
+<p>The operator to use, one of these symbols: <code>  :&lt;  :&lt;=  :==  :!= 
+:&gt;=  :&gt;  </code></p>
+</dd><dt>association_name
+<dd>
+<p>The association that must exist <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Association">Association at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>condition
+<dd>
+<p>Extra conditions the association must match to count <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Condition">Condition at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>options
+<dd>
+<p>Options to alter the generated query <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Options">Options at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd><dt>&amp;block
+<dd>
+<p>More complex conditions the associated record must match (can also use
+scopes of the association&#39;s model) <br> See <a
+href="QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-Block">Block at
+ActiveRecordWhereAssoc::QueryMethods</a></p>
+</dd></dl>
+
+<p>The order of the parameters may seem confusing. But you will get used to
+it. To help remember the order of the parameters, remember that the goal is
+to do:</p>
+
+<pre>5 &lt; (SELECT COUNT(*) FROM ...)</pre>
+
+<p>So the parameters are in the same order as in that query: number, operator,
+association.</p>
+
+<p>To be clear, when you use multiple associations in an array, the count you
+will be comparing against is the total number of records of that last
+association.</p>
+
+<pre class="ruby"><span class="ruby-comment"># The users that have received at least 5 comments total on all of their posts</span>
+<span class="ruby-comment"># So this can be from one post that has 5 comments of from 5 posts with 1 comments</span>
+<span class="ruby-constant">User</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, [:<span class="ruby-identifier">posts</span>, :<span class="ruby-identifier">comments</span>])
+
+<span class="ruby-comment"># The users that have at least 5 posts with at least one comments</span>
+<span class="ruby-constant">User</span>.<span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-value">5</span>, :<span class="ruby-operator">&lt;=</span>, :<span class="ruby-identifier">posts</span>) { <span class="ruby-identifier">where_assoc_exists</span>(:<span class="ruby-identifier">comments</span>) }
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="where_assoc_count-source">
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 374</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_count</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
           

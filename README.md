@@ -11,36 +11,39 @@ This gem makes it easy to do conditions based on the associations of your record
 # Find my_post's comments that were not made by an admin
 my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
  
-# Find posts that have comments by an admin
+# Find every posts that have comments by an admin
 Post.where_assoc_exists([:comments, :author], &:admins).where(...)
  
-# Find my_user's posts that have at least 5 non-spam comments
-my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.where(is_spam: false) }.where(...)
+# Find my_user's posts that have at least 5 non-spam comments (not_spam is a scope on comments)
+my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.not_spam }.where(...)
 ```
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
 
 You avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
 
-Works with SQLite3, PostgreSQL and MySQL. Untested with other RDBMS.
-
 Here are [many examples](EXAMPLES.md), including the generated SQL queries.
 
-## Feedback
+## Advantages
 
-This gem is very new. If you have any feedback, good or bad, do not hesitate to write it here: [General feedback](https://github.com/MaxLap/activerecord_where_assoc/issues/3). If you find any bug, please create a new issue.
-
-* Failure stories, if you had difficulties that kept you from using the gem.
-* Success stories, if you are using it and things are going great, I wanna hear this too.
-* Suggestions to make the documentation easier to follow / more complete.
+These methods have many advantages over the alternative ways of achieving the similar results:
+* Avoids the [problems with the alternative ways](ALTERNATIVES_PROBLEMS.md)
+* Can be chained and nested with regular ActiveRecord methods (`where`, `merge`, `scope`, etc).
+* Adds a single condition in the `WHERE` of the query instead of complex things like joins.
+  So it's easy to have multiple conditions on the same association
+* Handles `has_one` correctly: only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
+* Handles recursive associations (such as parent/children) seemlessly.
+* Can be used to quickly generate a SQL query that you can edit/use manually.
 
 ## Installation
 
-Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.6.
+Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.6.  
+Works with SQLite3, PostgreSQL and MySQL. Untested with other RDBMS.
+
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'activerecord_where_assoc'
+gem 'activerecord_where_assoc', '~> 1.0'
 ```
 
 And then execute:
@@ -53,125 +56,53 @@ Or install it yourself as:
 
 ## Usage
 
-### `#where_assoc_exists` & `#where_assoc_not_exists`
+The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html)  
+You can view [many examples](EXAMPLES.md).
 
-Returns a new relation, which is the result of filtering the current relation based on if a record for the specified association of the model exists (or not). Conditions the associated model must match can can also be specified.
-
-```ruby
-Post.where_assoc_exists(:comments, is_spam: true)
-Post.where_assoc_not_exists(:comments, is_spam: true)
-```
-
-* 1st parameter: the association we are doing the condition on.
-* 2nd parameter: (optional) the condition to apply on the association. It can be anything that `#where` can receive, so: Hash, String and Array (string with binds).
-* 3rd parameter: [options (listed below)](#options) to alter some behaviors. (rarely necessary)
-* block: adds more complex conditions by receiving a relation on the association. Can apply `#where`, `#where_assoc_*`, scopes, and other scoping methods.
-  The block either:
-
-  * receives no argument, in which case `self` is set to the relation, so you can do `{ where(id: 123) }`
-  * receives arguments, in which case the block is called with the relation as first parameter
-
-  The block should return the new relation to use or `nil` to do as if there were no blocks
-  It's common to use `where_assoc_*(..., &:scope_name)` to apply a single scope quickly
-
-### `#where_assoc_count`
-
-This is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behaves the same way as them, but is more flexible as it allows you to be specific about how many matches there should be. To clarify, here are equivalent examples:
+Otherwise, here is a short explanation:
 
 ```ruby
-Post.where_assoc_exists(:comments, is_spam: true)
-Post.where_assoc_count(1, :<=, :comments, is_spam: true)
-
-Post.where_assoc_not_exists(:comments, is_spam: true)
-Post.where_assoc_count(0, :==, :comments, is_spam: true)
+where_assoc_exists(association_name, conditions, options, &block)
+where_assoc_not_exists(association_name, conditions, options, &block)
+where_assoc_count(left_operand, operator, association_name, conditions, options, &block)
 ```
 
-* 1st parameter: the left side of the comparison. One of:  
-  * a number  
-  * a string of SQL to embed in the query  
-  * a range (operator must be `:==` or `:!=`)  
-    will use SQL's `BETWEEN` or `NOT BETWEEN`  
-    supports infinite ranges and exclusive end
-* 2nd parameter: the operator to use: `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`
-* 3rd, 4th, 5th parameters are the same as the 1st, 2nd and 3rd parameters of `#where_assoc_exists`.
-* block: same as `#where_assoc_exists`' block
+* These methods add a condition (a `#where`) to the relation that checks if the association exists (or not)  
+* You can specify condition on the association, so you could check only comments that are made by an admin.  
+* Each method returns a new relation, meaning you can chain `#where`, `#order`, `limit`, etc.  
+* common arguments:
+  * association_name: the association we are doing the condition on.
+  * conditions: (optional) the condition to apply on the association. It can be anything that `#where` can receive, so: Hash, String and Array (string with binds).
+  * options: [available options](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods#module-ActiveRecordWhereAssoc::QueryMethods-label-Options) to alter some behaviors. (rarely necessary)
+  * block: adds more complex conditions by receiving a relation on the association. Can use `#where`, `#where_assoc_*`, scopes, and other scoping methods.  
+    Must return a relation.
+    The block either:
+    * receives no argument, in which case `self` is set to the relation, so you can do `{ where(id: 123) }`
+    * receives arguments, in which case the block is called with the relation as first parameter.
 
-The order of the parameters may seem confusing, but you will get used to it. To help remember the order of the parameters, remember that the goal is to do:
+    The block should return the new relation to use or `nil` to do as if there were no blocks.  
+    It's common to use `where_assoc_*(..., &:scope_name)` to use a single scope.
+* `#where_assoc_count` is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behaves the same way, but is more powerful, as it allows you to specify how many matches there should be.
+    ```ruby
+    # These are equivalent:
+    Post.where_assoc_exists(:comments, is_spam: true)
+    Post.where_assoc_count(1, :<=, :comments, is_spam: true)
 
-    5 < (SELECT COUNT(*) FROM ...)
+    Post.where_assoc_not_exists(:comments, is_spam: true)
+    Post.where_assoc_count(0, :==, :comments, is_spam: true)
 
-The parameters are in the same order as in that query: number, operator, association.
-
-### More examples
-
-You can view [more usage examples](EXAMPLES.md).
-
-### Options
-
-Each of the methods above can take an options argument. It is also possible to change the default value for the options.
-
-* On a per-call basis:
-```ruby
-# Options are passed after the conditions argument
-Posts.where_assoc_exists(:last_status, nil, ignore_limit: true)
-Posts.where_assoc_count(1, :<, :last_status, nil, ignore_limit: true)
-```
-
-* As default for everywhere
-```ruby
-# Somewhere in your setup code, such as an initializer in Rails
-ActiveRecordWhereAssoc.default_options[:ignore_limit] = true
-```
-
-Here is a list of the available options:
-
-#### :ignore_limit
-
-When this option is true, then `#limit` and `#offset` that are set either from default_scope or on associations are ignored. `#has_one` means `limit(1)`, so `#has_one` will behave like `#has_many` with this option.
-
-Main reasons to use this:
-* This is needed for MySQL to be able to do anything with `#has_one` associations because [MySQL doesn't support sub-limit](#mysql-doesnt-support-sub-limit).
-* You have a `#has_one` association which you know can never have more than one record. Using `:ignore_limit`, you will use the simpler query of `#has_many`, which can be more efficient.
-
-Why this isn't the default:
-* From very few tests, the aliasing way seems to produce better plans.
-* Using aliasing produces a shorter query.
-
-#### :never_alias_limit
-
-When this option is true, `#where_assoc_*` will not use `#from` to build relations that have `#limit` or `#offset` set on default_scope or on associations. Note, `#has_one` means `limit(1)`, so it will also use `#from` unless this option is activated.
-
-Main reasons to use this:
-* You have to use `#from` as condition for `#where_assoc_*` method (possibly because a scope needs it).
-* This might result in a difference execution plan for the query since the query ends up being quite different.
-
-#### :poly_belongs_to
-Polymorphic belongs_to are tricky because the query can end up searching in multiple tables, and just knowing which Models to look into can require an expensive query. It's also frequent that you don't want to query every options but just a few that match your needs.
-
-This option allows to choose to do the expensive query or to specify which tables (Models) to query for a polymorphic belongs_to. When you specify the model, you can even specify additional scoping specific to that model.
-
-Can be:
-* `:pluck` to do a `#pluck` of the `*_type` column to detect to possible choices. This can have a performance cost for big tables
-* a model or an `Array` of model to specify which models to consider. This avoids the performance cost of `:pluck` and allows you to only consider specific models, ignoring the other ones.  
-  Note, this is not instances, it's actual models, ex: `[Post, Comment]`
-* a Hash to do the same as Array, placing the models in the keys of the Hash, but this also allows to apply specific conditions for the model as keys.  
-  The conditions are either a proc (behaves like the block) or the same thing `#where` accepts (String, Hash, Array, nil). Ex:
-  List.where_assoc_exists(:items,
-                          nil,
-                          poly_belongs_to: {Car => "color = blue",
-                                            Computer => proc { brand_new.where(core: 4) } })
-* :raise to raise an exception when this happens. This is the default
-
-## Advantages
-
-These methods have many advantages over the alternative ways of achieving the similar results:
-* Avoids the [problems with the alternative ways](ALTERNATIVES_PROBLEMS.md)
-* Can be chained and nested with regular ActiveRecord methods (`where`, `merge`, `scope`, etc).
-* Adds a single condition in the `WHERE` of the query instead of complex things like joins.
-  * So it's easy to have multiple conditions on the same association
-* Handles `has_one` correctly: only testing the "first" record of the association that matches the default_scope and the scope on the association itself.
-* Handles recursive associations (such as parent/children) seemlessly.
-* Can be used to quickly generate a SQL query that you can edit/use manually.
+    # This has no equivalent (Posts with at least 5 spam comments)
+    Post.where_assoc_count(5, :<=, :comments, is_spam: true)
+    ```
+* `where_assoc_count`'s additional arguments  
+  The order of the parameters of `#where_assoc_count` can be confusingof may seem confusing, but you will get used to it. To help remember: the goal is to do: `5 < (SELECT COUNT(*) FROM ...)`, the number is first, then operator, then the association and its conditions.
+  * left_operand:  
+      * a number  
+      * a string of SQL to embed in the query  
+      * a range (operator must be `:==` or `:!=`)  
+        will use SQL's `BETWEEN` or `NOT BETWEEN`  
+        supports infinite ranges and exclusive end
+  * operator: one of `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`
 
 ## Usage tips
 

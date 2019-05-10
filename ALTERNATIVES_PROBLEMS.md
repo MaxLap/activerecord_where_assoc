@@ -10,7 +10,8 @@ This is a list of some of those alternatives, explaining what issues they have o
 * No more having to choose, case by case, which way has the less problems.  
   Just use `#where_assoc_*` each time and avoid every problems.
 * Need less raw SQL, which means less code, more clarity and less maintenance.
-* Allows powerful scopes without traps.
+* Generates a single `#where`. No weird side-effects things like `#eager_load` or `#join`
+  This makes well-behaved scopes, you can even have multiple conditions on the same association
 * Handles recursive associations correctly.
 * Handles has_one correctly (Except [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit)).
 * Handles polymorphic belongs_to
