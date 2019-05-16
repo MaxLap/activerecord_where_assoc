@@ -11,7 +11,7 @@ This is a list of some of those alternatives, explaining what issues they have o
 * No more having to choose, case by case, which way has the less problems.  
   Just use `#where_assoc_*` each time and avoid every problems.
 * Need less raw SQL, which means less code, more clarity and less maintenance.
-* Generates a single `#where`. No weird side-effects things like `#eager_load` or `#join`
+* Generates a single `#where`. No weird side-effects things like `#eager_load` or `#join`  
   This makes well-behaved scopes, you can even have multiple conditions on the same association
 * Handles recursive associations correctly.
 * Handles has_one correctly (Except [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit)).
@@ -30,7 +30,7 @@ Summary of the problems of the alternatives that the `activerecord_where_assoc` 
   * checking for 2 sets of conditions on different records of the same association won't work without extra things.
     (so your scopes can be incompatible)
   * can't be used with Rails 5's `#or`.
-  * Doesn't work for polymorphic belongs_to.
+  * doesn't work for polymorphic belongs_to.
 * `joins`:
   * `has_many` may return duplicate records.
   * using `uniq` / `distinct` to solve duplicate rows is an unexpected side-effect when this is in a scope.
@@ -147,7 +147,7 @@ feature, such as `activerecord_where_assoc`.
 * You can have the gem do a `#pluck` to auto detect which models to search in, but this can be expensive
 * You can specify which models to search in, this has the added benefit of allowing to search for a subset only
 
-## ActiveRecord only
+## ActiveRecord only alternatives
 
 Those are the common ways given in stack overflow answers.
 
@@ -240,7 +240,7 @@ This is what is gem does behind the scene, but doing it manually can lead to tro
 * Unless you do a quite complex nested sub-selects, you will [treat has_one like a has_many](#treating-has_one-like-has_many)
 
 
-## Gems
+## Alternative gems
 
 ### where_exists
 
