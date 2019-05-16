@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.license       = "MIT"
 
   lib_files = `git ls-files -z lib`.split("\x0")
-  spec.files = [*lib_files, "ALTERNATIVES_PROBLEMS.md", "CHANGELOG.md", "EXAMPLES.md", "LICENSE.txt", "README.md"]
+  spec.files = [*lib_files, "CHANGELOG.md", "EXAMPLES.md", "LICENSE.txt", "README.md"]
 
   spec.add_dependency "activerecord", ">= 4.1.0"
 
