@@ -1,4 +1,5 @@
-There are multiple ways of achieving results similar to what this gems does using either only built-in ActiveRecord functionalities or other gems.
+There are multiple ways of achieving results similar to what this gems does using either only built-in
+ActiveRecord functionalities or other gems.
 
 This is a list of some of those alternatives, explaining what issues they have or reasons to prefer this gem over them.
 
@@ -44,11 +45,13 @@ Summary of the problems of the alternatives that `activerecord_where_assoc` solv
 
 ## Common problems to most alternatives
 
-These are problems that affect most alternatives. Details are written in this section and just referred to by a one liner when they apply to an alternative.
+These are problems that affect most alternatives. Details are written in this section and just referred to
+by a one liner when they apply to an alternative.
 
 ### Treating has_one like has_many
 
-Every alternative treats a has_one just like a has_many. So if any of the records (instead of only the first) matches your condition, you will get a match.
+Every alternative treats a has_one just like a has_many. So if any of the records (instead of only the first)
+matches your condition, you will get a match.
 
 And example to clarify:
 
@@ -68,16 +71,20 @@ Person.where_assoc_exists(:addresses, city: 'Montreal')
 
 The general version of this problem is to handle `#limit` and `#offset` on associations and in default_scopes.
 
-`#where_assoc_*` methods handle `#limit`, `#offset` and `#has_one` correctly and checks that the records that match
-the limit and the offset also match the condition.
+`#where_assoc_*` methods handle `#limit`, `#offset` and `#has_one` correctly and checks that the records that
+match the limit and the offset also match the condition.
 
-Note: [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit), this makes handling has_one correctly not possible with MySQL.
+Note: [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit), this makes handling has_one correctly
+not possible with MySQL.
 
 ### Raw SQL joins or sub-selects
 
-Having to write the joins and conditions in raw SQL is more painful and more error prone than having a method do it for you. It hides the important details of what you are doing in a lot of verbosity.
+Having to write the joins and conditions in raw SQL is more painful and more error prone than having a method
+do it for you. It hides the important details of what you are doing in a lot of verbosity.
 
-If there are conditions set on either the association or a default_scope of the model, then you must rewrite those conditions in your manual joins and your manual sub-selects. Worst, if you add/change those conditions on the association / default_scope, then you must find every raw SQL that apply and do the same operation.
+If there are conditions set on either the association or a default_scope of the model, then you must rewrite
+those conditions in your manual joins and your manual sub-selects. Worst, if you add/change those conditions
+on the association / default_scope, then you must find every raw SQL that apply and do the same operation.
 
 ```ruby
 class Post < ActiveRecord::Base
@@ -109,7 +116,9 @@ The last option is to use raw SQL, [which has problems](#raw-sql-joins-or-sub-se
 
 ### Unable to handle polymorphic belongs_to
 
-When you have a polymorphic belongs_to, you can't use `#joins` or `#includes` in order to do queries on it. You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a gem that provides the feature, such as `activerecord_where_assoc`.
+When you have a polymorphic belongs_to, you can't use `#joins` or `#includes` in order to do queries on it.
+You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a gem that provides the
+feature, such as `activerecord_where_assoc`.
 
 `where_assoc_*` methods can handle this in 3 ways based on the
 [:poly_belongs_to option](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Apoly_belongs_to+option):
@@ -128,10 +137,15 @@ Post.where_assoc_exists(:comments, is_spam: true)
 Post.joins(:comments).where(comments: {is_spam: true})
 ```
 
-* If the association maps to multiple records (such as with a has_many), then the the relation will return one record for each matching association record. In this example, you would get the same post twice if it has 2 comments that are marked as spam.  
-  Using `uniq` can solve this issue, but if you do that in a scope, then that scope unexpectedly adds a DISTINCT to your query, which can lead to unexpected results if you actually wanted duplicates for a different reason.
+* If the association maps to multiple records (such as with a has_many), then the the relation will return one
+record for each matching association record. In this example, you would get the same post twice if it has 2
+comments that are marked as spam.  
+  Using `uniq` can solve this issue, but if you do that in a scope, then that scope unexpectedly adds a DISTINCT
+  to your query, which can lead to unexpected results if you actually wanted duplicates for a different reason.
 
-* Doing the opposite is a lot more complicated, as seen below. You have to include your conditions directly in the join and use a LEFT JOIN, this means writing the whole thing in raw SQL, and then you must check for the id of the association to be empty.
+* Doing the opposite is a lot more complicated, as seen below. You have to include your conditions directly in
+  the join and use a LEFT JOIN, this means writing the whole thing in raw SQL, and then you must check for the
+  id of the association to be empty.
 
 ```ruby
 Post.where_assoc_not_exists(:comments, is_spam: true)
@@ -140,7 +154,9 @@ Post.joins("LEFT JOIN comments ON posts.id = comments.post_id AND comments.is_sp
 
 Writing a raw join like that has yet more problems: [raw SQL joins](#raw-sql-joins-or-sub-selects)
 
-* If you want to have another condition referring to the same association (or just the same table), then you need to write out the SQL for the second join using an alias. Therefore, your scopes are not even compatible unless each of them has a join with a unique alias.
+* If you want to have another condition referring to the same association (or just the same table), then you
+  need to write out the SQL for the second join using an alias. Therefore, your scopes are not even compatible
+  unless each of them has a join with a unique alias.
 
 ```ruby
 # We want to be able to match either different or the same records
@@ -162,17 +178,22 @@ Post.joins(:comments).where(comments: {is_spam: true})
 
 ### Using `includes` (or `eager_load`) and `where`
 
-This solution is similar to the `joins` one above, but avoids the need for `uniq`. Every other problems of the `joins` remain. You also add other potential issues.
+This solution is similar to the `joins` one above, but avoids the need for `uniq`. Every other problems of the
+`joins` remain. You also add other potential issues.
 
 ```ruby
 Post.where_assoc_exists(:comments, is_spam: true)
 Post.eager_load(:comments).where(comments: {is_spam: true})
 ```
 
-* You are triggering the loading of potentially lots of records that you might not need. You don't expect a scope like `have_reported_comments` to trigger eager loading. This is a performance degradation.
+* You are triggering the loading of potentially lots of records that you might not need. You don't expect a
+  scope like `have_reported_comments` to trigger eager loading. This is a performance degradation.
 
-* The eager loaded records of the association are actually also filtered by the conditions. All of the posts returned will only have the comments that are spam.  
-  This means if you iterate on `Post.have_reported_comments` to display each of the comments of the posts that have at least one reported comment, you are actually only going to display the reported comments. This may be what you wanted to do, but it clearly isn't intuitive.
+* The eager loaded records of the association are actually also filtered by the conditions. All of the posts
+  returned will only have the comments that are spam.  
+  This means if you iterate on `Post.have_reported_comments` to display each of the comments of the posts that
+  have at least one reported comment, you are actually only going to display the reported comments. This may
+  be what you wanted to do, but it clearly isn't intuitive.
 
 * Cannot be used with Rails 5's `or` unless both side do the same `includes` or `eager_load`.
 
@@ -182,7 +203,8 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
 
 * Simply cannot be used for complex cases.
 
-Note: using `includes` (or `eager_load`) already does a LEFT JOIN, so it is pretty easy to do a "not exists", but only if you don't need any condition on the association (which would normally need to be in the JOIN clause):
+Note: using `includes` (or `eager_load`) already does a LEFT JOIN, so it is pretty easy to do a "not exists",
+but only if you don't need any condition on the association (which would normally need to be in the JOIN clause):
 
 ```ruby
 Post.where_assoc_exists(:comments)
@@ -204,9 +226,12 @@ This is what is gem does behind the scene, but doing it manually can lead to tro
 
 https://github.com/EugZol/where_exists
 
-An interesting gem that also does `EXISTS (SELECT ... )` behind the scene. Solves most issues from ActiveRecord only alternatives, but appears less powerful than where_assoc_exists.
+An interesting gem that also does `EXISTS (SELECT ... )` behind the scene. Solves most issues from ActiveRecord
+only alternatives, but appears less powerful than where_assoc_exists.
 
-* where_exists supports polymorphic belongs_to only by always doing a `pluck` everytime. In some situation could be a slow query if there is a lots of rows to scan. where_assoc also allows directly specifying the classes manually, avoiding the pluck and possibly filtering the choices.
+* where_exists supports polymorphic belongs_to only by always doing a `pluck` everytime. In some situation could
+  be a slow query if there is a lots of rows to scan. where_assoc also allows directly specifying the classes
+  manually, avoiding the pluck and possibly filtering the choices.
   
 * Unable to use scopes of the association's model.
 ```ruby
