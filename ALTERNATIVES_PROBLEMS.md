@@ -29,7 +29,7 @@ Summary of the problems of the alternatives that the `activerecord_where_assoc` 
   * doing `not exists` with conditions requires a `LEFT JOIN` with the conditions as part of the `ON`, which requires raw SQL.
   * checking for 2 sets of conditions on different records of the same association won't work without extra things.
     (so your scopes can be incompatible)
-  * can't be used with Rails 5's `or` unless both sides do the same `#joins` / `#includes` / `#eager_load`.
+  * can't be used with Rails 5's `#or`.
   * Doesn't work for polymorphic belongs_to.
 * `joins`:
   * `has_many` may return duplicate records.
@@ -103,6 +103,26 @@ end
 
 All of this is done for you by the `where_assoc_*` methods.
 
+### Incompatible with `#or`
+
+Using `#joins`, `#includes` + `#references`, `#eager_load` affects the query as a whole. This means you can't
+use tools that only interact with the conditions.
+
+For example, you can't use `#or`, because that just deals with the conditions (the `#where`), but if one of
+your relation has a `#joins`, the implicit "condition" that "there must be a record" is not part of the `#where`.
+
+Actually, the `#or` will refuse to mix queries that mismatch structurally:
+
+```ruby
+# Posts by an admin or that have comments.
+# This will raise an exception because the joined tables of each queries are different.
+Post.by_admin.or(Post.joins(:comments))
+```
+
+It can work, when both side use the same joins and only have different conditions .
+
+Since the `#where_assoc_*` methods only add a single `#where`, they are compatible with `#or` and other similar tools.
+
 ### Unable to handle recursive associations
 
 When you have recursive associations such as parent/children, you are interacting with the same table twice.
@@ -172,7 +192,7 @@ Post.joins(:comments).where(comments: {is_spam: true})
     .where(comments_for_reported: {is_reported: true})
 ```
 
-* Cannot be used with Rails 5's `or` unless both side do the same `joins`.
+* [Cannot be used with Rails 5's `#or`](#incompatible-with-or)
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 * [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
@@ -196,8 +216,7 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
   have at least one reported comment, you are actually only going to display the reported comments. This may
   be what you wanted to do, but it clearly isn't intuitive.
 
-* Cannot be used with Rails 5's `or` unless both side do the same `includes` or `eager_load`.
-
+* [Cannot be used with Rails 5's `#or`](#incompatible-with-or)
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 * [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
