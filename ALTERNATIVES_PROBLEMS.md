@@ -21,13 +21,13 @@ This is a list of some of those alternatives, explaining what issues they have o
 Summary of the problems of the alternatives that `activerecord_where_assoc` solves. The following sections go in more details.
 
 * every alternatives (except raw SQL):
-  * treat `has_one` like a `has_many`.
+  * treat `#has_one` like a `#has_many`.
   * can't handle recursive associations nicely. (ex: parent/children)
   * no simple way of checking for more complex counts. (such as `less than 5`)
-* `joins` / `includes`:
+* `#joins` / `#includes`:
   * doing `not exists` with conditions requires a `LEFT JOIN` with the conditions as part of the `ON`, which requires raw SQL.
   * checking for 2 sets of conditions on different records of the same association won't work. (so your scopes can be incompatible)
-  * can't be used with Rails 5's `or` unless both sides do the same `joins` / `includes` / `eager_load`.
+  * can't be used with Rails 5's `or` unless both sides do the same `#joins` / `#includes` / `#eager_load`.
   * Doesn't work for polymorphic belongs_to.
 * `joins`:
   * `has_many` may return duplicate records.
@@ -61,12 +61,15 @@ end
 # This correctly matches only those whose current_address is in Montreal
 Person.where_assoc_exists(:current_address, city: 'Montreal')
 
-# Every alternatives (except raw SQL):
-# Matches those that have had an address in Montreal, no matter when
+# In every alternatives (except raw SQL), doing a joins or anything else on :current_address will
+# actually do the exact same thing as doing it on :addresses. So their effect will be identical to:
 Person.where_assoc_exists(:addresses, city: 'Montreal')
 ```
 
-The general version of this problem is the handling of `limit` and `offset` on associations and in default_scopes. where_assoc_exists handle those correctly and only checks the records that match the limit and the offset.
+The general version of this problem is to handle `#limit` and `#offset` on associations and in default_scopes.
+
+`#where_assoc_*` methods handle `#limit`, `#offset` and `#has_one` correctly and checks that the records that match
+the limit and the offset also match the condition.
 
 Note: [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit), this makes handling has_one correctly not possible with MySQL.
 
@@ -94,15 +97,25 @@ All of this is avoided by where_assoc_* methods.
 
 ### Unable to handle recursive associations
 
-When you have recursive associations such as parent/children, you must compare multiple rows of the same table. To do this, you have no choice but to write your own raw SQL to, at the very least, do a SQL join with an alias.
+When you have recursive associations such as parent/children, you are interacting with the same table twice.
 
-This brings us back to the [raw SQL joins](#raw-sql-joins-or-sub-selects) problem.
+Using `#joins`, `#includes` + `#references`, `#eager_load` automatically create an alias for you. But if you
+want to have conditions, this alias can be arcane and will change as you do more such joins. Overall, this
+feels complicated and won't work too well in scopes.
 
-`where_assoc_*` methods handle this seemlessly.
+The last option is to use raw SQL, [which has problems](#raw-sql-joins-or-sub-selects).
+
+`#where_assoc_*` methods handle this seemlessly. The conditions can use the real table name, so any scope can be used.
 
 ### Unable to handle polymorphic belongs_to
 
-When you have a polymorphic belongs_to, you can't use `joins` or `includes` in order to do queries on it. You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a gem that provides the feature, such as `activerecord_where_assoc`.
+When you have a polymorphic belongs_to, you can't use `#joins` or `#includes` in order to do queries on it. You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a gem that provides the feature, such as `activerecord_where_assoc`.
+
+`where_assoc_*` methods can handle this in 3 ways based on the
+[:poly_belongs_to option](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Apoly_belongs_to+option):
+* The default will raise an exception
+* You can have the gem do a `#pluck` to auto detect which models to search in, but this can be expensive
+* You can specify which models to search in, this has the added benefit of allowing to search for a subset only
 
 ## ActiveRecord only
 
