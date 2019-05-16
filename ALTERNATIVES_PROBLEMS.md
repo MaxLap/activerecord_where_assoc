@@ -19,7 +19,7 @@ This is a list of some of those alternatives, explaining what issues they have o
 
 ## Short version
 
-Summary of the problems of the alternatives that `activerecord_where_assoc` solves. The following sections go in more details.
+Summary of the problems of the alternatives that the `activerecord_where_assoc` gem solves. The following sections go in more details.
 
 * every alternatives (except raw SQL):
   * treat `#has_one` like a `#has_many`.
@@ -27,7 +27,8 @@ Summary of the problems of the alternatives that `activerecord_where_assoc` solv
   * no simple way of checking for more complex counts. (such as `less than 5`)
 * `#joins` / `#includes`:
   * doing `not exists` with conditions requires a `LEFT JOIN` with the conditions as part of the `ON`, which requires raw SQL.
-  * checking for 2 sets of conditions on different records of the same association won't work. (so your scopes can be incompatible)
+  * checking for 2 sets of conditions on different records of the same association won't work without extra things.
+    (so your scopes can be incompatible)
   * can't be used with Rails 5's `or` unless both sides do the same `#joins` / `#includes` / `#eager_load`.
   * Doesn't work for polymorphic belongs_to.
 * `joins`:
@@ -100,7 +101,7 @@ class Comment < ActiveRecord::Base
 end
 ```
 
-All of this is avoided by where_assoc_* methods.
+All of this is done for you by the `where_assoc_*` methods.
 
 ### Unable to handle recursive associations
 
@@ -112,7 +113,7 @@ feels complicated and won't work too well in scopes.
 
 The last option is to use raw SQL, [which has problems](#raw-sql-joins-or-sub-selects).
 
-`#where_assoc_*` methods handle this seemlessly. The conditions can use the real table name, so any scope can be used.
+`#where_assoc_*` methods handle this seamlessly. The conditions can use the real table name, so any scope can be used.
 
 ### Unable to handle polymorphic belongs_to
 
