@@ -95,7 +95,7 @@ where_assoc_count(left_operand, operator, association_name, conditions, options,
     Post.where_assoc_count(5, :<=, :comments, is_spam: true)
     ```
 * `where_assoc_count`'s additional arguments  
-  The order of the parameters of `#where_assoc_count` can be confusingof may seem confusing, but you will get used to it. To help remember: the goal is to do: `5 < (SELECT COUNT(*) FROM ...)`, the number is first, then operator, then the association and its conditions.
+  The order of the parameters of `#where_assoc_count` may seem confusing, but you will get used to it. It helps to remember: the goal is to do: `5 < (SELECT COUNT(*) FROM ...)`, the number is first, then operator, then the association and its conditions.
   * left_operand:  
       * a number  
       * a string of SQL to embed in the query  

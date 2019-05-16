@@ -134,6 +134,8 @@ module ActiveRecordWhereAssoc
   #   Post.where_assoc_exists(:comments) { where(author_id: self.foo(:bar)) }
   #   # THESE ARE WRONG!
   #
+  # If both +condition+ and +block+ are given, the conditions are applied first, and then the block.
+  #
   # === Options
   # Some options are available to tweak how queries are generated. The default values of the options
   # can be changed globally:
@@ -150,53 +152,53 @@ module ActiveRecordWhereAssoc
   # Note, if you don't need a condition, you must pass nil as condition to provide options:
   #   Post.where_assoc_exists(:comments, nil, ignore_limit: true)
   #
-  # [ignore_limit]
-  #   When true, +#limit+ and +#offset+ that are set from default_scope, on associations, and from
-  #   +#has_one+ are ignored. <br>
-  #   Removing the limit from +#has_one+ makes them be treated like a +#has_many+.
+  # ===== :ignore_limit option
+  # When true, +#limit+ and +#offset+ that are set from default_scope, on associations, and from
+  # +#has_one+ are ignored. <br>
+  # Removing the limit from +#has_one+ makes them be treated like a +#has_many+.
   #
-  #   Main reasons to use ignore_limit: true
-  #   * Needed for MySQL to be able to do anything with +#has_one+ associations because MySQL
-  #     doesn't support sub-limit. <br>
-  #     See {MySQL doesn't support limit}[https://github.com/MaxLap/activerecord_where_assoc#mysql-doesnt-support-sub-limit] <br>
-  #     Note, this does mean the +#has_one+ will be treated as if it was a +#has_many+ for MySQL too.
-  #   * You have a +#has_one+ association which you know can never have more than one record and are
-  #     dealing with a heavy/slow query. The query used to deal with +#has_many+ is less complex, and
-  #     may prove faster.
-  #   * For this one special case, you want to check the other records that match your has_one
+  # Main reasons to use ignore_limit: true
+  # * Needed for MySQL to be able to do anything with +#has_one+ associations because MySQL
+  #   doesn't support sub-limit. <br>
+  #   See {MySQL doesn't support limit}[https://github.com/MaxLap/activerecord_where_assoc#mysql-doesnt-support-sub-limit] <br>
+  #   Note, this does mean the +#has_one+ will be treated as if it was a +#has_many+ for MySQL too.
+  # * You have a +#has_one+ association which you know can never have more than one record and are
+  #   dealing with a heavy/slow query. The query used to deal with +#has_many+ is less complex, and
+  #   may prove faster.
+  # * For this one special case, you want to check the other records that match your has_one
   #
-  # [never_alias_limit]
-  #   When true, +#where_assoc_*+ will not use +#from+ to build relations that have +#limit+ or +#offset+ set
-  #   on default_scope or on associations or for +#has_one+. <br>
-  #   This allows changing the from as part of the conditions (such as for a scope)
+  # ===== :never_alias_limit option
+  # When true, +#where_assoc_*+ will not use +#from+ to build relations that have +#limit+ or +#offset+ set
+  # on default_scope or on associations or for +#has_one+. <br>
+  # This allows changing the from as part of the conditions (such as for a scope)
   #
-  #   Main reasons to use this: you have to use +#from+ in the block of +#where_assoc_*+ method
-  #   (ex: because a scope needs +#from+).
+  # Main reasons to use this: you have to use +#from+ in the block of +#where_assoc_*+ method
+  # (ex: because a scope needs +#from+).
   #
-  #   Why this isn't the default:
-  #   * From very few tests, the aliasing way seems to produce better plans.
-  #   * Using aliasing produces a shorter query.
+  # Why this isn't the default:
+  # * From very few tests, the aliasing way seems to produce better plans.
+  # * Using aliasing produces a shorter query.
   #
-  # [poly_belongs_to]
-  #   Specify what to do when a polymorphic belongs_to is encountered. Things are tricky because the query can
-  #   end up searching in multiple Models, and just knowing which ones to look into can require an expensive query.
-  #   It's also possible that you only want to search for those that match some specific Models, ignoring the other ones.
-  #   [:pluck]
-  #     Do a +#pluck+ in the column to detect to possible choices. This option can have a performance cost for big tables
-  #     or when the query if done often, as the +#pluck+ will be executed each time
-  #   [model or array of models]
-  #     Specify which models to search for. This avoids the performance cost of +#pluck+ and can allow to filter some
-  #     of the choices out that don't interest you. <br>
-  #     Note, these are not instances, it's actual models, ex: <code>[Post, Comment]</code>
-  #   [a hash]
-  #     The keys must be models (same behavior as an array of models). <br>
-  #     The values are conditions to apply only for key's model.
-  #     The conditions are either a proc (behaves like the block, but only for that model) or the same things +#where+
-  #     can receive. (String, Hash, Array, nil). Ex:
-  #       List.where_assoc_exists(:items, nil, poly_belongs_to: {Car => "color = 'blue'",
-  #                                                              Computer => proc { brand_new.where(core: 4) } })
-  #   [:raise]
-  #     (default) raise an exception when a polymorphic belongs_to is encountered.
+  # ===== :poly_belongs_to option
+  # Specify what to do when a polymorphic belongs_to is encountered. Things are tricky because the query can
+  # end up searching in multiple Models, and just knowing which ones to look into can require an expensive query.
+  # It's also possible that you only want to search for those that match some specific Models, ignoring the other ones.
+  # [:pluck]
+  #   Do a +#pluck+ in the column to detect to possible choices. This option can have a performance cost for big tables
+  #   or when the query if done often, as the +#pluck+ will be executed each time
+  # [model or array of models]
+  #   Specify which models to search for. This avoids the performance cost of +#pluck+ and can allow to filter some
+  #   of the choices out that don't interest you. <br>
+  #   Note, these are not instances, it's actual models, ex: <code>[Post, Comment]</code>
+  # [a hash]
+  #   The keys must be models (same behavior as an array of models). <br>
+  #   The values are conditions to apply only for key's model.
+  #   The conditions are either a proc (behaves like the block, but only for that model) or the same things +#where+
+  #   can receive. (String, Hash, Array, nil). Ex:
+  #     List.where_assoc_exists(:items, nil, poly_belongs_to: {Car => "color = 'blue'",
+  #                                                            Computer => proc { brand_new.where(core: 4) } })
+  # [:raise]
+  #   (default) raise an exception when a polymorphic belongs_to is encountered.
   module QueryMethods
     # :section: Basic methods
 
@@ -342,7 +344,13 @@ module ActiveRecordWhereAssoc
     #   The operator to use, one of these symbols: <code>  :<  :<=  :==  :!=  :>=  :>  </code>
     #
     # [association_name]
-    #   The association that must exist <br>
+    #   The association that must have a certain number of occurrences <br>
+    #   Note that if you use an array of association names, the number of the last association
+    #   is what is counted.
+    #
+    #     # Users which have received at least 5 comments total (can be spread on all of their posts)
+    #     User.where_assoc_count(5, :<=, [:posts, :comments])
+    #
     #   See ActiveRecordWhereAssoc::QueryMethods@Association
     #
     # [condition]
@@ -357,8 +365,8 @@ module ActiveRecordWhereAssoc
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
     #   See ActiveRecordWhereAssoc::QueryMethods@Block
     #
-    # The order of the parameters may seem confusing. But you will get used to it. To help
-    # remember the order of the parameters, remember that the goal is to do:
+    # The order of the parameters may seem confusing. But you will get used to it. It helps
+    # to remember that the goal is to do:
     #    5 < (SELECT COUNT(*) FROM ...)
     # So the parameters are in the same order as in that query: number, operator, association.
     #

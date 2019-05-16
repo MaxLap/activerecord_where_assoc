@@ -22,7 +22,7 @@ Summary of the problems of the alternatives that `activerecord_where_assoc` solv
 
 * every alternatives (except raw SQL):
   * treat `has_one` like a `has_many`.
-  * can't handle recursive associations. (ex: parent/children)
+  * can't handle recursive associations nicely. (ex: parent/children)
   * no simple way of checking for more complex counts. (such as `less than 5`)
 * `joins` / `includes`:
   * doing `not exists` with conditions requires a `LEFT JOIN` with the conditions as part of the `ON`, which requires raw SQL.
