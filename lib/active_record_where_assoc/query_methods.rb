@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "active_record_compat"
-require_relative "exceptions"
-
 # See ActiveRecordWhereAssoc::QueryMethods
 module ActiveRecordWhereAssoc
   # This module adds new variations of +#where+ to your Models/relations/associations/scopes.
