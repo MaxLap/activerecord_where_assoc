@@ -20,6 +20,8 @@ my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.not_spa
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
 
+Here is an [introduction to this gem](INTRODUCTION.md).
+
 You avoid many [problems with the alternative options](ALTERNATIVES_PROBLEMS.md).
 
 Here are [many examples](EXAMPLES.md), including the generated SQL queries.
