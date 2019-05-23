@@ -41,8 +41,7 @@ To me, the biggest issues that no alternatives fully solve are:
 
 A scope should filter records and do nothing more. (Unless you want it to do more/something else, but that should be clear)
 
-The root of the problem is that when you want to filter records and do nothing else, the SQL `JOIN` (which is used by
-all of the above) is the wrong wrong tool for the job!
+The root of the problem is that when you want to filter records and do nothing else, the SQL `JOIN` (which is used by `#joins`, `#includes`, `#eager_load`) is the wrong wrong tool for the job!
 
 A sign that it's the wrong tool is that you can't use it multiple time for the same table without using a unique
 name for the table each time. If you have the scopes `#with_recent_comment` and `#with_old_comment`. You can't do
@@ -70,9 +69,9 @@ scope :with_old_comment, -> {
 }
 ```
 And since we are using joins, we probably need to use `#distinct`? I'm always uneasy at adding those side-effects to my scopes.
-I want them to be as lean as possible, to do what their name imply, nothing more, nothing less.
+I want them to be as lean as possible, to do what their name imply, nothing more.
 
-I hope you understand that there is no good way of dealing with this in ActiveRecord. You won't have as much issues
+I hope you understand that there is no good way of dealing with this in ActiveRecord only. You won't have as much issues
 when the condition is on a `#belongs_to`, because there is a single record, so you can't get duplicates, and you
 always want to target the same record, so just using `#joins` works fine. But having to choose the way to do things
 each time in order to avoid problems gets annoying.
@@ -86,7 +85,7 @@ You use it like this: `Post.where_assoc_exists(:comments)`
 It's almost too simple compared to the built-in ways. Readability-wise it's great, it actually says what it does.
 There is no issue of duplicates being returned.
 
-If we got with the more complex example that had conditions on the comments, here's the resulting query:
+If we go with the more complex example that had conditions on the comments, here's the resulting query:
 
 ```ruby
 Post.with_recent_comment.with_old_comment
@@ -202,7 +201,7 @@ Post.where_assoc_count(5, :<=, :comments)
 ```
 
 This is a more powerful version of `#where_assoc_exists` / `#where_assoc_not_exists`. You can specify how many
-associations must match for a record to be returned.
+records in the association must match for a record to be returned.
 
 Again, lets say we want posts with at least 5 comments by admin:
 
