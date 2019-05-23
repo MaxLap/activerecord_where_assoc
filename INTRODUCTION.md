@@ -239,3 +239,5 @@ with details of those solved problems.
 
 If after reading this, you still aren't interested in the gem / aren't going to use this, I would really like to know why.
 Please leave me some feedback in [this issue](https://github.com/MaxLap/activerecord_where_assoc/issues/3).
+
+Here is the link to the gem: [activerecord_where_assoc](https://github.com/MaxLap/activerecord_where_assoc)
