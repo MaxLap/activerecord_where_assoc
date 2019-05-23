@@ -481,7 +481,7 @@ ActiveRecordWhereAssoc::QueryMethods</a></p>
 
           
           <div class="method-source-code" id="where_assoc_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 240</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 237</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -564,7 +564,7 @@ ActiveRecordWhereAssoc::QueryMethods</a></p>
 
           
           <div class="method-source-code" id="where_assoc_not_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 284</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 281</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_not_exists</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -743,7 +743,7 @@ association.</p>
 
           
           <div class="method-source-code" id="where_assoc_count-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 382</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/query_methods.rb, line 379</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">do_where_assoc_count</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
