@@ -34,13 +34,13 @@ Summary of the problems of the alternatives that the `activerecord_where_assoc` 
 * `joins`:
   * `has_many` may return duplicate records.
   * using `uniq` / `distinct` to solve duplicate rows is an unexpected side-effect when this is in a scope.
-* `includes`:
+* `#includes`:
   * triggers eagerloading, which makes your `scope` have unexpected bad performances if it's not necessary.
   * when using a condition, the eagerloaded records are also filtered, which is very bug-prone when in a scope.
 * raw SQL:
   * verbose, less clear on the goal of the queries (you don't even name the association the query is about).
   * need to repeat conditions from the association / default_scope.
-* `where_exists` gem:
+* `#where_exists` gem:
   * can't use scopes of the association's model.
   * can't go deeper than one level of association.
 
@@ -101,7 +101,7 @@ class Comment < ActiveRecord::Base
 end
 ```
 
-All of this is done for you by the `where_assoc_*` methods.
+All of this is done for you by the `#where_assoc_*` methods.
 
 ### Incompatible with `#or`
 
@@ -141,7 +141,7 @@ When you have a polymorphic belongs_to, you can't use `#joins` or `#includes` in
 You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a gem that provides the
 feature, such as `activerecord_where_assoc`.
 
-`where_assoc_*` methods can handle this in 3 ways based on the
+`#where_assoc_*` methods can handle this in 3 ways based on the
 [:poly_belongs_to option](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Apoly_belongs_to+option):
 * The default will raise an exception
 * You can have the gem do a `#pluck` to auto detect which models to search in, but this can be expensive
@@ -151,7 +151,7 @@ feature, such as `activerecord_where_assoc`.
 
 Those are the common ways given in stack overflow answers.
 
-### Using `joins` and `where`
+### Using `#joins` and `#where`
 
 ```ruby
 Post.where_assoc_exists(:comments, is_spam: true)
@@ -197,7 +197,7 @@ Post.joins(:comments).where(comments: {is_spam: true})
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 * [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
 
-### Using `includes` (or `eager_load`) and `where`
+### Using `#includes` (or `#eager_load`) and `#where`
 
 This solution is similar to the `joins` one above, but avoids the need for `uniq`. Every other problems of the
 `joins` remain. You also add other potential issues.
@@ -223,7 +223,7 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
 
 * Simply cannot be used for complex cases.
 
-Note: using `includes` (or `eager_load`) already does a LEFT JOIN, so it is pretty easy to do a "not exists",
+Note: using `#includes` (or `#eager_load`) already does a LEFT JOIN, so it is pretty easy to do a "not exists",
 but only if you don't need any condition on the association (which would normally need to be in the JOIN clause):
 
 ```ruby
@@ -231,7 +231,7 @@ Post.where_assoc_exists(:comments)
 Post.eager_load(:comments).where(comments: {id: nil})
 ```
 
-### Using `where("EXISTS( SELECT... )")`
+### Using `#where("EXISTS( SELECT... )")`
 
 This is what is gem does behind the scene, but doing it manually can lead to troubles:
 
@@ -249,7 +249,7 @@ https://github.com/EugZol/where_exists
 An interesting gem that also does `EXISTS (SELECT ... )` behind the scene. Solves most issues from ActiveRecord
 only alternatives, but appears less powerful than where_assoc_exists.
 
-* where_exists supports polymorphic belongs_to only by always doing a `pluck` everytime. In some situation could
+* where_exists supports polymorphic belongs_to only by always doing a `#pluck` everytime. In some situation could
   be a slow query if there is a lots of rows to scan. where_assoc also allows directly specifying the classes
   manually, avoiding the pluck and possibly filtering the choices.
   
@@ -273,7 +273,7 @@ Comment.where_assoc_exists(:author) { admins.where("created_at <= ?", 1.month.ag
 User.where_assoc_exists([:posts, :comments])
 ```
 
-* Has no equivalent to `where_assoc_count`
+* Has no equivalent to `#where_assoc_count`
 ```ruby
 # There is no equivalent for this (posts with more than 5 comments)
 Post.where_assoc_count(:comments, :>, 5)
@@ -283,7 +283,7 @@ Post.where_assoc_count(:comments, :>, 5)
 
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 
-* `where_exists` is shorter than `where_assoc_exists`, but it is also less obvious about what it does.  
+* `#where_exists` is shorter than `#where_assoc_exists`, but it is also less obvious about what it does.  
   In any case, it is trivial to alias one name to the other one.
 
 * where_exists supports Rails 4.2 and up, while where_assoc supports Rails 4.1 and up.

@@ -20,6 +20,7 @@ class Post < ActiveRecord::Base
   belongs_to :author, class_name: "User"
   has_many :comments
   has_many :comments_author, through: :comments
+  has_one :last_comment, class_name: "Comment", order("created_at DESC")
 
   # Easy and powerful scope examples
   scope :by_admin, -> { where_assoc_exists(:author, &:admins) }
