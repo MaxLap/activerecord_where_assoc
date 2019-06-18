@@ -5,6 +5,9 @@ cache: bundler
 addons:
   postgresql: "9.6"
 
+services:
+  - mysql
+
 env:
   global:
     # Github oauth key to allow getting the rails-head gemfile
