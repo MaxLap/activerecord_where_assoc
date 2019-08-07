@@ -16,7 +16,7 @@ Post.eager_load(:comments).where("comments.id IS NOT NULL")
 But each of these approaches have some side effects that can make things harder for yourself later:
 * Using `#joins` will make your query return duplicate entries if a `Post` has multiple `Comments`.  
   You might fix that by adding `#distinct` to the query, but that is a change to the whole query which could
-  cause issues depending on what else you are doing.
+  cause issues depending on what else you are doing in the query (maybe you wanted duplicates from another join?).
 * Using `#includes` or `#eager_load` will trigger eager-loading of your models.
   * If you don't actually need the `Comments`, this is wasteful.
   * If you use conditions on the comments, the eager-loading will only load the associated records that match.
@@ -31,7 +31,7 @@ These are just some of the ways of doing it, and some of the problems with them.
 To me, the biggest issues that no alternatives fully solve are:
 * Too verbose
 * Not clear on your intent  
-  Are you joining that table because you want to filter based on it or just becasue you need it for ordering or something else?
+  Are you joining that table because you want to filter based on it or just because you need it for ordering or something else?
 * Make your scopes have unexpected behaviors
   * Do you expect your scope to make your query return duplicated results?
   * Do you expect your scope to add a `#distinct` to your query?
