@@ -41,7 +41,8 @@ To me, the biggest issues that no alternatives fully solve are:
 
 A scope should filter records and do nothing more. (Unless you want it to do more/something else, but that should be clear)
 
-The root of the problem is that when you want to filter records and do nothing else, the SQL `JOIN` (which is used by `#joins`, `#includes`, `#eager_load`) is the wrong wrong tool for the job!
+The root of the problem is that when you want to filter records and do nothing else, the SQL `JOIN` (which is used by
+`#joins`, `#includes`, `#eager_load`) is the wrong wrong tool for the job!
 
 A sign that it's the wrong tool is that you can't use it multiple time for the same table without using a unique
 name for the table each time. If you have the scopes `#with_recent_comment` and `#with_old_comment`. You can't do
@@ -61,7 +62,8 @@ Post.includes(:comments).references(:comments)
 ```
 
 The only way to make the scopes play nice together, is if you use `joins` and write out the SQL for the `JOIN`
-with a custom alias for the table unique to that use, and then use that alias in the condition. This is painful and has many drawbacks. The scopes would look like this:
+with a custom alias for the table unique to that use, and then use that alias in the condition. This is painful and has
+many drawbacks. The scopes would look like this:
 ```ruby
 scope :with_old_comment, -> {
   joins("INNER JOIN comments old_comments ON comments.post_id = posts.id")
@@ -97,8 +99,8 @@ scope :with_old_comment, -> {
 }
 ```
 
-Basically, you can pass conditions in the second argument. Those must be matched in for an association to be
-considered as "existing". It can take multiple forms:
+Basically, you can pass conditions in the second argument. Records of the association that match those conditions are
+considered to be "existing". The condition can take multiple forms:
 
 ```ruby
 where_assoc_exists(:comments, ["created_at <= ?", 5.days.ago])
@@ -107,7 +109,7 @@ where_assoc_exists(:comments, "is_spam = true")
 ```
 
 You may notice I'm not including the table name in those conditions, that's because with the way the query is generated,
-it will not be ambiguous.
+it will not be ambiguous even if the `Post` and the `Comment` table have a column with the same name.
 
 If you have more complex conditions, you can pass a block instead
 ```ruby
@@ -172,8 +174,8 @@ methods is left as an exercise. Here is how you can do it now:
 Post.where_assoc_not_exists(:comments)
 ```
 
-The `where_assoc_not_exists` is the exact same as `where_assoc_exists`, but it will return records for which
-no association record exists that match the condition.
+The `where_assoc_not_exists` is the exact same as `where_assoc_exists`, but it will return records for which none of the
+records of the association match the condition
 
 Now lets say you want posts that don't have comments from an admin:
 
@@ -189,6 +191,18 @@ Post.where_assoc_not_exists([:comments, :author], &:admin)
 # Or if you have the by_admin scope on Comment
 Post.where_assoc_not_exists(:comments, &:by_admin)
 ```
+
+### More problems with the alternatives
+
+Lets say your association is a `has_one`, and it can have multiple records. In that case, `has_one` will return the `first`
+record it finds. (When you do that, you need an `order` clause) In that case, using `joins` or `includes` will query as
+if you had a `has_many`, so if any of the "other" associated records match, you will will get a result. `where_assoc_*`
+does not do that, it generates the extra SQL to treat the `has_one` correctly.
+
+What about recursive relations such as having a parent/children relation. When you `joins` or `includes`, since it's on
+the same table, then ActiveRecord will do an SQL alias for the table name. So now you must use that alias in your conditions,
+making things less clear (and if you forget, you won't get an error, just a bad behavior). `where_assoc_*` does not create
+an alias, you cannot accidentally target the wrong level of abstraction.
 
 ### Even more
 
@@ -229,13 +243,13 @@ and there would be many more if we had this earlier. The app has 40k lines of co
 is a need that can happen frequently.
 
 I also often use these when I have a question about by database. Does *X* ever happen? Lets check, the query
-is easy to make in a console now.
+is easy to make in a console now. You can also use the usual `to_sql` to get the powerful SQL query when you need
+to do an EXISTS in SQL.
 
 Scopes really become a more powerful tool and allow for more code reuse.
 
-There are many other problems I didn't mention here. Handling `has_one` correctly (not like a `has_many`), handling
-recursive associations, handling polymorphic belongs_to, works with `#or`. I made a [whole document](ALTERNATIVES_PROBLEMS.md)
-with details of those solved problems.
+There are more problems I didn't mention here. Handling polymorphic `belongs_to`, interaction with `#or`. I made
+[whole document](ALTERNATIVES_PROBLEMS.md) with details of those problems. They are solved by this gem.
 
 If after reading this, you still aren't interested in the gem / aren't going to use this, I would really like to know why.
 Please leave me some feedback in [this issue](https://github.com/MaxLap/activerecord_where_assoc/issues/3).
