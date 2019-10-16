@@ -62,9 +62,10 @@ The [documentation is nicely structured](https://maxlap.github.io/activerecord_w
 
 If you prefer to see it in the code, [everything is in this file](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/query_methods.rb) 
 
+Here are some [usage tips](#usage-tips)
+
 ## Usage
 
-The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html)  
 You can view [many examples](EXAMPLES.md).
 
 Otherwise, here is a short explanation:
@@ -208,12 +209,6 @@ Run `rake test` to run the tests for the latest version of rails. If you want SQ
 Run `bin/console` for an interactive prompt that will allow you to experiment in the same environment as the tests.
 
 Run `bin/fixcop` to fix a lot of common styling mistake from your changes and then display the remaining rubocop rules you break. Make sure to do this before committing and submitting PRs. Use common sense, sometimes it's okay to break a rule, add a [rubocop:disable comment](http://rubocop.readthedocs.io/en/latest/configuration/#disabling-cops-within-source-code) in that situation.
-
-Run `bin/testall` to test all supported rails/ruby versions:
-* It will tell you about missing ruby versions, which you can install if you want to test for them
-* It will run `rake test` on each supported version or ruby/rails
-* It automatically installs bundler if a ruby version doesn't have it
-* It automatically runs `bundle install`
 
 ## Contributing
 
