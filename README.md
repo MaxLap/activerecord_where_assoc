@@ -56,6 +56,12 @@ Or install it yourself as:
 
     $ gem install activerecord_where_assoc
 
+## Documentation
+
+The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html)
+
+If you prefer to see it in the code, [everything is in this file](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/query_methods.rb) 
+
 ## Usage
 
 The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html)  
@@ -173,7 +179,7 @@ All the methods always chain nested associations using an `EXISTS` when they hav
 
 ### Using `#from` in scope
 
-If you want to use a scope / condition which uses `#from`, then you need to use the [:never_alias_limit](#never_alias_limit) option to avoid `#where_assoc_*` being overwritten by your scope and getting a weird exception / wrong result.
+If you want to use a scope / condition which uses `#from`, then you need to use the [:never_alias_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Anever_alias_limit+option) option to avoid `#where_assoc_*` being overwritten by your scope and getting a weird exception / wrong result.
 
 ## Known issues/limitations
 
@@ -182,7 +188,7 @@ On MySQL databases, it is not possible to use `has_one` associations and associa
 
 I do not know of a way to do a SQL query that can deal with all the specifics of `has_one` for MySQL. If you have one, then please suggest it in an issue/pull request.
 
-In order to work around this, you must use the [ignore_limit](#ignore_limit) option. The behavior is less correct, but better than being unable to use the gem. 
+In order to work around this, you must use the [ignore_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Aignore_limit+option) option. The behavior is less correct, but better than being unable to use the gem. 
 
 ### has_* :through vs limit/offset
 For `has_many` and `has_one` with the `:through` option, `#limit` and `#offset` are ignored. Note that `#limit` and `#offset` of the `:source` and of the `:through` side are applied correctly.

@@ -284,7 +284,7 @@ module ActiveRecordWhereAssoc
             end
             msg << "This is not supported by ActiveRecord when doing joins, but it is by WhereAssoc. However, "
             msg << "you must pass the :poly_belongs_to option to specify what to do in this case.\n"
-            msg << "See https://github.com/MaxLap/activerecord_where_assoc#poly_belongs_to"
+            msg << "See https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Apoly_belongs_to+option"
             raise ActiveRecordWhereAssoc::PolymorphicBelongsToWithoutClasses, msg
           else
             if on_poly_belongs_to.is_a?(Class) && on_poly_belongs_to < ActiveRecord::Base
@@ -315,7 +315,7 @@ module ActiveRecordWhereAssoc
         msg = String.new
         msg << "Associations and default_scopes with a limit or offset are not supported for MySQL (this includes has_many). "
         msg << "Use ignore_limit: true to ignore both limit and offset, and treat has_one like has_many. "
-        msg << "See https://github.com/MaxLap/activerecord_where_assoc/tree/ignore_limits#mysql-doesnt-support-sub-limit for details."
+        msg << "See https://github.com/MaxLap/activerecord_where_assoc#mysql-doesnt-support-sub-limit for details."
         raise MySQLDoesntSupportSubLimitError, msg
       end
 

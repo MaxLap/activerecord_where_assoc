@@ -1,4 +1,6 @@
 
+* Fix broken urls in error messages 
+
 # 1.0.0
 
 * Now supports polymorphic belongs_to
