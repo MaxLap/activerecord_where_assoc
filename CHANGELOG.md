@@ -1,3 +1,4 @@
+# 1.0.1
 
 * Fix broken urls in error messages 
 
