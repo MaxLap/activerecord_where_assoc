@@ -103,9 +103,9 @@ Basically, you can pass conditions in the second argument. Records of the associ
 considered to be "existing". The condition can take multiple forms:
 
 ```ruby
-where_assoc_exists(:comments, ["created_at <= ?", 5.days.ago])
-where_assoc_exists(:comments, is_spam: true)
-where_assoc_exists(:comments, "is_spam = true")
+Post.where_assoc_exists(:comments, ["created_at <= ?", 5.days.ago])
+Post.where_assoc_exists(:comments, is_spam: true)
+Post.where_assoc_exists(:comments, "is_spam = true")
 ```
 
 You may notice I'm not including the table name in those conditions, that's because with the way the query is generated,
@@ -113,23 +113,23 @@ it will not be ambiguous even if the `Post` and the `Comment` table have a colum
 
 If you have more complex conditions, you can pass a block instead
 ```ruby
-where_assoc_exists(:comments) { |comments_scope|
+Post.where_assoc_exists(:comments) { |comments_scope|
   comments_scope.where("created_at <= ?", 5.days.ago)
 }
 # If your block has no parameters, then the `self` is the scope,
 # so you can be more concise:
-where_assoc_exists(:comments) {
+Post.where_assoc_exists(:comments) {
   where("created_at <= ?", 5.days.ago)
 }
 
 # The main advantage is that now, you can even use the scopes that you have on your comments!
 # Imagine the `Comment` model has a scope `old`
-where_assoc_exists(:comments) { |comments_scope|
+Post.where_assoc_exists(:comments) { |comments_scope|
   comments_scope.old
 }
 # Now those are short and clear:
-where_assoc_exists(:comments) { old }
-where_assoc_exists(:comments, &:old)
+Post.where_assoc_exists(:comments) { old }
+Post.where_assoc_exists(:comments, &:old)
 ```
 
 Now we can easily reuse scopes and avoid duplicating the logic of what is an old comment!
