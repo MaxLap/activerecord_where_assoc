@@ -126,7 +126,7 @@ where_assoc_exists(:comments) {
 # Imagine the `Comment` model has a scope `old`
 where_assoc_exists(:comments) { |comments_scope|
   comments_scope.old
-  }
+}
 # Now those are short and clear:
 where_assoc_exists(:comments) { old }
 where_assoc_exists(:comments, &:old)
