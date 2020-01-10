@@ -94,7 +94,7 @@ matrix:
   # fast_finish: true
 
 # The last version that supports our older supported ruby versions if is 1.17.3
-before_install: gem install bundler -v 1.17.3
+#before_install: gem install bundler -v 1.17.3
 
 before_script:
   - psql -c 'CREATE DATABASE activerecord_where_assoc' -U postgres
