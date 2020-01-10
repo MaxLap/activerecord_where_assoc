@@ -13,11 +13,11 @@ require "uri"
 
 if ENV["GITHUB_ACCESS_TOKEN"]
   # Thnx to https://jhawthorn.github.io/curl-to-ruby/
-  uri = URI.parse("https://api.github.com/repos/rails/rails/branches/master?access_token=#{ENV['GITHUB_ACCESS_TOKEN']}")
+  uri = ::URI.parse("https://api.github.com/repos/rails/rails/branches/master?access_token=#{ENV['GITHUB_ACCESS_TOKEN']}")
   response = Net::HTTP.get_response(uri)
   rails_commit_sha = JSON.parse(response.body)["commit"]["sha"]
 
-  uri = URI.parse("https://api.github.com/repos/rails/arel/branches/master?access_token=#{ENV['GITHUB_ACCESS_TOKEN']}")
+  uri = ::URI.parse("https://api.github.com/repos/rails/arel/branches/master?access_token=#{ENV['GITHUB_ACCESS_TOKEN']}")
   response = Net::HTTP.get_response(uri)
   arel_commit_sha = JSON.parse(response.body)["commit"]["sha"]
 
