@@ -50,7 +50,7 @@ class BaseTestModel < ActiveRecord::Base
   end
 
   # Creates an association with a condition on #{target_table_name}.#{target_table_name}_column
-  def self.testable_association(macro, association_name, given_scope = nil, options = {})
+  def self.testable_association(macro, association_name, given_scope = nil, **options)
     if given_scope.is_a?(Hash)
       options = given_scope
       given_scope = nil
@@ -63,27 +63,27 @@ class BaseTestModel < ActiveRecord::Base
       scope = -> { where(testable_condition(condition_value)) }
     end
 
-    send(macro, association_name, scope, options)
+    send(macro, association_name, scope, **options)
   end
 
-  def self.testable_has_many(association_name, given_scope = nil, options = {})
+  def self.testable_has_many(association_name, given_scope = nil, **options)
     raise "association_name should start with 'm'" unless association_name.to_s.start_with?("m")
-    testable_association(:has_many, association_name, given_scope, options)
+    testable_association(:has_many, association_name, given_scope, **options)
   end
 
-  def self.testable_has_one(association_name, given_scope = nil, options = {})
+  def self.testable_has_one(association_name, given_scope = nil, **options)
     raise "association_name should start with 'o'" unless association_name.to_s.start_with?("o")
-    testable_association(:has_one, association_name, given_scope, options)
+    testable_association(:has_one, association_name, given_scope, **options)
   end
 
-  def self.testable_belongs_to(association_name, given_scope = nil, options = {})
+  def self.testable_belongs_to(association_name, given_scope = nil, **options)
     raise "association_name should start with 'b'" unless association_name.to_s.start_with?("b")
-    testable_association(:belongs_to, association_name, given_scope, options)
+    testable_association(:belongs_to, association_name, given_scope, **options)
   end
 
-  def self.testable_has_and_belongs_to_many(association_name, given_scope = nil, options = {})
+  def self.testable_has_and_belongs_to_many(association_name, given_scope = nil, **options)
     raise "association_name should start with 'z'" unless association_name.to_s.start_with?("z")
-    testable_association(:has_and_belongs_to_many, association_name, given_scope, options)
+    testable_association(:has_and_belongs_to_many, association_name, given_scope, **options)
   end
 
   def self.create_default!(*source_associations)
