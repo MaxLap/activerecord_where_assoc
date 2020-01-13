@@ -39,8 +39,8 @@ These methods have many advantages over the alternative ways of achieving the si
 
 ## Installation
 
-Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.6.  
-Works with SQLite3, PostgreSQL and MySQL. Untested with other RDBMS.
+Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.7.  
+Tested against SQLite3, PostgreSQL and MySQL.
 
 Add this line to your application's Gemfile:
 
