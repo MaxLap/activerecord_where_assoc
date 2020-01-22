@@ -41,6 +41,7 @@ These methods have many advantages over the alternative ways of achieving the si
 
 Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.7.  
 Tested against SQLite3, PostgreSQL and MySQL.
+The gem only depends on the `activerecord` gem.
 
 Add this line to your application's Gemfile:
 
@@ -55,6 +56,11 @@ And then execute:
 Or install it yourself as:
 
     $ gem install activerecord_where_assoc
+
+## Development state
+
+This gem is feature complete.  
+Other than rare tweaks as new versions of Rails and Ruby are released, there shouldn't be much activity on this repository (unless a problem is found).
 
 ## Documentation
 
