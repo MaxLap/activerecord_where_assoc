@@ -13,12 +13,23 @@ require "uri"
 
 if ENV["GITHUB_ACCESS_TOKEN"]
   # Thnx to https://jhawthorn.github.io/curl-to-ruby/
-  uri = ::URI.parse("https://api.github.com/repos/rails/rails/branches/master?access_token=#{ENV['GITHUB_ACCESS_TOKEN']}")
-  response = Net::HTTP.get_response(uri)
+
+  req_github = lambda do |url|
+    uri = ::URI.parse(url)
+    Net::HTTP.start(uri.host, uri.port,
+                    :use_ssl => uri.scheme == 'https') do |http|
+
+      request = Net::HTTP::Get.new uri.request_uri
+      request.basic_auth 'maxlap', ENV['GITHUB_ACCESS_TOKEN']
+
+      http.request(request)
+    end
+  end
+
+  response = req_github.call("https://api.github.com/repos/rails/rails/branches/master")
   rails_commit_sha = JSON.parse(response.body)["commit"]["sha"]
 
-  uri = ::URI.parse("https://api.github.com/repos/rails/arel/branches/master?access_token=#{ENV['GITHUB_ACCESS_TOKEN']}")
-  response = Net::HTTP.get_response(uri)
+  response = req_github.call("https://api.github.com/repos/rails/arel/branches/master")
   arel_commit_sha = JSON.parse(response.body)["commit"]["sha"]
 
   gem "activerecord", git: "https://github.com/rails/rails.git", ref: rails_commit_sha
