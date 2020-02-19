@@ -236,7 +236,8 @@ module ActiveRecordWhereAssoc
     #   See ActiveRecordWhereAssoc::QueryMethods@Block
     #
     def where_assoc_exists(association_name, conditions = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_exists(self, association_name, conditions, options, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.where_assoc_exists_sql(self, association_name, conditions, options, &block)
+      where(sql)
     end
 
     # Returns a new relation with a condition added (a +#where+) that checks if an association
@@ -280,7 +281,8 @@ module ActiveRecordWhereAssoc
     #   See ActiveRecordWhereAssoc::QueryMethods@Block
     #
     def where_assoc_not_exists(association_name, conditions = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_not_exists(self, association_name, conditions, options, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.where_assoc_not_exists_sql(self, association_name, conditions, options, &block)
+      where(sql)
     end
 
     # :section: Complex method
@@ -378,7 +380,8 @@ module ActiveRecordWhereAssoc
     #   User.where_assoc_count(5, :<=, :posts) { where_assoc_exists(:comments) }
     #
     def where_assoc_count(left_operand, operator, association_name, conditions = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.do_where_assoc_count(self, left_operand, operator, association_name, conditions, options, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.where_assoc_count_sql(self, left_operand, operator, association_name, conditions, options, &block)
+      where(sql)
     end
   end
 end

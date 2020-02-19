@@ -8,24 +8,35 @@ module ActiveRecordWhereAssoc
     # Arel table used for aliasing when handling recursive associations (such as parent/children)
     ALIAS_TABLE = Arel::Table.new("_ar_where_assoc_alias_")
 
+    def self.sql_for_exists(nested_scopes)
+      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
+      sql = nested_scopes.map { |ns| "EXISTS (#{ns.select('1').to_sql})" }.join(" OR ")
+      if nested_scopes.size > 1
+        "(#{sql})" # Needed when embedding the sql in a `where`, because the OR could make things wrong
+      elsif nested_scopes.size == 1
+        sql
+      else
+        "0=1"
+      end
+    end
+
     # Block used when nesting associations for a where_assoc_[not_]exists
     # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
     # exists_prefix: raw sql prefix to the EXISTS, ex: 'NOT '
-    NestWithExistsBlock = lambda do |wrapping_scope, nested_scopes, exists_prefix = ""|
-      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
-      sql = nested_scopes.map { |ns| "EXISTS (#{ns.select('1').to_sql})" }.join(" OR ")
-      sql = "(#{sql})" if nested_scopes.size > 1
-      sql = sql.presence || "0=1"
+    NestWithExistsBlock = lambda do |wrapping_scope, nested_scopes|
+      wrapping_scope.where(sql_for_exists(nested_scopes))
+    end
 
-      wrapping_scope.where(exists_prefix + sql)
+    def self.sql_for_sum_of_counts(nested_scopes)
+      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
+      # Need the double parentheses
+      nested_scopes.map { |ns| "SUM((#{ns.to_sql}))" }.join(" + ").presence || "0"
     end
 
     # Block used when nesting associations for a where_assoc_count
     # Will apply the nested scope to the wrapping_scope with: select("SUM(SELECT... *nested_scope*)")
     NestWithSumBlock = lambda do |wrapping_scope, nested_scopes|
-      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
-      # Need the double parentheses
-      sql = nested_scopes.map { |ns| "SUM((#{ns.to_sql}))" }.join(" + ").presence || "0"
+      sql = sql_for_sum_of_counts(nested_scopes)
 
       wrapping_scope.unscope(:select).select(sql)
     end
@@ -47,25 +58,25 @@ module ActiveRecordWhereAssoc
     # based on if a record for the specified association of the model exists.
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.do_where_assoc_exists(base_relation, association_name, given_conditions, options, &block)
+    def self.where_assoc_exists_sql(base_relation, association_name, given_conditions, options, &block)
       nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, block, NestWithExistsBlock)
-      NestWithExistsBlock.call(base_relation, nested_relations)
+      sql_for_exists(nested_relations)
     end
 
     # Returns a new relation, which is the result of filtering base_relation
     # based on if a record for the specified association of the model doesn't exist.
     #
     # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.do_where_assoc_not_exists(base_relation, association_name, given_conditions, options, &block)
+    def self.where_assoc_not_exists_sql(base_relation, association_name, given_conditions, options, &block)
       nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, block, NestWithExistsBlock)
-      NestWithExistsBlock.call(base_relation, nested_relations, "NOT ")
+      "NOT #{sql_for_exists(nested_relations)}"
     end
 
     # Returns a new relation, which is the result of filtering base_relation
     # based on how many records for the specified association of the model exists.
     #
     # See #where_assoc_exists and #where_assoc_count in query_methods.rb for usage details.
-    def self.do_where_assoc_count(base_relation, left_operand, operator, association_name, given_conditions, options, &block)
+    def self.where_assoc_count_sql(base_relation, left_operand, operator, association_name, given_conditions, options, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
@@ -76,8 +87,7 @@ module ActiveRecordWhereAssoc
 
       right_sql = nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
 
-      sql = sql_for_count_operator(left_operand, operator, right_sql)
-      base_relation.where(sql)
+      sql_for_count_operator(left_operand, operator, right_sql)
     end
 
     # Returns relations on the associated model meant to be embedded in a query
