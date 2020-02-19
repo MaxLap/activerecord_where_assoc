@@ -17,10 +17,10 @@ if ENV["GITHUB_ACCESS_TOKEN"]
   req_github = lambda do |url|
     uri = ::URI.parse(url)
     Net::HTTP.start(uri.host, uri.port,
-                    :use_ssl => uri.scheme == 'https') do |http|
+                    use_ssl: uri.scheme == "https") do |http|
 
       request = Net::HTTP::Get.new uri.request_uri
-      request.basic_auth 'maxlap', ENV['GITHUB_ACCESS_TOKEN']
+      request.basic_auth "maxlap", ENV["GITHUB_ACCESS_TOKEN"]
 
       http.request(request)
     end
