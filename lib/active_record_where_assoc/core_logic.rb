@@ -96,15 +96,18 @@ module ActiveRecordWhereAssoc
     def self.relations_on_association(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
       association_names_path = Array.wrap(association_names_path)
+      _relations_on_association_recurse(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
+    end
 
+    def self._relations_on_association_recurse(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
-          nested_scope = relations_on_association(scope,
-                                                  association_names_path[1..-1],
-                                                  given_conditions,
-                                                  options,
-                                                  last_assoc_block,
-                                                  nest_assocs_block)
+          nested_scope = _relations_on_association_recurse(scope,
+                                                           association_names_path[1..-1],
+                                                           given_conditions,
+                                                           options,
+                                                           last_assoc_block,
+                                                           nest_assocs_block)
           nest_assocs_block.call(scope, nested_scope)
         end
 
