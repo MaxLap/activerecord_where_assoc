@@ -179,12 +179,18 @@ class Examples
     description = description.strip_heredoc
     ruby = ruby.strip_heredoc
 
-    relation = eval(ruby) # rubocop:disable Security/Eval
+    # The +2 is for skipping the line with the call, and the DESC line
+    initial_line_no = caller_locations[0].lineno + description.count("\n") + 2
+
+    relation = eval(ruby, nil, __FILE__, initial_line_no) # rubocop:disable Security/Eval
     # Just making sure the query doesn't fail
     relation.to_a
 
     # #to_niceql formats the SQL a little
     sql = relation.to_niceql
+
+    # Remove stupid indentation everywhere after the first line...
+    sql = sql.gsub(/^  /, '')
 
     puts "```ruby"
     puts description.split("\n").map { |s| "# #{s}" }.join("\n")

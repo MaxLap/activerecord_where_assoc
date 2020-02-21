@@ -16,10 +16,10 @@ Post.where_assoc_exists(:comments)
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id"
-  ))
+WHERE (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id"
+))
 ```
 
 ---
@@ -30,10 +30,10 @@ Post.where_assoc_not_exists(:comments)
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (NOT EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id"
-  ))
+WHERE (NOT EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id"
+))
 ```
 
 ---
@@ -44,10 +44,10 @@ Post.where_assoc_count(50, :<=, :comments)
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE ((50) <= COALESCE((
-    SELECT COUNT(*) FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id"
-  ), 0))
+WHERE ((50) <= COALESCE((
+  SELECT COUNT(*) FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id"
+), 0))
 ```
 
 ---
@@ -58,10 +58,10 @@ User.where_assoc_exists(:posts)
 ```
 ```sql
 SELECT "users".* FROM "users"
-  WHERE (EXISTS (
-    SELECT 1 FROM "posts"
-    WHERE "posts"."author_id" = "users"."id"
-  ))
+WHERE (EXISTS (
+  SELECT 1 FROM "posts"
+  WHERE "posts"."author_id" = "users"."id"
+))
 ```
 
 ---
@@ -72,13 +72,13 @@ User.where_assoc_exists([:posts, :comments])
 ```
 ```sql
 SELECT "users".* FROM "users"
-  WHERE (EXISTS (
-    SELECT 1 FROM "posts"
-    WHERE "posts"."author_id" = "users"."id" AND (EXISTS (
-      SELECT 1 FROM "comments"
-      WHERE "comments"."post_id" = "posts"."id"
-    ))
+WHERE (EXISTS (
+  SELECT 1 FROM "posts"
+  WHERE "posts"."author_id" = "users"."id" AND (EXISTS (
+    SELECT 1 FROM "comments"
+    WHERE "comments"."post_id" = "posts"."id"
   ))
+))
 ```
 
 ---
@@ -90,13 +90,13 @@ my_users.where("#{User.assoc_exists_sql(:posts)} OR #{User.assoc_exists_sql(:com
 ```
 ```sql
 SELECT "users".* FROM "users"
-  WHERE (EXISTS (
-    SELECT 1 FROM "posts"
-    WHERE "posts"."author_id" = "users"."id"
-  ) OR EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."author_id" = "users"."id"
-  ))
+WHERE (EXISTS (
+  SELECT 1 FROM "posts"
+  WHERE "posts"."author_id" = "users"."id"
+) OR EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."author_id" = "users"."id"
+))
 ```
 
 ---
@@ -107,13 +107,13 @@ User.where_assoc_exists(:posts).or(User.where_assoc_exists(:comments))
 ```
 ```sql
 SELECT "users".* FROM "users"
-  WHERE ((EXISTS (
-    SELECT 1 FROM "posts"
-    WHERE "posts"."author_id" = "users"."id"
-  )) OR (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."author_id" = "users"."id"
-  )))
+WHERE ((EXISTS (
+  SELECT 1 FROM "posts"
+  WHERE "posts"."author_id" = "users"."id"
+)) OR (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."author_id" = "users"."id"
+)))
 ```
 
 ---
@@ -126,10 +126,10 @@ my_post.comments.where_assoc_exists(:author, is_admin: true)
 ```
 ```sql
 SELECT "comments".* FROM "comments"
-  WHERE "comments"."post_id" = 1 AND (EXISTS (
-    SELECT 1 FROM "users"
-    WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
-  ))
+WHERE "comments"."post_id" = 1 AND (EXISTS (
+  SELECT 1 FROM "users"
+  WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 1
+))
 ```
 
 ---
@@ -140,10 +140,10 @@ my_post.comments.where_assoc_not_exists(:author, &:admins)
 ```
 ```sql
 SELECT "comments".* FROM "comments"
-  WHERE "comments"."post_id" = 1 AND (NOT EXISTS (
-    SELECT 1 FROM "users"
-    WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
-  ))
+WHERE "comments"."post_id" = 1 AND (NOT EXISTS (
+  SELECT 1 FROM "users"
+  WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 1
+))
 ```
 
 ---
@@ -154,10 +154,10 @@ Post.where_assoc_count(5, :<=, :comments, ["is_reported = ?", true])
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE ((5) <= COALESCE((
-    SELECT COUNT(*) FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND (is_reported = 't')
-  ), 0))
+WHERE ((5) <= COALESCE((
+  SELECT COUNT(*) FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND (is_reported = 1)
+), 0))
 ```
 
 ---
@@ -168,10 +168,10 @@ Post.where_assoc_exists(:author, "is_admin = 't'")
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (EXISTS (
-    SELECT 1 FROM "users"
-    WHERE "users"."id" = "posts"."author_id" AND (is_admin = 't')
-  ))
+WHERE (EXISTS (
+  SELECT 1 FROM "users"
+  WHERE "users"."id" = "posts"."author_id" AND (is_admin = 't')
+))
 ```
 
 ---
@@ -182,10 +182,10 @@ my_post.comments.where_assoc_not_exists(:author) { admins }
 ```
 ```sql
 SELECT "comments".* FROM "comments"
-  WHERE "comments"."post_id" = 1 AND (NOT EXISTS (
-    SELECT 1 FROM "users"
-    WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
-  ))
+WHERE "comments"."post_id" = 1 AND (NOT EXISTS (
+  SELECT 1 FROM "users"
+  WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 1
+))
 ```
 
 ---
@@ -196,10 +196,10 @@ Post.where_assoc_count(5..10, :==, :comments) { where(is_reported: true) }
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (COALESCE((
-    SELECT COUNT(*) FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 't'
-  ), 0) BETWEEN 5 AND 10)
+WHERE (COALESCE((
+  SELECT COUNT(*) FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 1
+), 0) BETWEEN 5 AND 10)
 ```
 
 ---
@@ -210,10 +210,10 @@ Comment.where_assoc_exists(:post, author_id: my_user.id)
 ```
 ```sql
 SELECT "comments".* FROM "comments"
-  WHERE (EXISTS (
-    SELECT 1 FROM "posts"
-    WHERE "posts"."id" = "comments"."post_id" AND "posts"."author_id" = 1
-  ))
+WHERE (EXISTS (
+  SELECT 1 FROM "posts"
+  WHERE "posts"."id" = "comments"."post_id" AND "posts"."author_id" = 1
+))
 ```
 
 ---
@@ -226,13 +226,13 @@ Post.where_assoc_exists([:comments, :author], is_admin: true)
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND (EXISTS (
-      SELECT 1 FROM "users"
-      WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
-    ))
+WHERE (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND (EXISTS (
+    SELECT 1 FROM "users"
+    WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 1
   ))
+))
 ```
 
 ---
@@ -243,10 +243,10 @@ Post.where_assoc_exists(:comments, "posts.author_id = comments.author_id")
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND (posts.author_id = comments.author_id)
-  ))
+WHERE (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND (posts.author_id = comments.author_id)
+))
 ```
 
 ---
@@ -259,13 +259,13 @@ Post.where_assoc_exists(:comments, is_reported: true) {
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 't' AND (EXISTS (
-      SELECT 1 FROM "users"
-      WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
-    ))
+WHERE (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 1 AND (EXISTS (
+    SELECT 1 FROM "users"
+    WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 1
   ))
+))
 ```
 
 ---
@@ -277,16 +277,16 @@ my_user.posts.where_assoc_exists(:comments, is_reported: true)
 ```
 ```sql
 SELECT "posts".* FROM "posts"
-  WHERE "posts"."author_id" = 1 AND (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 't'
-  )) AND (EXISTS (
-    SELECT 1 FROM "comments"
-    WHERE "comments"."post_id" = "posts"."id" AND (EXISTS (
-      SELECT 1 FROM "users"
-      WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 't'
-    ))
+WHERE "posts"."author_id" = 1 AND (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND "comments"."is_reported" = 1
+)) AND (EXISTS (
+  SELECT 1 FROM "comments"
+  WHERE "comments"."post_id" = "posts"."id" AND (EXISTS (
+    SELECT 1 FROM "users"
+    WHERE "users"."id" = "comments"."author_id" AND "users"."is_admin" = 1
   ))
+))
 ```
 ```ruby
 # Users with more posts than comments
@@ -295,11 +295,11 @@ my_users.where("#{User.only_assoc_count_sql(:posts)} > #{User.only_assoc_count_s
 ```
 ```sql
 SELECT "users".* FROM "users"
-  WHERE (COALESCE((
-    SELECT COUNT(*) FROM "posts"
-    WHERE "posts"."author_id" = "users"."id"
-  ), 0) > COALESCE((
-    SELECT COUNT(*) FROM "comments"
-    WHERE "comments"."author_id" = "users"."id"
-  ), 0))
+WHERE (COALESCE((
+  SELECT COUNT(*) FROM "posts"
+  WHERE "posts"."author_id" = "users"."id"
+), 0) > COALESCE((
+  SELECT COUNT(*) FROM "comments"
+  WHERE "comments"."author_id" = "users"."id"
+), 0))
 ```
