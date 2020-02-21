@@ -132,11 +132,15 @@
 <p>models: <code>Post.where_assoc_exists(:comments)</code></p>
 </li></ul>
 
-<p>In short: Anywhere you could use #where, you can also use the methods presented here. This includes with the #or method.</p>
+<p>In short: Anywhere you could use #where, you can also use the methods presented here. This includes with ActiveRecord&#39;s #or method.</p>
 
-<p>You may also consider viewing the gem&#39;s README. It contains known issues and some tips. You can view the <a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/README.md">README on github</a>.</p>
+<p><a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/INTRODUCTION.md">Introduction to this gem</a> introduces each features of the gem clearly.</p>
 
-<p>If you need extra convincing to try this gem, I have a whole document with the problems of the other ways of doing this kind of filtering: <a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/ALTERNATIVES_PROBLEMS.md">alternatives’ problems</a>.</p>
+<p>The <a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/README.md">gem’s README.md</a> contains known limitations and usage tips.</p>
+
+<p><a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/EXAMPLES.md">Many examples</a> are available, including the generated SQL queries.</p>
+
+<p>If you need extra convincing to try this gem, this document with the problems of the other ways of doing this kind of filtering should help: <a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/ALTERNATIVES_PROBLEMS.md">alternatives’ problems</a>.</p>
 
 <h3 id="module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Association">Association<span><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Association">&para;</a> <a href="#top">&uarr;</a></span></h3>
 
@@ -401,7 +405,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
           
           <div class="method-source-code" id="where_assoc_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 245</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 251</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">sql</span> = <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">assoc_exists_sql</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">klass</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
@@ -469,7 +473,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
           
           <div class="method-source-code" id="where_assoc_not_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 291</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 297</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">sql</span> = <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">assoc_not_exists_sql</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">klass</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
@@ -621,7 +625,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
           
           <div class="method-source-code" id="where_assoc_count-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 392</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 398</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">sql</span> = <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">compare_assoc_count_sql</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">klass</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>,
                                                                   <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)

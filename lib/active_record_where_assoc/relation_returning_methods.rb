@@ -19,13 +19,19 @@ module ActiveRecordWhereAssoc
   # * models: <tt>Post.where_assoc_exists(:comments)</tt>
   #
   # In short: Anywhere you could use #where, you can also use the methods presented here. This includes
-  # with the #or method.
+  # with ActiveRecord's #or method.
   #
-  # You may also consider viewing the gem's README. It contains known issues and some tips.
-  # You can view the {README on github}[https://github.com/MaxLap/activerecord_where_assoc/blob/master/README.md].
+  # {Introduction to this gem}[https://github.com/MaxLap/activerecord_where_assoc/blob/master/INTRODUCTION.md]
+  # introduces each features of the gem clearly.
   #
-  # If you need extra convincing to try this gem, I have a whole document with the problems of
-  # the other ways of doing this kind of filtering:
+  # The {gem's README.md}[https://github.com/MaxLap/activerecord_where_assoc/blob/master/README.md] contains
+  # known limitations and usage tips.
+  #
+  # {Many examples}[https://github.com/MaxLap/activerecord_where_assoc/blob/master/EXAMPLES.md] are available,
+  # including the generated SQL queries.
+  #
+  # If you need extra convincing to try this gem, this document with the problems of the other
+  # ways of doing this kind of filtering should help:
   # {alternatives' problems}[https://github.com/MaxLap/activerecord_where_assoc/blob/master/ALTERNATIVES_PROBLEMS.md].
   #
   # === Association
