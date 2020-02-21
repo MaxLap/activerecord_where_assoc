@@ -66,7 +66,8 @@ Other than rare tweaks as new versions of Rails and Ruby are released, there sho
 
 The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html)
 
-If you prefer to see it in the code, [everything is in this file](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/relation_returning_methods.rb) 
+If you prefer to see it in the code, the main methods are in [this file](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/relation_returning_methods.rb)
+and the ones that return SQL parts are in [this one](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/sql_returning_methods.rb)
 
 Here are some [usage tips](#usage-tips)
 
@@ -74,7 +75,7 @@ Here are some [usage tips](#usage-tips)
 
 You can view [many examples](EXAMPLES.md).
 
-Otherwise, here is a short explanation:
+Otherwise, here is a short explanation. These are the main methods provided by this gem:
 
 ```ruby
 where_assoc_exists(association_name, conditions, options, &block)
