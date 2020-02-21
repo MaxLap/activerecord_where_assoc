@@ -11,6 +11,7 @@ The common ways you may find online:
 Post.joins(:comments)
 Post.includes(:comments).references(:comments).where("comments.id IS NOT NULL")
 Post.eager_load(:comments).where("comments.id IS NOT NULL")
+Post.where("EXISTS(SELECT 1 FROM comments where posts.id = comments.post_id")
 ```
 
 But each of these approaches have some side effects that can make things harder for yourself later:
@@ -24,20 +25,22 @@ But each of these approaches have some side effects that can make things harder 
     terrible idea for a scope.
 * There is the option of using counter caches, but while that works for very basic cases, it requires setup and
   is not able to deal with more complex needs (conditions and nesting).
+* Doing an `EXISTS` query manually is longer and error prone. It's easy to forget a condition and not notice the error
+  right away, especially for more complex needs, such as nested queries.
 
 These are just some of the ways of doing it, and some of the problems with them. If you are curious, I made a
 [whole document](ALTERNATIVES_PROBLEMS.md) with all the ways and more problems with detailed explanation.
 
 To me, the biggest issues that no alternatives fully solve are:
-* Too verbose
-* Not clear on your intent  
-  Are you joining that table because you want to filter based on it or just because you need it for ordering or something else?
-* Make your scopes have unexpected behaviors
-  * Do you expect your scope to make your query return duplicated results?
-  * Do you expect your scope to add a `#distinct` to your query?
-  * Do you expect your scope to trigger eager-loading?
-  * Do you expect your scope make partial eager-loading of an association, generating subtle bugs?
-  * And more! See below.
+* Too verbose and error prone
+* Your intent is not clear... Are you joining that table because you want to filter based on it or just because you
+  need it for ordering or something else?
+* Make your scopes have unexpected behaviors... Do you expect your scopes to:
+  * make your query return duplicated results?
+  * add a `#distinct` to your query?
+  * trigger eager-loading?
+  * make partial eager-loading of an association, generating subtle bugs?
+  * be incompatible with each other?
 
 A scope should filter records and do nothing more. (Unless you want it to do more/something else, but that should be clear)
 
@@ -236,7 +239,23 @@ instead of a fixed number. See the
 [documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#method-i-where_assoc_count)
 for details.
 
-### Do you need this?
+### Playing with the SQL
+
+Sometimes, it may happen that you want only to have the SQL for one of these. Maybe you are building a more
+complex query, or maybe you need them for an even more complex condition. These are the building blocks for the SQL.
+
+* `assoc_exists_sql` returns only the SQL for doing an EXISTS condition
+* `assoc_not_exists_sql` returns only the SQL for doing a NOT EXISTS condition
+* `compare_assoc_count_sql` returns only the SQL for doing a condition on the number of associated records that match 
+* `only_assoc_count_sql` returns only the SQL to count the number of associated records that match, this is to be used in a condition
+
+You can read about them in the [documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/SqlReturningMethods.html). Here is a quick example:
+
+```ruby
+User.where("#{User.assoc_exists_sql(:posts)} OR #{User.assoc_exists_sql(:comments)}")
+```
+
+### Do you need all of this?
 
 At my work, we have used a WIP version of this gem for many years now. We have more than 250 calls to these methods,
 and there would be many more if we had this earlier. The app has 40k lines of code (views excluded). So clearly, this
@@ -248,8 +267,8 @@ to do an EXISTS in SQL.
 
 Scopes really become a more powerful tool and allow for more code reuse.
 
-There are more problems I didn't mention here. Handling polymorphic `belongs_to`, interaction with `#or`. I made
-[whole document](ALTERNATIVES_PROBLEMS.md) with details of those problems. They are solved by this gem.
+There are more problems I didn't mention here. Handling polymorphic `belongs_to`, interaction with `#or`. This
+[whole document](ALTERNATIVES_PROBLEMS.md) details those problems. They are solved by this gem.
 
 If after reading this, you still aren't interested in the gem / aren't going to use this, I would really like to know why.
 Please leave me some feedback in [this issue](https://github.com/MaxLap/activerecord_where_assoc/issues/3).
