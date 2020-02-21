@@ -178,6 +178,21 @@ Post.where_assoc_exists([:comments, :author, :address], "addresses.country = pos
 
 Doing the same thing but with less associations between `address` and `posts` would not be an issue.
 
+### Getting SQL strings
+
+Sometimes, you may need only the SQL of the condition instead of a whole relation, such as when writing your own complex SQL. There are methods available for this use case: `assoc_exists_sql`, `assoc_not_exists_sql`, `compare_assoc_count_sql`, `only_assoc_count_sql`.
+
+You can read some more about them in [their documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/SqlReturningMethods.html)
+
+Here is a simple example of what can be done with them:
+
+```ruby
+    # Users with a post or a comment
+    User.where("#{User.assoc_exists_sql(:posts)} OR #{User.assoc_exists_sql(:comments)}")
+    my_users.where("#{User.assoc_exists_sql(:posts)} OR #{User.assoc_exists_sql(:comments)}")
+    # Note that this could be achieved in Rails 5 using the #or method
+```
+
 ### The opposite of multiple nested EXISTS...
 
 ... is a single `NOT EXISTS` with the nested ones still using `EXISTS`.

@@ -5,7 +5,7 @@
 
 # Avoid a message about default database used
 ENV["DB"] ||= "sqlite3"
-
+require "active_support/core_ext/string/strip"
 require_relative "../test/support/load_test_env"
 require_relative "schema"
 require_relative "models"
@@ -15,7 +15,9 @@ require "niceql"
 class Examples
   def puts_doc
     puts <<-HEADER.strip_heredoc
-      Here are some example usages of the gem, along with the generated SQL. Each of those can be chained with scoping methods.
+      Here are some example usages of the gem, along with the generated SQL.
+
+      Each of those methods can be chained with scoping methods, so they can be used on `Post`, `my_user.posts`, `Post.where('hello')` or inside a scope. Note that for the `*_sql` variants, those should preferably be used on classes only, because otherwise, it could be confusing for a reader.
 
       The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
@@ -56,6 +58,19 @@ class Examples
       Users that have made posts that have comments
     DESC
       User.where_assoc_exists([:posts, :comments])
+    RUBY
+
+    output_example(<<-DESC, <<-RUBY)
+      Users with a post or a comment (without using ActiveRecord's `or` method)
+      Using `my_users` to highlight that *_sql methods should always be called on the class
+    DESC
+      my_users.where("\#{User.assoc_exists_sql(:posts)} OR \#{User.assoc_exists_sql(:comments)}")
+    RUBY
+
+    output_example(<<-DESC, <<-RUBY)
+      Users with a post or a comment (using ActiveRecord's `or` method)
+    DESC
+      User.where_assoc_exists(:posts).or(User.where_assoc_exists(:comments))
     RUBY
 
     puts "## Examples with condition / scope"
@@ -132,6 +147,13 @@ class Examples
       my_user.posts.where_assoc_exists(:comments, is_reported: true)
                    .where_assoc_exists([:comments, :author], is_admin: true)
     RUBY
+
+    output_example(<<-DESC, <<-RUBY, footer: false)
+      Users with more posts than comments
+      Using `my_users` to highlight that *_sql methods should always be called on the class
+    DESC
+      my_users.where("\#{User.only_assoc_count_sql(:posts)} > \#{User.only_assoc_count_sql(:comments)}")
+    RUBY
   end
 
 
@@ -143,6 +165,10 @@ class Examples
 
   def my_user
     User.order(:id).first
+  end
+
+  def my_users
+    User.all
   end
 
   def my_comment

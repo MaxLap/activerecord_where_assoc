@@ -7,12 +7,13 @@ module ActiveRecordWhereAssoc
   # Default options for the gem. Meant to be modified in place by external code, such as in
   # an initializer.
   # Ex:
-  #   ActiveRecordWhereAssoc[:ignore_limit] = true
+  #   ActiveRecordWhereAssoc.default_options[:ignore_limit] = true
   #
-  # A description for each can be found in ActiveRecordWhereAssoc::QueryMethods#where_assoc_exists.
+  # A description for each can be found in QueryMethods@Options.
   #
-  # The only one that truly makes sense to change is :ignore_limit, when you are using MySQL, since
-  # limit are never supported on it.
+  # :ignore_limit is the only one to consider changing, when you are using MySQL, since limit are
+  # never supported on it. Otherwise, the safety of having to pass the options yourself
+  # and noticing you made a mistake / avoiding the need for extra queries is worth the extra code.
   def self.default_options
     @default_options ||= {
                            ignore_limit: false,
@@ -24,11 +25,13 @@ end
 
 require_relative "active_record_where_assoc/core_logic"
 require_relative "active_record_where_assoc/query_methods"
-require_relative "active_record_where_assoc/querying"
+require_relative "active_record_where_assoc/relation_returning_delegates"
+require_relative "active_record_where_assoc/sql_returning_methods"
 
 ActiveSupport.on_load(:active_record) do
   ActiveRecord.eager_load!
 
   ActiveRecord::Relation.include(ActiveRecordWhereAssoc::QueryMethods)
-  ActiveRecord::Base.extend(ActiveRecordWhereAssoc::Querying)
+  ActiveRecord::Base.extend(ActiveRecordWhereAssoc::RelationReturningDelegates)
+  ActiveRecord::Base.extend(ActiveRecordWhereAssoc::SqlReturningMethods)
 end

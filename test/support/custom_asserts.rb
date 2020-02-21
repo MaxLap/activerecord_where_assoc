@@ -49,11 +49,19 @@ module Minitest::Assertions
 
   def assert_exists_with_matching_from(start_from, association_name, *args, &block)
     msgs = []
-    if !start_from.where_assoc_exists(association_name, *args, &block).exists?
+    exists_relation = start_from.where_assoc_exists(association_name, *args, &block)
+    if !exists_relation.to_sql.include?(start_from.assoc_exists_sql(association_name, *args, &block))
+      msgs << "Expected query from where_assoc_exists to include the SQL from assoc_exists_sql"
+    end
+    if !exists_relation.exists?
       msgs << "Expected a match but got none for S0.where_assoc_exists(#{association_name.inspect}, ...)"
     end
 
-    if start_from.where_assoc_not_exists(association_name, *args, &block).exists?
+    not_exists_relation = start_from.where_assoc_not_exists(association_name, *args, &block)
+    if !not_exists_relation.to_sql.include?(start_from.assoc_not_exists_sql(association_name, *args, &block))
+      msgs << "Expected query from where_assoc_not_exists to include the SQL from assoc_not_exists_sql"
+    end
+    if not_exists_relation.exists?
       msgs << "Expected no matches but got one for S0.where_assoc_not_exists(#{association_name.inspect}, ...)"
     end
     assert msgs.empty?, msgs.map { |s| "  #{s}" }.join("\n")
@@ -61,11 +69,19 @@ module Minitest::Assertions
 
   def assert_exists_without_matching_from(start_from, association_name, *args, &block)
     msgs = []
-    if start_from.where_assoc_exists(association_name, *args, &block).exists?
+    exists_relation = start_from.where_assoc_exists(association_name, *args, &block)
+    if !exists_relation.to_sql.include?(start_from.assoc_exists_sql(association_name, *args, &block))
+      msgs << "Expected query from where_assoc_exists to include the SQL from assoc_exists_sql"
+    end
+    if exists_relation.exists?
       msgs << "Expected no matches but got one for S0.where_assoc_exists(#{association_name.inspect}, ...)"
     end
 
-    if !start_from.where_assoc_not_exists(association_name, *args, &block).exists?
+    not_exists_relation = start_from.where_assoc_not_exists(association_name, *args, &block)
+    if !not_exists_relation.to_sql.include?(start_from.assoc_not_exists_sql(association_name, *args, &block))
+      msgs << "Expected query from where_assoc_not_exists to include the SQL from assoc_not_exists_sql"
+    end
+    if !not_exists_relation.exists?
       msgs << "Expected a match but got none for S0.where_assoc_not_exists(#{association_name.inspect}, ...)"
     end
     assert msgs.empty?, msgs.map { |s| "  #{s}" }.join("\n")
@@ -86,12 +102,26 @@ module Minitest::Assertions
 
   def assert_wa_count_specific_from(start_from, matching_nb, not_matching_nb, operator, association_name, *args, &block)
     msgs = []
-    if !start_from.where_assoc_count(matching_nb, operator, association_name, *args, &block).exists?
+    matching_relation = start_from.where_assoc_count(matching_nb, operator, association_name, *args, &block)
+    if !matching_relation.to_sql.include?(start_from.compare_assoc_count_sql(matching_nb, operator, association_name, *args, &block))
+      msgs << "Expected query from where_assoc_count to include the SQL from compare_assoc_count_sql"
+    end
+    if !matching_relation.to_sql.include?(start_from.only_assoc_count_sql(association_name, *args, &block))
+      msgs << "Expected query from where_assoc_count to include the SQL from only_assoc_count_sql"
+    end
+    if !matching_relation.exists?
       msgs << "Expected a match but got none for" \
               " S0.where_assoc_count(matching_nb=#{matching_nb}, :#{operator}, #{association_name.inspect}, ...)"
     end
 
-    if start_from.where_assoc_count(not_matching_nb, operator, association_name, *args, &block).exists?
+    non_matching_relation = start_from.where_assoc_count(not_matching_nb, operator, association_name, *args, &block)
+    if !non_matching_relation.to_sql.include?(start_from.compare_assoc_count_sql(not_matching_nb, operator, association_name, *args, &block))
+      msgs << "Expected query from where_assoc_count to include the SQL from compare_assoc_count_sql"
+    end
+    if !non_matching_relation.to_sql.include?(start_from.only_assoc_count_sql(association_name, *args, &block))
+      msgs << "Expected query from where_assoc_count to include the SQL from compare_assoc_count_sql"
+    end
+    if non_matching_relation.exists?
       msgs << "Expected no matches but got one for" \
               " S0.where_assoc_count(not_matching_nb=#{not_matching_nb}, :#{operator}, #{association_name.inspect}, ...)"
     end

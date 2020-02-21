@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# See ActiveRecordWhereAssoc::QueryMethods
+# See QueryMethods
 module ActiveRecordWhereAssoc
   # This module adds new variations of +#where+ to your Models/relations/associations/scopes.
   # These variations check if an association has records, so you can check if a +Post+ has
@@ -17,6 +17,9 @@ module ActiveRecordWhereAssoc
   # * relations: <tt>Posts.where(serious: true).where_assoc_exists(:comments)</tt>
   # * scopes: (On the Post model) <tt>scope :with_comments, -> { where_assoc_exists(:comments) }</tt>
   # * models: <tt>Post.where_assoc_exists(:comments)</tt>
+  #
+  # In short: Anywhere you could use #where, you can also use the methods presented here. This includes
+  # with the #or method.
   #
   # You may also consider viewing the gem's README. It contains known issues and some tips.
   # You can view the {README on github}[https://github.com/MaxLap/activerecord_where_assoc/blob/master/README.md].
@@ -182,7 +185,10 @@ module ActiveRecordWhereAssoc
   # It's also possible that you only want to search for those that match some specific Models, ignoring the other ones.
   # [:pluck]
   #   Do a +#pluck+ in the column to detect to possible choices. This option can have a performance cost for big tables
-  #   or when the query if done often, as the +#pluck+ will be executed each time
+  #   or when the query if done often, as the +#pluck+ will be executed each time.
+  #   It is important to note that this happens when the query is prepared, so using this with methods that return SQL
+  #   (such as SqlReturningMethods#assoc_exists_sql) will still execute a query even if you don't
+  #   use the returned string.
   # [model or array of models]
   #   Specify which models to search for. This avoids the performance cost of +#pluck+ and can allow to filter some
   #   of the choices out that don't interest you. <br>
@@ -221,22 +227,23 @@ module ActiveRecordWhereAssoc
     #
     # [association_name]
     #   The association that must exist <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Association
+    #   See QueryMethods@Association
     #
     # [condition]
     #   Extra conditions the association must match <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Condition
+    #   See QueryMethods@Condition
     #
     # [options]
     #   Options to alter the generated query <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Options
+    #   See QueryMethods@Options
     #
     # [&block]
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Block
+    #   See QueryMethods@Block
     #
+    # You can get the SQL string of the condition using SqlReturningMethods#assoc_exists_sql.
     def where_assoc_exists(association_name, conditions = nil, options = {}, &block)
-      sql = ActiveRecordWhereAssoc::CoreLogic.where_assoc_exists_sql(self, association_name, conditions, options, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.assoc_exists_sql(self.klass, association_name, conditions, options, &block)
       where(sql)
     end
 
@@ -266,22 +273,23 @@ module ActiveRecordWhereAssoc
     #
     # [association_name]
     #   The association that must exist <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Association
+    #   See QueryMethods@Association
     #
     # [condition]
     #   Extra conditions the association must not match <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Condition
+    #   See QueryMethods@Condition
     #
     # [options]
     #   Options to alter the generated query <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Options
+    #   See QueryMethods@Options
     #
     # [&block]
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Block
+    #   See QueryMethods@Block
     #
+    # You can get the SQL string of the condition using SqlReturningMethods#assoc_not_exists_sql.
     def where_assoc_not_exists(association_name, conditions = nil, options = {}, &block)
-      sql = ActiveRecordWhereAssoc::CoreLogic.where_assoc_not_exists_sql(self, association_name, conditions, options, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.assoc_not_exists_sql(self.klass, association_name, conditions, options, &block)
       where(sql)
     end
 
@@ -350,19 +358,19 @@ module ActiveRecordWhereAssoc
     #     # Users which have received at least 5 comments total (can be spread on all of their posts)
     #     User.where_assoc_count(5, :<=, [:posts, :comments])
     #
-    #   See ActiveRecordWhereAssoc::QueryMethods@Association
+    #   See QueryMethods@Association
     #
     # [condition]
     #   Extra conditions the association must match to count <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Condition
+    #   See QueryMethods@Condition
     #
     # [options]
     #   Options to alter the generated query <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Options
+    #   See QueryMethods@Options
     #
     # [&block]
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
-    #   See ActiveRecordWhereAssoc::QueryMethods@Block
+    #   See QueryMethods@Block
     #
     # The order of the parameters may seem confusing. But you will get used to it. It helps
     # to remember that the goal is to do:
@@ -379,8 +387,11 @@ module ActiveRecordWhereAssoc
     #   # The users that have at least 5 posts with at least one comments
     #   User.where_assoc_count(5, :<=, :posts) { where_assoc_exists(:comments) }
     #
+    # You can get the SQL string of the condition using SqlReturningMethods#compare_assoc_count_sql.
+    # You can get the SQL string for only the counting using SqlReturningMethods#only_assoc_count_sql.
     def where_assoc_count(left_operand, operator, association_name, conditions = nil, options = {}, &block)
-      sql = ActiveRecordWhereAssoc::CoreLogic.where_assoc_count_sql(self, left_operand, operator, association_name, conditions, options, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.compare_assoc_count_sql(self.klass, left_operand, operator,
+                                                                      association_name, conditions, options, &block)
       where(sql)
     end
   end

@@ -21,6 +21,7 @@ task :run_rdoc do
   args << "--output=docs"
   args << "--show-hash"
   args << "lib/active_record_where_assoc/query_methods.rb"
+  args << "lib/active_record_where_assoc/sql_returning_methods.rb"
 
   Bundler.with_clean_env do
     exit(1) unless system(*args)

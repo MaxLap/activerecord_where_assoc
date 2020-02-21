@@ -8,12 +8,15 @@ module ActiveRecordWhereAssoc
     # Arel table used for aliasing when handling recursive associations (such as parent/children)
     ALIAS_TABLE = Arel::Table.new("_ar_where_assoc_alias_")
 
-    def self.sql_for_exists(nested_scopes)
-      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
-      sql = nested_scopes.map { |ns| "EXISTS (#{ns.select('1').to_sql})" }.join(" OR ")
-      if nested_scopes.size > 1
+    # Returns the SQL for checking if any of the received relation exists.
+    # Uses a OR if there are multiple relations.
+    # => "EXISTS (SELECT... *relation1*) OR EXISTS (SELECT... *relation2*)"
+    def self.sql_for_any_exists(relations)
+      relations = [relations] unless relations.is_a?(Array)
+      sql = relations.map { |ns| "EXISTS (#{ns.select('1').to_sql})" }.join(" OR ")
+      if relations.size > 1
         "(#{sql})" # Needed when embedding the sql in a `where`, because the OR could make things wrong
-      elsif nested_scopes.size == 1
+      elsif relations.size == 1
         sql
       else
         "0=1"
@@ -21,12 +24,12 @@ module ActiveRecordWhereAssoc
     end
 
     # Block used when nesting associations for a where_assoc_[not_]exists
-    # Will apply the nested scope to the wrapping_scope with: where("EXISTS (SELECT... *nested_scope*)")
-    # exists_prefix: raw sql prefix to the EXISTS, ex: 'NOT '
     NestWithExistsBlock = lambda do |wrapping_scope, nested_scopes|
-      wrapping_scope.where(sql_for_exists(nested_scopes))
+      wrapping_scope.where(sql_for_any_exists(nested_scopes))
     end
 
+    # Returns the SQL for getting the sum of of the received relations
+    # => "SUM((SELECT... *relation1*)) + SUM((SELECT... *relation2*))"
     def self.sql_for_sum_of_counts(nested_scopes)
       nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
       # Need the double parentheses
@@ -34,10 +37,8 @@ module ActiveRecordWhereAssoc
     end
 
     # Block used when nesting associations for a where_assoc_count
-    # Will apply the nested scope to the wrapping_scope with: select("SUM(SELECT... *nested_scope*)")
     NestWithSumBlock = lambda do |wrapping_scope, nested_scopes|
       sql = sql_for_sum_of_counts(nested_scopes)
-
       wrapping_scope.unscope(:select).select(sql)
     end
 
@@ -54,52 +55,57 @@ module ActiveRecordWhereAssoc
       options.fetch(key) { ActiveRecordWhereAssoc.default_options[key] }
     end
 
-    # Returns a new relation, which is the result of filtering base_relation
-    # based on if a record for the specified association of the model exists.
+    # Returns the SQL condition to check if the specified association of the record_class exists (has records).
     #
-    # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.where_assoc_exists_sql(base_relation, association_name, given_conditions, options, &block)
-      nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, block, NestWithExistsBlock)
-      sql_for_exists(nested_relations)
+    # See QueryMethods#where_assoc_exists or SqlReturningMethods#assoc_exists_sql for usage details.
+    def self.assoc_exists_sql(record_class, association_name, given_conditions, options, &block)
+      nested_relations = relations_on_association(record_class, association_name, given_conditions, options, block, NestWithExistsBlock)
+      sql_for_any_exists(nested_relations)
     end
 
-    # Returns a new relation, which is the result of filtering base_relation
-    # based on if a record for the specified association of the model doesn't exist.
+    # Returns the SQL condition to check if the specified association of the record_class doesn't exist (has no records).
     #
-    # See #where_assoc_exists in query_methods.rb for usage details.
-    def self.where_assoc_not_exists_sql(base_relation, association_name, given_conditions, options, &block)
-      nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, block, NestWithExistsBlock)
-      "NOT #{sql_for_exists(nested_relations)}"
+    # See QueryMethods#where_assoc_not_exists or SqlReturningMethods#assoc_not_exists_sql for usage details.
+    def self.assoc_not_exists_sql(record_class, association_name, given_conditions, options, &block)
+      nested_relations = relations_on_association(record_class, association_name, given_conditions, options, block, NestWithExistsBlock)
+      "NOT #{sql_for_any_exists(nested_relations)}"
     end
 
-    # Returns a new relation, which is the result of filtering base_relation
-    # based on how many records for the specified association of the model exists.
+    # This does not return an SQL condition. Instead, it returns only the SQL to count the number of records for the specified
+    # association.
     #
-    # See #where_assoc_exists and #where_assoc_count in query_methods.rb for usage details.
-    def self.where_assoc_count_sql(base_relation, left_operand, operator, association_name, given_conditions, options, &block)
+    # See SqlReturningMethods#only_assoc_count_sql for usage details.
+    def self.only_assoc_count_sql(record_class, association_name, given_conditions, options, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      nested_relations = relations_on_association(base_relation, association_name, given_conditions, options, deepest_scope_mod, NestWithSumBlock)
+      nested_relations = relations_on_association(record_class, association_name, given_conditions, options, deepest_scope_mod, NestWithSumBlock)
 
-      right_sql = nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
+      nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
+    end
+
+    # Returns the SQL condition to check if the specified association of the record_class has the desired number of records.
+    #
+    # See QueryMethods#where_assoc_count or SqlReturningMethods#compare_assoc_count_sql for usage details.
+    def self.compare_assoc_count_sql(record_class, left_operand, operator, association_name, given_conditions, options, &block)
+      right_sql = only_assoc_count_sql(record_class, association_name, given_conditions, options, &block)
 
       sql_for_count_operator(left_operand, operator, right_sql)
     end
 
     # Returns relations on the associated model meant to be embedded in a query
-    # Will return more than one association only for polymorphic belongs_to
+    # Will only return more than one association when there are polymorphic belongs_to
     # association_names_path: can be an array of association names or a single one
-    def self.relations_on_association(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
+    def self.relations_on_association(record_class, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
       association_names_path = Array.wrap(association_names_path)
-      _relations_on_association_recurse(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
+      _relations_on_association_recurse(record_class, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
     end
 
-    def self._relations_on_association_recurse(base_relation, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
+    def self._relations_on_association_recurse(record_class, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
       if association_names_path.size > 1
         recursive_scope_block = lambda do |scope|
           nested_scope = _relations_on_association_recurse(scope,
@@ -111,17 +117,16 @@ module ActiveRecordWhereAssoc
           nest_assocs_block.call(scope, nested_scope)
         end
 
-        relations_on_one_association(base_relation, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
+        relations_on_one_association(record_class, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
       else
-        relations_on_one_association(base_relation, association_names_path.first, given_conditions, options, last_assoc_block, nest_assocs_block)
+        relations_on_one_association(record_class, association_names_path.first, given_conditions, options, last_assoc_block, nest_assocs_block)
       end
     end
 
     # Returns relations on the associated model meant to be embedded in a query
     # Will return more than one association only for polymorphic belongs_to
-    def self.relations_on_one_association(base_relation, association_name, given_conditions, options, last_assoc_block, nest_assocs_block)
-      relation_klass = base_relation.klass
-      final_reflection = fetch_reflection(relation_klass, association_name)
+    def self.relations_on_one_association(record_class, association_name, given_conditions, options, last_assoc_block, nest_assocs_block)
+      final_reflection = fetch_reflection(record_class, association_name)
 
       check_reflection_validity!(final_reflection)
 
@@ -148,7 +153,7 @@ module ActiveRecordWhereAssoc
 
         init_scopes = initial_scopes_from_reflection(reflection_chain[i..-1], constaints_chain[i], options)
         current_scopes = init_scopes.map do |alias_scope, current_scope, klass_scope|
-          current_scope = process_association_step_limits(current_scope, reflection, relation_klass, options)
+          current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
 
           if i.zero?
             current_scope = current_scope.where(given_conditions) if given_conditions
