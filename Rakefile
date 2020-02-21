@@ -40,4 +40,15 @@ task :run_rdoc do
   File.write(query_methods_path, query_methods)
 end
 
-task default: :test
+task :generate_examples do
+  content = `ruby examples/examples.rb`
+  if $?.success?
+    File.write("EXAMPLES.md", content)
+    puts "Finished generate EXAMPLES.md"
+  else
+    puts "Couldn't generate EXAMPLES.md"
+    exit(1)
+  end
+end
+
+task default: [:run_rdoc, :generate_examples, :test]

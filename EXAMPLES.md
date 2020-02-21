@@ -4,7 +4,7 @@ Each of those methods can be chained with scoping methods, so they can be used o
 
 The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
-The content of this file is generated from running `ruby examples/examples.rb > EXAMPLES.md`
+The content of this file is generated when running `rake`
 
 -------
 
