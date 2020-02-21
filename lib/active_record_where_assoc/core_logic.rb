@@ -58,16 +58,16 @@ module ActiveRecordWhereAssoc
     # Returns the SQL condition to check if the specified association of the record_class exists (has records).
     #
     # See RelationReturningMethods#where_assoc_exists or SqlReturningMethods#assoc_exists_sql for usage details.
-    def self.assoc_exists_sql(record_class, association_name, given_conditions, options, &block)
-      nested_relations = relations_on_association(record_class, association_name, given_conditions, options, block, NestWithExistsBlock)
+    def self.assoc_exists_sql(record_class, association_names, given_conditions, options, &block)
+      nested_relations = relations_on_association(record_class, association_names, given_conditions, options, block, NestWithExistsBlock)
       sql_for_any_exists(nested_relations)
     end
 
     # Returns the SQL condition to check if the specified association of the record_class doesn't exist (has no records).
     #
     # See RelationReturningMethods#where_assoc_not_exists or SqlReturningMethods#assoc_not_exists_sql for usage details.
-    def self.assoc_not_exists_sql(record_class, association_name, given_conditions, options, &block)
-      nested_relations = relations_on_association(record_class, association_name, given_conditions, options, block, NestWithExistsBlock)
+    def self.assoc_not_exists_sql(record_class, association_names, given_conditions, options, &block)
+      nested_relations = relations_on_association(record_class, association_names, given_conditions, options, block, NestWithExistsBlock)
       "NOT #{sql_for_any_exists(nested_relations)}"
     end
 
@@ -75,14 +75,14 @@ module ActiveRecordWhereAssoc
     # association.
     #
     # See SqlReturningMethods#only_assoc_count_sql for usage details.
-    def self.only_assoc_count_sql(record_class, association_name, given_conditions, options, &block)
+    def self.only_assoc_count_sql(record_class, association_names, given_conditions, options, &block)
       deepest_scope_mod = lambda do |deepest_scope|
         deepest_scope = apply_proc_scope(deepest_scope, block) if block
 
         deepest_scope.unscope(:select).select("COUNT(*)")
       end
 
-      nested_relations = relations_on_association(record_class, association_name, given_conditions, options, deepest_scope_mod, NestWithSumBlock)
+      nested_relations = relations_on_association(record_class, association_names, given_conditions, options, deepest_scope_mod, NestWithSumBlock)
 
       nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
     end
@@ -90,26 +90,26 @@ module ActiveRecordWhereAssoc
     # Returns the SQL condition to check if the specified association of the record_class has the desired number of records.
     #
     # See RelationReturningMethods#where_assoc_count or SqlReturningMethods#compare_assoc_count_sql for usage details.
-    def self.compare_assoc_count_sql(record_class, left_operand, operator, association_name, given_conditions, options, &block)
-      right_sql = only_assoc_count_sql(record_class, association_name, given_conditions, options, &block)
+    def self.compare_assoc_count_sql(record_class, left_operand, operator, association_names, given_conditions, options, &block)
+      right_sql = only_assoc_count_sql(record_class, association_names, given_conditions, options, &block)
 
       sql_for_count_operator(left_operand, operator, right_sql)
     end
 
     # Returns relations on the associated model meant to be embedded in a query
     # Will only return more than one association when there are polymorphic belongs_to
-    # association_names_path: can be an array of association names or a single one
-    def self.relations_on_association(record_class, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
+    # association_names: can be an array of association names or a single one
+    def self.relations_on_association(record_class, association_names, given_conditions, options, last_assoc_block, nest_assocs_block)
       validate_options(options)
-      association_names_path = Array.wrap(association_names_path)
-      _relations_on_association_recurse(record_class, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
+      association_names = Array.wrap(association_names)
+      _relations_on_association_recurse(record_class, association_names, given_conditions, options, last_assoc_block, nest_assocs_block)
     end
 
-    def self._relations_on_association_recurse(record_class, association_names_path, given_conditions, options, last_assoc_block, nest_assocs_block)
-      if association_names_path.size > 1
+    def self._relations_on_association_recurse(record_class, association_names, given_conditions, options, last_assoc_block, nest_assocs_block)
+      if association_names.size > 1
         recursive_scope_block = lambda do |scope|
           nested_scope = _relations_on_association_recurse(scope,
-                                                           association_names_path[1..-1],
+                                                           association_names[1..-1],
                                                            given_conditions,
                                                            options,
                                                            last_assoc_block,
@@ -117,9 +117,9 @@ module ActiveRecordWhereAssoc
           nest_assocs_block.call(scope, nested_scope)
         end
 
-        relations_on_one_association(record_class, association_names_path.first, nil, options, recursive_scope_block, nest_assocs_block)
+        relations_on_one_association(record_class, association_names.first, nil, options, recursive_scope_block, nest_assocs_block)
       else
-        relations_on_one_association(record_class, association_names_path.first, given_conditions, options, last_assoc_block, nest_assocs_block)
+        relations_on_one_association(record_class, association_names.first, given_conditions, options, last_assoc_block, nest_assocs_block)
       end
     end
 
