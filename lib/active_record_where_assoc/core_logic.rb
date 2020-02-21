@@ -57,7 +57,7 @@ module ActiveRecordWhereAssoc
 
     # Returns the SQL condition to check if the specified association of the record_class exists (has records).
     #
-    # See QueryMethods#where_assoc_exists or SqlReturningMethods#assoc_exists_sql for usage details.
+    # See RelationReturningMethods#where_assoc_exists or SqlReturningMethods#assoc_exists_sql for usage details.
     def self.assoc_exists_sql(record_class, association_name, given_conditions, options, &block)
       nested_relations = relations_on_association(record_class, association_name, given_conditions, options, block, NestWithExistsBlock)
       sql_for_any_exists(nested_relations)
@@ -65,7 +65,7 @@ module ActiveRecordWhereAssoc
 
     # Returns the SQL condition to check if the specified association of the record_class doesn't exist (has no records).
     #
-    # See QueryMethods#where_assoc_not_exists or SqlReturningMethods#assoc_not_exists_sql for usage details.
+    # See RelationReturningMethods#where_assoc_not_exists or SqlReturningMethods#assoc_not_exists_sql for usage details.
     def self.assoc_not_exists_sql(record_class, association_name, given_conditions, options, &block)
       nested_relations = relations_on_association(record_class, association_name, given_conditions, options, block, NestWithExistsBlock)
       "NOT #{sql_for_any_exists(nested_relations)}"
@@ -89,7 +89,7 @@ module ActiveRecordWhereAssoc
 
     # Returns the SQL condition to check if the specified association of the record_class has the desired number of records.
     #
-    # See QueryMethods#where_assoc_count or SqlReturningMethods#compare_assoc_count_sql for usage details.
+    # See RelationReturningMethods#where_assoc_count or SqlReturningMethods#compare_assoc_count_sql for usage details.
     def self.compare_assoc_count_sql(record_class, left_operand, operator, association_name, given_conditions, options, &block)
       right_sql = only_assoc_count_sql(record_class, association_name, given_conditions, options, &block)
 
@@ -302,7 +302,7 @@ module ActiveRecordWhereAssoc
             end
             msg << "This is not supported by ActiveRecord when doing joins, but it is by WhereAssoc. However, "
             msg << "you must pass the :poly_belongs_to option to specify what to do in this case.\n"
-            msg << "See https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Apoly_belongs_to+option"
+            msg << "See https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Apoly_belongs_to+option"
             raise ActiveRecordWhereAssoc::PolymorphicBelongsToWithoutClasses, msg
           else
             if on_poly_belongs_to.is_a?(Class) && on_poly_belongs_to < ActiveRecord::Base

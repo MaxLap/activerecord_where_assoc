@@ -9,7 +9,7 @@ module ActiveRecordWhereAssoc
   # Ex:
   #   ActiveRecordWhereAssoc.default_options[:ignore_limit] = true
   #
-  # A description for each can be found in QueryMethods@Options.
+  # A description for each can be found in RelationReturningMethods@Options.
   #
   # :ignore_limit is the only one to consider changing, when you are using MySQL, since limit are
   # never supported on it. Otherwise, the safety of having to pass the options yourself
@@ -24,14 +24,14 @@ module ActiveRecordWhereAssoc
 end
 
 require_relative "active_record_where_assoc/core_logic"
-require_relative "active_record_where_assoc/query_methods"
+require_relative "active_record_where_assoc/relation_returning_methods"
 require_relative "active_record_where_assoc/relation_returning_delegates"
 require_relative "active_record_where_assoc/sql_returning_methods"
 
 ActiveSupport.on_load(:active_record) do
   ActiveRecord.eager_load!
 
-  ActiveRecord::Relation.include(ActiveRecordWhereAssoc::QueryMethods)
+  ActiveRecord::Relation.include(ActiveRecordWhereAssoc::RelationReturningMethods)
   ActiveRecord::Base.extend(ActiveRecordWhereAssoc::RelationReturningDelegates)
   ActiveRecord::Base.extend(ActiveRecordWhereAssoc::SqlReturningMethods)
 end

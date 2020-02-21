@@ -20,7 +20,7 @@ task :run_rdoc do
   args << "--title=activerecord_where_assoc"
   args << "--output=docs"
   args << "--show-hash"
-  args << "lib/active_record_where_assoc/query_methods.rb"
+  args << "lib/active_record_where_assoc/relation_returning_methods.rb"
   args << "lib/active_record_where_assoc/sql_returning_methods.rb"
 
   Bundler.with_clean_env do
@@ -33,11 +33,11 @@ task :run_rdoc do
   rdoc_css.gsub!("url(images", "url(../images")
   File.write(rdoc_css_path, rdoc_css)
 
-  query_methods_path = File.join(__dir__, "docs/ActiveRecordWhereAssoc/QueryMethods.html")
-  query_methods = File.read(query_methods_path)
+  relation_returning_methods_path = File.join(__dir__, "docs/ActiveRecordWhereAssoc/RelationReturningMethods.html")
+  relation_returning_methods = File.read(relation_returning_methods_path)
   # A little bug in rdoc's generated stuff. The links to headings are broken!
-  query_methods.gsub!(/#(label[^"]+)/, "#module-ActiveRecordWhereAssoc::QueryMethods-\\1")
-  File.write(query_methods_path, query_methods)
+  relation_returning_methods.gsub!(/#(label[^"]+)/, "#module-ActiveRecordWhereAssoc::RelationReturningMethods-\\1")
+  File.write(relation_returning_methods_path, relation_returning_methods)
 end
 
 task :generate_examples do

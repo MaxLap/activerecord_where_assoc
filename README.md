@@ -64,9 +64,9 @@ Other than rare tweaks as new versions of Rails and Ruby are released, there sho
 
 ## Documentation
 
-The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html)
+The [documentation is nicely structured](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html)
 
-If you prefer to see it in the code, [everything is in this file](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/query_methods.rb) 
+If you prefer to see it in the code, [everything is in this file](https://github.com/MaxLap/activerecord_where_assoc/blob/master/lib/active_record_where_assoc/relation_returning_methods.rb) 
 
 Here are some [usage tips](#usage-tips)
 
@@ -88,7 +88,7 @@ where_assoc_count(left_operand, operator, association_name, conditions, options,
 * common arguments:
   * association_name: the association we are doing the condition on.
   * conditions: (optional) the condition to apply on the association. It can be anything that `#where` can receive, so: Hash, String and Array (string with binds).
-  * options: [available options](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods#module-ActiveRecordWhereAssoc::QueryMethods-label-Options) to alter some behaviors. (rarely necessary)
+  * options: [available options](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options) to alter some behaviors. (rarely necessary)
   * block: adds more complex conditions by receiving a relation on the association. Can use `#where`, `#where_assoc_*`, scopes, and other scoping methods.  
     Must return a relation.
     The block either:
@@ -201,7 +201,7 @@ All the methods always chain nested associations using an `EXISTS` when they hav
 
 ### Using `#from` in scope
 
-If you want to use a scope / condition which uses `#from`, then you need to use the [:never_alias_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Anever_alias_limit+option) option to avoid `#where_assoc_*` being overwritten by your scope and getting a weird exception / wrong result.
+If you want to use a scope / condition which uses `#from`, then you need to use the [:never_alias_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Anever_alias_limit+option) option to avoid `#where_assoc_*` being overwritten by your scope and getting a weird exception / wrong result.
 
 ## Known issues/limitations
 
@@ -210,7 +210,7 @@ On MySQL databases, it is not possible to use `has_one` associations and associa
 
 I do not know of a way to do a SQL query that can deal with all the specifics of `has_one` for MySQL. If you have one, then please suggest it in an issue/pull request.
 
-In order to work around this, you must use the [ignore_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Aignore_limit+option) option. The behavior is less correct, but better than being unable to use the gem. 
+In order to work around this, you must use the [ignore_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Aignore_limit+option) option. The behavior is less correct, but better than being unable to use the gem. 
 
 ### has_* :through vs limit/offset
 For `has_many` and `has_one` with the `:through` option, `#limit` and `#offset` are ignored. Note that `#limit` and `#offset` of the `:source` and of the `:through` side are applied correctly.

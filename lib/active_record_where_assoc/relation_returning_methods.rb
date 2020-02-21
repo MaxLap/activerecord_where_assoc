@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# See QueryMethods
+# See RelationReturningMethods
 module ActiveRecordWhereAssoc
   # This module adds new variations of +#where+ to your Models/relations/associations/scopes.
   # These variations check if an association has records, so you can check if a +Post+ has
@@ -202,7 +202,7 @@ module ActiveRecordWhereAssoc
   #                                                            Computer => proc { brand_new.where(core: 4) } })
   # [:raise]
   #   (default) raise an exception when a polymorphic belongs_to is encountered.
-  module QueryMethods
+  module RelationReturningMethods
     # :section: Basic methods
 
     # Returns a new relation with a condition added (a +#where+) that checks if an association
@@ -227,19 +227,19 @@ module ActiveRecordWhereAssoc
     #
     # [association_name]
     #   The association that must exist <br>
-    #   See QueryMethods@Association
+    #   See RelationReturningMethods@Association
     #
     # [condition]
     #   Extra conditions the association must match <br>
-    #   See QueryMethods@Condition
+    #   See RelationReturningMethods@Condition
     #
     # [options]
     #   Options to alter the generated query <br>
-    #   See QueryMethods@Options
+    #   See RelationReturningMethods@Options
     #
     # [&block]
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
-    #   See QueryMethods@Block
+    #   See RelationReturningMethods@Block
     #
     # You can get the SQL string of the condition using SqlReturningMethods#assoc_exists_sql.
     def where_assoc_exists(association_name, conditions = nil, options = {}, &block)
@@ -273,19 +273,19 @@ module ActiveRecordWhereAssoc
     #
     # [association_name]
     #   The association that must exist <br>
-    #   See QueryMethods@Association
+    #   See RelationReturningMethods@Association
     #
     # [condition]
     #   Extra conditions the association must not match <br>
-    #   See QueryMethods@Condition
+    #   See RelationReturningMethods@Condition
     #
     # [options]
     #   Options to alter the generated query <br>
-    #   See QueryMethods@Options
+    #   See RelationReturningMethods@Options
     #
     # [&block]
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
-    #   See QueryMethods@Block
+    #   See RelationReturningMethods@Block
     #
     # You can get the SQL string of the condition using SqlReturningMethods#assoc_not_exists_sql.
     def where_assoc_not_exists(association_name, conditions = nil, options = {}, &block)
@@ -358,19 +358,19 @@ module ActiveRecordWhereAssoc
     #     # Users which have received at least 5 comments total (can be spread on all of their posts)
     #     User.where_assoc_count(5, :<=, [:posts, :comments])
     #
-    #   See QueryMethods@Association
+    #   See RelationReturningMethods@Association
     #
     # [condition]
     #   Extra conditions the association must match to count <br>
-    #   See QueryMethods@Condition
+    #   See RelationReturningMethods@Condition
     #
     # [options]
     #   Options to alter the generated query <br>
-    #   See QueryMethods@Options
+    #   See RelationReturningMethods@Options
     #
     # [&block]
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
-    #   See QueryMethods@Block
+    #   See RelationReturningMethods@Block
     #
     # The order of the parameters may seem confusing. But you will get used to it. It helps
     # to remember that the goal is to do:

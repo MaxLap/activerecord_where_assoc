@@ -142,7 +142,7 @@ You have to use manual SQL ([raw SQL joins](#raw-sql-joins-or-sub-selects)) or a
 feature, such as `activerecord_where_assoc`.
 
 `#where_assoc_*` methods can handle this in 3 ways based on the
-[:poly_belongs_to option](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#module-ActiveRecordWhereAssoc::QueryMethods-label-3Apoly_belongs_to+option):
+[:poly_belongs_to option](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Apoly_belongs_to+option):
 * The default will raise an exception
 * You can have the gem do a `#pluck` to auto detect which models to search in, but this can be expensive
 * You can specify which models to search in, this has the added benefit of allowing to search for a subset only

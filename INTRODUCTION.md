@@ -233,7 +233,7 @@ number, operator, association.
 
 You can use any of the basic operators: `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`. You can even give it a range
 instead of a fixed number. See the
-[documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/QueryMethods.html#method-i-where_assoc_count)
+[documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#method-i-where_assoc_count)
 for details.
 
 ### Do you need this?
