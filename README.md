@@ -59,8 +59,8 @@ Or install it yourself as:
 
 ## Development state
 
-This gem is feature complete.  
-Other than rare tweaks as new versions of Rails and Ruby are released, there shouldn't be much activity on this repository (unless a problem is found).
+This gem is feature complete and production ready.  
+Other than rare tweaks as new versions of Rails and Ruby are released, there shouldn't be much activity on this repository.
 
 ## Documentation
 
@@ -75,7 +75,7 @@ Here are some [usage tips](#usage-tips)
 
 You can view [many examples](EXAMPLES.md).
 
-Otherwise, here is a short explanation. These are the main methods provided by this gem:
+Otherwise, here is a short explanation of the main methods provided by this gem:
 
 ```ruby
 where_assoc_exists(association_name, conditions, options, &block)
@@ -185,13 +185,13 @@ Sometimes, you may need only the SQL of the condition instead of a whole relatio
 
 You can read some more about them in [their documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/SqlReturningMethods.html)
 
-Here is a simple example of what can be done with them:
+Here is a simple example of they use. Note that they should always be called on the class.
 
 ```ruby
     # Users with a post or a comment
     User.where("#{User.assoc_exists_sql(:posts)} OR #{User.assoc_exists_sql(:comments)}")
     my_users.where("#{User.assoc_exists_sql(:posts)} OR #{User.assoc_exists_sql(:comments)}")
-    # Note that this could be achieved in Rails 5 using the #or method
+    # Note that this could be achieved in Rails 5 using the #or method and #where_assoc_exists
 ```
 
 ### The opposite of multiple nested EXISTS...
