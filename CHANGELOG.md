@@ -1,6 +1,8 @@
 # Unreleased
 
-* Added methods which return the SQL used by this gem: `assoc_exists_sql`, `assoc_not_exists_sql`, `compare_assoc_count_sql`, `only_assoc_count_sql`
+# 1.1.0 - 2020-02-24
+
+* Added methods which return the SQL used by this gem: `assoc_exists_sql`, `assoc_not_exists_sql`, `compare_assoc_count_sql`, `only_assoc_count_sql`  
   [Documentation for them](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/SqlReturningMethods.html)
 
 # 1.0.1
