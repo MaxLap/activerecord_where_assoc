@@ -58,8 +58,12 @@ module ActiveRecordWhereAssoc
   #   Post.where_assoc_exists([:comments, :replies])
   #
   # === Condition
-  # After the +association_name+ argument, you can pass additional conditions the associated
-  # record must also match to be considered as existing.
+  # After the +association_name+ argument, you can pass conditions on your association to
+  # specify which of its records you care about. For example, you could only want Posts that
+  # have a comment marked as spam, so all you care about are comments marked as spam.
+  #
+  # Another way to look at this is that you are filtering your association (using a +#where+)
+  # and checking if a record of that association is still found, and you do this for each of you records.
   #
   # This +condition+ argument is passed directly to +#where+, so you can pass in the following:
   #
@@ -91,13 +95,13 @@ module ActiveRecordWhereAssoc
   #
   # === Block
   # The block is used to add more complex conditions. The effect is the same as the condition
-  # parameter, in that these conditions must be matched for the association to be considered
-  # to exist, but lets you use any scoping methods, such as +#where+, +#joins+, nested
+  # parameter. You are specifying which records in the association you care about, but using
+  # a block lets you use any scoping methods, such as +#where+, +#joins+, nested
   # +#where_assoc_*+, scopes on the model, etc.
   #
   # Note that using +#joins+ might lead to unexpected results when using #where_assoc_count,
   # since if the joins adds rows, it will change the resulting count. It probably makes more
-  # sense to, again, use one of the +where_assoc_*+ methods.
+  # sense to, again, use one of the +where_assoc_*+ methods (they can be nested).
   #
   # There are 2 ways of using the block for adding conditions to the association.
   #

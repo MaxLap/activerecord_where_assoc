@@ -166,7 +166,9 @@
 
 <h3 id="module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Condition">Condition<span><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Condition">&para;</a> <a href="#top">&uarr;</a></span></h3>
 
-<p>After the <code>association_name</code> argument, you can pass additional conditions the associated record must also match to be considered as existing.</p>
+<p>After the <code>association_name</code> argument, you can pass conditions on your association to specify which of its records you care about. For example, you could only want Posts that have a comment marked as spam, so all you care about are comments marked as spam.</p>
+
+<p>Another way to look at this is that you are filtering your association (using a <code>#where</code>) and checking if a record of that association is still found, and you do this for each of you records.</p>
 
 <p>This <code>condition</code> argument is passed directly to <code>#where</code>, so you can pass in the following:</p>
 
@@ -199,9 +201,9 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
 <h3 id="module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block<span><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">&para;</a> <a href="#top">&uarr;</a></span></h3>
 
-<p>The block is used to add more complex conditions. The effect is the same as the condition parameter, in that these conditions must be matched for the association to be considered to exist, but lets you use any scoping methods, such as <code>#where</code>, <code>#joins</code>, nested <code>#where_assoc_*</code>, scopes on the model, etc.</p>
+<p>The block is used to add more complex conditions. The effect is the same as the condition parameter. You are specifying which records in the association you care about, but using a block lets you use any scoping methods, such as <code>#where</code>, <code>#joins</code>, nested <code>#where_assoc_*</code>, scopes on the model, etc.</p>
 
-<p>Note that using <code>#joins</code> might lead to unexpected results when using <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>#where_assoc_count</code></a>, since if the joins adds rows, it will change the resulting count. It probably makes more sense to, again, use one of the <code>where_assoc_*</code> methods.</p>
+<p>Note that using <code>#joins</code> might lead to unexpected results when using <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>#where_assoc_count</code></a>, since if the joins adds rows, it will change the resulting count. It probably makes more sense to, again, use one of the <code>where_assoc_*</code> methods (they can be nested).</p>
 
 <p>There are 2 ways of using the block for adding conditions to the association.</p>
 <dl class="rdoc-list label-list"><dt>A block that receives one argument
@@ -405,7 +407,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
           
           <div class="method-source-code" id="where_assoc_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 251</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 255</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">sql</span> = <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">assoc_exists_sql</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">klass</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
@@ -473,7 +475,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
           
           <div class="method-source-code" id="where_assoc_not_exists-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 297</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 301</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">sql</span> = <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">assoc_not_exists_sql</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">klass</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
@@ -625,7 +627,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
           
           <div class="method-source-code" id="where_assoc_count-source">
-            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 398</span>
+            <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 402</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">sql</span> = <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">compare_assoc_count_sql</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">klass</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>,
                                                                   <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)

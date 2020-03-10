@@ -10,10 +10,10 @@ This gem makes it easy to do conditions based on the associations of your record
 ```ruby
 # Find my_post's comments that were not made by an admin
 my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
- 
+
 # Find every posts that have comments by an admin
 Post.where_assoc_exists([:comments, :author], &:admins).where(...)
- 
+
 # Find my_user's posts that have at least 5 non-spam comments (not_spam is a scope on comments)
 my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.not_spam }.where(...)
 ```
@@ -83,8 +83,8 @@ where_assoc_not_exists(association_name, conditions, options, &block)
 where_assoc_count(left_operand, operator, association_name, conditions, options, &block)
 ```
 
-* These methods add a condition (a `#where`) to the relation that checks if the association exists (or not)  
-* You can specify condition on the association, so you could check only comments that are made by an admin.  
+* These methods add a condition (a `#where`) that checks if the association exists (or not)  
+* You can specify condition on the association, so you could check only for comments that are made by an admin.  
 * Each method returns a new relation, meaning you can chain `#where`, `#order`, `limit`, etc.  
 * common arguments:
   * association_name: the association we are doing the condition on.
@@ -119,6 +119,21 @@ where_assoc_count(left_operand, operator, association_name, conditions, options,
         will use SQL's `BETWEEN` or `NOT BETWEEN`  
         supports infinite ranges and exclusive end
   * operator: one of `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`
+
+## Intuition
+
+Here is the basic intuition for the methods:
+
+`#where_assoc_exists` filters the models, returning those *where* a record for the *association* matching a condition (by default any record in the association) *exists*.
+
+`#where_assoc_not_exists` is the exact opposite of `#where_assoc_exists`. Filters the models, returning those *where* a record for the *association* matching a condition (by default any record in the association) do *not exists*
+
+`#where_assoc_count` the more specific version of `#where_assoc_exists`. Filters the models, returning those *where* a record for the *association* matching a condition (by default any record in the association) do *not exists*
+
+The condition that you may need on the record can be quite complicated. For this reason, you can pass a block to these methods.  
+The block will receive a relation on records of the association. Your job is then to call `where` and scopes to specify what you want to exist (or to not exist if using `#where_assoc_not_exists`). 
+
+So if you have `User.where_assoc_exists(:comments) {|rel| rel.where("content ilike '%github.com%'") }`, `rel` is a relation is on `Comment`, and you are specifying what you want to exist. So now we are looking for users that made a comment containing 'github.com'.
 
 ## Usage tips
 
