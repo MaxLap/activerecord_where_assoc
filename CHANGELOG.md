@@ -1,5 +1,7 @@
 # Unreleased
 
+* Handling for ActiveRecord's NullRelation (MyModel.none) in block and association's conditions.
+
 # 1.1.0 - 2020-02-24
 
 * Added methods which return the SQL used by this gem: `assoc_exists_sql`, `assoc_not_exists_sql`, `compare_assoc_count_sql`, `only_assoc_count_sql`  

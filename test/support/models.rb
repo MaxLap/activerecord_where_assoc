@@ -22,6 +22,11 @@ class S0 < BaseTestModel
   testable_belongs_to :b1, class_name: "S1", foreign_key: "s1_id"
   testable_has_and_belongs_to_many :z1, class_name: "S1"
 
+  testable_has_many :m1_none, -> { none }, class_name: "S1"
+  testable_has_one :o1_none, -> { order("s1s.id DESC").none }, class_name: "S1"
+  testable_belongs_to :b1_none, -> { none }, class_name: "S1", foreign_key: "s1_id"
+  testable_has_and_belongs_to_many :z1_none, -> { none }, class_name: "S1"
+
   testable_has_many :mp1, class_name: "S1", as: "has_s1s_poly"
   testable_has_one :op1, -> { order("s1s.id DESC") }, class_name: "S1", as: "has_s1s_poly"
   testable_belongs_to :bp1, polymorphic: true, foreign_key: "s0s_belongs_to_poly_id", foreign_type: "s0s_belongs_to_poly_type"
