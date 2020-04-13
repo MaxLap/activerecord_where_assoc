@@ -1,6 +1,8 @@
 # Unreleased
 
-* Handling for ActiveRecord's NullRelation (MyModel.none) in block and association's conditions.
+# 1.1.1 - 2020-04-13
+
+* Fix handling for ActiveRecord's NullRelation (MyModel.none) in block and association's conditions.
 
 # 1.1.0 - 2020-02-24
 
