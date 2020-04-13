@@ -13,11 +13,11 @@ module ActiveRecordWhereAssoc
     # => "EXISTS (SELECT... *relation1*) OR EXISTS (SELECT... *relation2*)"
     def self.sql_for_any_exists(relations)
       relations = [relations] unless relations.is_a?(Array)
-      sql = relations.map { |ns| "EXISTS (#{ns.select('1').to_sql})" }.join(" OR ")
-      if relations.size > 1
-        "(#{sql})" # Needed when embedding the sql in a `where`, because the OR could make things wrong
-      elsif relations.size == 1
-        sql
+      sqls = relations.map { |rel| "EXISTS (#{rel.select('1').to_sql})" }
+      if sqls.size > 1
+        "(#{sqls.join(" OR ")})" # Parens needed when embedding the sql in a `where`, because the OR could make things wrong
+      elsif sqls.size == 1
+        sqls.first
       else
         "0=1"
       end
@@ -30,10 +30,10 @@ module ActiveRecordWhereAssoc
 
     # Returns the SQL for getting the sum of of the received relations
     # => "SUM((SELECT... *relation1*)) + SUM((SELECT... *relation2*))"
-    def self.sql_for_sum_of_counts(nested_scopes)
-      nested_scopes = [nested_scopes] unless nested_scopes.is_a?(Array)
+    def self.sql_for_sum_of_counts(relations)
+      relations = [relations] unless relations.is_a?(Array)
       # Need the double parentheses
-      nested_scopes.map { |ns| "SUM((#{ns.to_sql}))" }.join(" + ").presence || "0"
+      relations.map { |rel| "SUM((#{rel.to_sql}))" }.join(" + ").presence || "0"
     end
 
     # Block used when nesting associations for a where_assoc_count
