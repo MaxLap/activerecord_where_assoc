@@ -35,7 +35,7 @@ describe "wa" do
     s0.create_assoc!(:bp1, :S0_bp1, target_model: S1)
     s1 = s0.create_assoc!(:bp1, :S0_bp1, target_model: S1)
 
-    s1.update_attributes!(s1s_adhoc_column: 42)
+    s1.update!(s1s_adhoc_column: 42)
 
     without_manual_wa_test do
       assert_wa(1, :bp1, nil, poly_belongs_to: { S1 => proc { where(s1s_adhoc_column: 42) } })
@@ -48,7 +48,7 @@ describe "wa" do
     s0.create_assoc!(:bp1, :S0_bp1, target_model: S1)
     s1 = s0.create_assoc!(:bp1, :S0_bp1, target_model: S1)
 
-    s1.update_attributes!(s1s_adhoc_column: 21)
+    s1.update!(s1s_adhoc_column: 21)
 
     without_manual_wa_test do
       assert_wa(0, :bp1, nil, poly_belongs_to: { S1 => proc { where(s1s_adhoc_column: 42) } })
@@ -210,12 +210,12 @@ describe "wa" do
     s0_1 = s0
     s1_1 = s0_1.create_assoc!(:mp1, :S0_mp1)
     p1 = s1_1.create_assoc!(:bp2, :S0_mbp2mp1, :S1_bp2, target_model: S2)
-    p1.update_attributes!(s2s_adhoc_column: 42)
+    p1.update!(s2s_adhoc_column: 42)
 
     s0_2 = S0.create_default!
     s1_2 = s0_2.create_assoc!(:mp1, :S0_mp1)
     p2 = s1_2.create_assoc!(:bp2, :S0_mbp2mp1, :S1_bp2, target_model: S3)
-    p2.update_attributes!(s3s_adhoc_column: 43)
+    p2.update!(s3s_adhoc_column: 43)
 
     _s0_3 = S0.create_default!
 

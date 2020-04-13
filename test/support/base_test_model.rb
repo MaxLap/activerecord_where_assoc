@@ -150,7 +150,7 @@ class BaseTestModel < ActiveRecord::Base
       save! # Must save that our id that just changed
     when "bp"
       record = target_model.create(attributes)
-      update_attributes!(reflection.foreign_key => record.id, reflection.foreign_type => target_model.base_class.name)
+      update!(reflection.foreign_key => record.id, reflection.foreign_type => target_model.base_class.name)
     else
       raise "Unexpected macro: #{association_macro}"
     end
