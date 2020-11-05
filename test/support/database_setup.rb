@@ -24,8 +24,11 @@ module Test
     def self.postgres_config
       @postgres_config ||= {
                              adapter:   "postgresql",
+                             host: "localhost",
+                             port: 5432,
                              database:  database_name,
                              username:  db_user_name,
+                             password: db_password,
                            }
     end
 
@@ -34,7 +37,13 @@ module Test
     end
 
     def self.db_user_name
+      return ENV["PGUSER"] if ENV["PGUSER"].present?
       ENV["TRAVIS"] ? "postgres" : `whoami`.strip
+    end
+
+    def self.db_password
+      return ENV["PGPASSWORD"] if ENV["PGPASSWORD"].present?
+      nil
     end
   end
 
@@ -70,12 +79,18 @@ module Test
                           adapter:   "mysql2",
                           database:  database_name,
                           username:  db_user_name,
+                          password:  db_password,
                         }
     end
 
     def self.db_user_name
-      # I don't know why, I get access denied on Travis-CI when using user travis, but root works...
+      return ENV["MYSQL_USER"] if ENV["MYSQL_USER"].present?
       ENV["TRAVIS"] ? "root" : `whoami`
+    end
+
+    def self.db_password
+      return ENV["MYSQL_PASSWORD"] if ENV["MYSQL_PASSWORD"].present?
+      nil
     end
 
     def self.database_name

@@ -1,9 +1,8 @@
 # ActiveRecord Where Assoc
 
-[![Build Status](https://travis-ci.org/MaxLap/activerecord_where_assoc.svg?branch=master)](https://travis-ci.org/MaxLap/activerecord_where_assoc)
+![Test supported versions](https://github.com/MaxLap/activerecord_where_assoc/workflows/Test%20supported%20versions/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/MaxLap/activerecord_where_assoc/badge.svg)](https://coveralls.io/github/MaxLap/activerecord_where_assoc)
 [![Code Climate](https://codeclimate.com/github/MaxLap/activerecord_where_assoc/badges/gpa.svg)](https://codeclimate.com/github/MaxLap/activerecord_where_assoc)
-[![Issue Count](https://codeclimate.com/github/MaxLap/activerecord_where_assoc/badges/issue_count.svg)](https://codeclimate.com/github/MaxLap/activerecord_where_assoc)
 
 This gem makes it easy to do conditions based on the associations of your records in ActiveRecord (Rails). (Using SQL's `EXISTS` operator)
 
@@ -39,7 +38,7 @@ These methods have many advantages over the alternative ways of achieving the si
 
 ## Installation
 
-Rails 4.1 to 6.0 are supported with Ruby 2.1 to 2.7.  
+Rails 4.1 to 6.1 are supported with Ruby 2.1 to 2.7.
 Tested against SQLite3, PostgreSQL and MySQL. 
 The gem only depends on the `activerecord` gem.
 

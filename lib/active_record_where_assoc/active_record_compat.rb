@@ -2,7 +2,17 @@
 
 module ActiveRecordWhereAssoc
   module ActiveRecordCompat
-    if ActiveRecord.gem_version >= Gem::Version.new("5.1")
+    if ActiveRecord.gem_version >= Gem::Version.new("6.1.0.rc1")
+      JoinKeys = Struct.new(:key, :foreign_key)
+      def self.join_keys(reflection, poly_belongs_to_klass)
+        if poly_belongs_to_klass
+          JoinKeys.new(reflection.join_primary_key(poly_belongs_to_klass), reflection.join_foreign_key)
+        else
+          JoinKeys.new(reflection.join_primary_key, reflection.join_foreign_key)
+        end
+      end
+
+    elsif ActiveRecord.gem_version >= Gem::Version.new("5.1")
       def self.join_keys(reflection, poly_belongs_to_klass)
         if poly_belongs_to_klass
           reflection.get_join_keys(poly_belongs_to_klass)

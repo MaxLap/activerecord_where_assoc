@@ -1,40 +1,100 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
-# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+name: Test supported versions
 
-name: Ruby
-
-on:
+# Need the quotes, otherwise YAML.load, which we uses to generate run_tests_on_head.yml will interpret this
+# as the boolean `true`...
+'on':
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '0 10 * * 6'
+  workflow_dispatch:
+    branches: [ master ]
+
+env:
+  PGUSER: postgres
+  PGPASSWORD: postgres
+  MYSQL_USER: root
+  MYSQL_PASSWORD: root
 
 jobs:
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - gemfile: gemfiles/rails_6_1.gemfile
+            ruby_version: 2.7
+          - gemfile: gemfiles/rails_6_1.gemfile
+            ruby_version: 2.5
+
+          - gemfile: gemfiles/rails_6_0.gemfile
+            ruby_version: 2.7
+          - gemfile: gemfiles/rails_6_0.gemfile
+            ruby_version: 2.5
+
+          - gemfile: gemfiles/rails_5_2.gemfile
+            ruby_version: 2.6
+          - gemfile: gemfiles/rails_5_2.gemfile
+            ruby_version: 2.3
+
+          - gemfile: gemfiles/rails_5_1.gemfile
+            ruby_version: 2.5
+          - gemfile: gemfiles/rails_5_1.gemfile
+            ruby_version: 2.2
+
+          - gemfile: gemfiles/rails_5_0.gemfile
+            ruby_version: 2.4
+          - gemfile: gemfiles/rails_5_0.gemfile
+            ruby_version: 2.2
+
+          - gemfile: gemfiles/rails_4_2.gemfile
+            ruby_version: 2.4
+          - gemfile: gemfiles/rails_4_2.gemfile
+            ruby_version: 2.1
+
+          - gemfile: gemfiles/rails_4_1.gemfile
+            ruby_version: 2.3
+          - gemfile: gemfiles/rails_4_1.gemfile
+            ruby_version: 2.1
 
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:11
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_USER: ${{env.PGUSER}}
+          POSTGRES_PASSWORD: ${{env.PGUSER}}
+
 
     steps:
     - uses: actions/checkout@v2
+    - run: sudo service mysql start
     - name: Set up Ruby
-    # To automatically get bug fixes and new Ruby versions for ruby/setup-ruby,
-    # change this to (see https://github.com/ruby/setup-ruby#versioning):
-    # uses: ruby/setup-ruby@v1
-      uses: ruby/setup-ruby@ec106b438a1ff6ff109590de34ddc62c540232e0
+      uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6
+        ruby-version: ${{ matrix.ruby_version }}
+    - uses: actions/cache@v2
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}
     - name: Install dependencies
-      run: bundle install
-    - name: Run tests
-      run: bundle exec rake
-  
-    - psql -c 'CREATE DATABASE activerecord_where_assoc' -U postgres
-    - mysql -e 'CREATE DATABASE activerecord_where_assoc'
-    - DB=mysql bundle exec rake test
-    - bundle exec rake test DB=pg
-    - bundle exec rake test DB=sqlite3
-    - bundle exec rake coveralls:push
+      run: |
+        bundle config path vendor/bundle
+        bundle config gemfile ${{ matrix.gemfile }}
+        bundle install --jobs 4 --retry 3
+    - run: psql --host=localhost --port=5432 -c 'CREATE DATABASE activerecord_where_assoc'
+    - run: mysql -h 127.0.0.1 -u "${{ env.MYSQL_USER }}" -p${{ env.MYSQL_PASSWORD }} -e 'CREATE DATABASE activerecord_where_assoc'
+    - run: DB=sqlite3 bundle exec rake test
+    - run: DB=pg bundle exec rake test
+    - run: DB=mysql bundle exec rake test
+      # MySQL build segfaults on older ruby version, no idea why and painful to debug, so just skip them.
+      if: ${{ matrix.ruby_version >= 2.4 || matrix.ruby_version == 'head' }}
+    - run: bundle exec rake coveralls:push

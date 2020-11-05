@@ -1,0 +1,69 @@
+# This file is generated from run_tests.yml, changes here will be lost next time `rake` is run
+---
+name: Test future versions
+'on':
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+  schedule:
+  - cron: 0 10 * * 6
+  workflow_dispatch:
+    branches:
+    - master
+env:
+  PGUSER: postgres
+  PGPASSWORD: postgres
+  MYSQL_USER: root
+  MYSQL_PASSWORD: root
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - :gemfile: gemfiles/rails_head.gemfile
+          :ruby_version: head
+        - :gemfile: gemfiles/rails_head.gemfile
+          :ruby_version: 2.7
+        - :gemfile: gemfiles/rails_6_1.gemfile
+          :ruby_version: head
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:11
+        ports:
+        - 5432:5432
+        options: "--health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5"
+        env:
+          POSTGRES_USER: "${{env.PGUSER}}"
+          POSTGRES_PASSWORD: "${{env.PGUSER}}"
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo service mysql start
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: "${{ matrix.ruby_version }}"
+    - uses: actions/cache@v2
+      with:
+        path: vendor/bundle
+        key: "${{ runner.os }}-gems-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile
+          }}"
+    - name: Install dependencies
+      run: |
+        bundle config path vendor/bundle
+        bundle config gemfile ${{ matrix.gemfile }}
+        bundle install --jobs 4 --retry 3
+    - run: psql --host=localhost --port=5432 -c 'CREATE DATABASE activerecord_where_assoc'
+    - run: mysql -h 127.0.0.1 -u "${{ env.MYSQL_USER }}" -p${{ env.MYSQL_PASSWORD
+        }} -e 'CREATE DATABASE activerecord_where_assoc'
+    - run: DB=sqlite3 bundle exec rake test
+    - run: DB=pg bundle exec rake test
+    - run: DB=mysql bundle exec rake test
+      if: "${{ matrix.ruby_version >= 2.4 || matrix.ruby_version == 'head' }}"
+    - run: bundle exec rake coveralls:push
+    continue-on-error: true

@@ -41,14 +41,35 @@ task :run_rdoc do
 end
 
 task :generate_examples do
+  puts "Begin generating EXAMPLES.md"
   content = `ruby examples/examples.rb`
   if $?.success?
     File.write("EXAMPLES.md", content)
-    puts "Finished generate EXAMPLES.md"
+    puts "Finished generating EXAMPLES.md"
   else
     puts "Couldn't generate EXAMPLES.md"
     exit(1)
   end
 end
 
-task default: [:run_rdoc, :generate_examples, :test]
+task :generate_run_tests_on_head_workflow do
+  require 'yaml'
+  config = YAML.load_file('.github/workflows/run_tests.yml')
+  config['name'] = 'Test future versions'
+  config['jobs']['test']['strategy']['matrix']['include'] = [
+    {gemfile: 'gemfiles/rails_head.gemfile', ruby_version: 'head'},
+    {gemfile: 'gemfiles/rails_head.gemfile', ruby_version: 2.7},
+    {gemfile: 'gemfiles/rails_6_1.gemfile', ruby_version: 'head'},
+  ]
+
+  #
+  config['jobs']['test']['continue-on-error'] = true
+
+  header = <<-TXT
+# This file is generated from run_tests.yml, changes here will be lost next time `rake` is run
+  TXT
+
+  File.write('.github/workflows/run_tests_on_head.yml', header + config.to_yaml)
+end
+
+task default: [:generate_run_tests_on_head_workflow, :generate_examples, :run_rdoc, :test]
