@@ -71,5 +71,4 @@ jobs:
     - run: DB=pg bundle exec rake test
     - run: DB=mysql bundle exec rake test
       if: "${{ matrix.ruby_version >= 2.4 || matrix.ruby_version == 'head' }}"
-    - run: bundle exec rake coveralls:push
     continue-on-error: true

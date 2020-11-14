@@ -24,7 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry"
   spec.add_development_dependency "rake", ">= 10.0"
 
-  spec.add_development_dependency "coveralls", ">= 0.8.23"
   spec.add_development_dependency "deep-cover"
   spec.add_development_dependency "rubocop", "0.54.0"
   spec.add_development_dependency "simplecov"
@@ -37,6 +36,6 @@ Gem::Specification.new do |spec|
 
   # Travis-CI takes care of the other ones
   # Using conditions because someone might not even be able to install the gems
-  spec.add_development_dependency "mysql2", "~> 0.4.0" if ENV["TRAVIS"] || ENV["CI"] || ENV["ALL_DB"] || ENV["DB"] == "mysql"
-  spec.add_development_dependency "pg", "< 1.0.0" if ENV["TRAVIS"] || ENV["CI"] || ENV["ALL_DB"] || ["pg", "postgres", "postgresql"].include?(ENV["DB"])
+  spec.add_development_dependency "mysql2", "~> 0.4.0" if ENV["CI"] || ENV["ALL_DB"] || ENV["DB"] == "mysql"
+  spec.add_development_dependency "pg", "< 1.0.0" if ENV["CI"] || ENV["ALL_DB"] || ["pg", "postgres", "postgresql"].include?(ENV["DB"])
 end

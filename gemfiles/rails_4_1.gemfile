@@ -8,6 +8,6 @@ gem "sqlite3", "~> 1.3.6"
 # A bug in rails 4.1 requires to set a mysql2 version manually
 # https://stackoverflow.com/questions/32457657/rails-4-gemloaderror-specified-mysql2-for-database-adapter-but-the-gem-i
 # We still want its inclusion to be conditional on some env vars
-gem "mysql2", "~> 0.3.18" if ENV["TRAVIS"] || ENV["ALL_DB"] || ENV["DB"] == "mysql"
+gem "mysql2", "~> 0.3.18" if ENV["CI"] || ENV["ALL_DB"] || ENV["DB"] == "mysql"
 
 gemspec path: "../"

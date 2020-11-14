@@ -105,4 +105,3 @@ jobs:
     - run: DB=mysql bundle exec rake test
       # MySQL build segfaults on older ruby version, no idea why and painful to debug, so just skip them.
       if: ${{ matrix.ruby_version >= 2.4 || matrix.ruby_version == 'head' }}
-    - run: bundle exec rake coveralls:push

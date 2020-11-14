@@ -4,12 +4,10 @@ coverage_config = proc do
   add_filter "/test/"
 end
 
-if ENV["TRAVIS"]
-  require "deep_cover/builtin_takeover"
-  require "coveralls"
-  require "simplecov"
-  SimpleCov.command_name "rake test-#{ENV['DB']}"
-  Coveralls.wear_merged!(&coverage_config)
+if ENV["CI"]
+  # No doing coverage badge at the moment.. Coveralls stopped working right after switching to
+  # Github actions, and its doc is too bad for me to figure it out. A few hours lost is more
+  # than I wanted to put into this.
 else
   require "deep_cover"
 end

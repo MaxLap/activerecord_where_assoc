@@ -38,7 +38,7 @@ module Test
 
     def self.db_user_name
       return ENV["PGUSER"] if ENV["PGUSER"].present?
-      ENV["TRAVIS"] ? "postgres" : `whoami`.strip
+      `whoami`.strip
     end
 
     def self.db_password
@@ -85,7 +85,7 @@ module Test
 
     def self.db_user_name
       return ENV["MYSQL_USER"] if ENV["MYSQL_USER"].present?
-      ENV["TRAVIS"] ? "root" : `whoami`
+      `whoami`
     end
 
     def self.db_password
@@ -115,5 +115,5 @@ else
   raise "Unhandled DB parameter: #{ENV['DB'].inspect}"
 end
 
-Test::SelectedDBHelper.drop_and_create_database unless ENV["TRAVIS"]
+Test::SelectedDBHelper.drop_and_create_database unless ENV["CI"]
 Test::SelectedDBHelper.connect_db
