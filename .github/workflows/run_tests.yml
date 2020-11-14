@@ -17,6 +17,10 @@ env:
   PGPASSWORD: postgres
   MYSQL_USER: root
   MYSQL_PASSWORD: root
+  # This set to false for run_tests_on_head by the rakefile
+  CACHE_DEPENDENCIES: 'true'
+  # Dumb workaround since it's not possible to clear caches in Github Actions
+  CACHE_VERSION: '3'
 
 jobs:
   test:
@@ -82,9 +86,13 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby_version }}
     - uses: actions/cache@v2
+      if: ${{ env.CACHE_DEPENDENCIES == 'true' }}
       with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}
+        # The path given to bundler is used relatively to the directory of the gemfile
+        # I keep the different gemfiles in the 'gemfiles' directory, so the path to cache is also there.
+        path: gemfiles/vendor/bundle
+        key: ${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('activerecord_where_assoc.gemspec') }}
+        restore-keys: ${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}
     - name: Install dependencies
       run: |
         bundle config path vendor/bundle

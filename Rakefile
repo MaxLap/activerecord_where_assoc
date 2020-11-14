@@ -56,10 +56,11 @@ task :generate_run_tests_on_head_workflow do
   require 'yaml'
   config = YAML.load_file('.github/workflows/run_tests.yml')
   config['name'] = 'Test future versions'
+  config['env']['CACHE_DEPENDENCIES'] = false
   config['jobs']['test']['strategy']['matrix']['include'] = [
-    {gemfile: 'gemfiles/rails_head.gemfile', ruby_version: 'head'},
-    {gemfile: 'gemfiles/rails_head.gemfile', ruby_version: 2.7},
-    {gemfile: 'gemfiles/rails_6_1.gemfile', ruby_version: 'head'},
+    {'gemfile' => 'gemfiles/rails_head.gemfile', 'ruby_version' => 'head'},
+    {'gemfile' => 'gemfiles/rails_head.gemfile', 'ruby_version' => 2.7},
+    {'gemfile' => 'gemfiles/rails_6_1.gemfile', 'ruby_version' => 'head'},
   ]
 
   #

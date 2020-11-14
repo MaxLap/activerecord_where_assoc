@@ -18,18 +18,20 @@ env:
   PGPASSWORD: postgres
   MYSQL_USER: root
   MYSQL_PASSWORD: root
+  CACHE_DEPENDENCIES: false
+  CACHE_VERSION: '3'
 jobs:
   test:
     strategy:
       fail-fast: false
       matrix:
         include:
-        - :gemfile: gemfiles/rails_head.gemfile
-          :ruby_version: head
-        - :gemfile: gemfiles/rails_head.gemfile
-          :ruby_version: 2.7
-        - :gemfile: gemfiles/rails_6_1.gemfile
-          :ruby_version: head
+        - gemfile: gemfiles/rails_head.gemfile
+          ruby_version: head
+        - gemfile: gemfiles/rails_head.gemfile
+          ruby_version: 2.7
+        - gemfile: gemfiles/rails_6_1.gemfile
+          ruby_version: head
     runs-on: ubuntu-latest
     services:
       db:
@@ -49,10 +51,14 @@ jobs:
       with:
         ruby-version: "${{ matrix.ruby_version }}"
     - uses: actions/cache@v2
+      if: "${{ env.CACHE_DEPENDENCIES == 'true' }}"
       with:
-        path: vendor/bundle
-        key: "${{ runner.os }}-gems-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile
+        path: gemfiles/vendor/bundle
+        key: "${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version
+          }}-${{ matrix.gemfile }}-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('activerecord_where_assoc.gemspec')
           }}"
+        restore-keys: "${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version
+          }}-${{ matrix.gemfile }}"
     - name: Install dependencies
       run: |
         bundle config path vendor/bundle
