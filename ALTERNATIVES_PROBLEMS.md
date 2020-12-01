@@ -41,8 +41,7 @@ Summary of the problems of the alternatives that the `activerecord_where_assoc` 
   * verbose, less clear on the goal of the queries (you don't even name the association the query is about).
   * need to repeat conditions from the association / default_scope.
 * `#where_exists` gem:
-  * can't use scopes of the association's model.
-  * can't go deeper than one level of association.
+  * No other problems than the ones common to every alternatives written above.
 
 ## Common problems to most alternatives
 
@@ -252,25 +251,15 @@ only alternatives, but appears less powerful than where_assoc_exists.
 * where_exists supports polymorphic belongs_to only by always doing a `#pluck` everytime. In some situation could
   be a slow query if there is a lots of rows to scan. where_assoc also allows directly specifying the classes
   manually, avoiding the pluck and possibly filtering the choices.
-  
-* Unable to use scopes of the association's model.
-```ruby
-# There is no equivalent for this (admins is a scope on User)
-Comment.where_assoc_exists(:author, &:admins)
-```
 
-* Cannot use a block for more complex conditions
-```ruby
-# There is no equivalent for this
-Comment.where_assoc_exists(:author) { admins.where("created_at <= ?", 1.month.ago) }
-```
-
-* Unable to dig deeper in the associations  
-  Note: it does follow :through associations so doing a custom associations for your need can be a workaround.
+* No shortcut to dig deeper in the associations
 
 ```ruby
-# There is no equivalent for this (Users that have posts with at least a comments)
+# with activerecord_where_assoc
 User.where_assoc_exists([:posts, :comments])
+
+# with where_exists
+User.where_exists(:posts) { |posts| posts.where_exists(comments) }
 ```
 
 * Has no equivalent to `#where_assoc_count`
@@ -286,4 +275,4 @@ Post.where_assoc_count(:comments, :>, 5)
 * `#where_exists` is shorter than `#where_assoc_exists`, but it is also less obvious about what it does.  
   In any case, it is trivial to alias one name to the other one.
 
-* where_exists supports Rails 4.2 and up, while where_assoc supports Rails 4.1 and up.
+* where_exists supports Rails 4.2 and up, while activerecord_where_assoc supports Rails 4.1 and up.
