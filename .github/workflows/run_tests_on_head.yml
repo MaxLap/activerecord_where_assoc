@@ -43,6 +43,9 @@ jobs:
         env:
           POSTGRES_USER: "${{env.PGUSER}}"
           POSTGRES_PASSWORD: "${{env.PGUSER}}"
+    env:
+      BUNDLE_GEMFILE: "${{ matrix.gemfile }}"
+      BUNDLE_PATH: vendor/bundle
     steps:
     - uses: actions/checkout@v2
     - run: sudo service mysql start
@@ -60,10 +63,9 @@ jobs:
         restore-keys: "${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version
           }}-${{ matrix.gemfile }}"
     - name: Install dependencies
-      run: |
-        bundle config path vendor/bundle
-        bundle config gemfile ${{ matrix.gemfile }}
-        bundle install --jobs 4 --retry 3
+      run: 'bundle install --jobs 4 --retry 3
+
+'
     - run: psql --host=localhost --port=5432 -c 'CREATE DATABASE activerecord_where_assoc'
     - run: mysql -h 127.0.0.1 -u "${{ env.MYSQL_USER }}" -p${{ env.MYSQL_PASSWORD
         }} -e 'CREATE DATABASE activerecord_where_assoc'
