@@ -29,6 +29,8 @@ jobs:
       matrix:
         include:
           - gemfile: gemfiles/rails_6_1.gemfile
+            ruby_version: 3.0
+          - gemfile: gemfiles/rails_6_1.gemfile
             ruby_version: 2.7
           - gemfile: gemfiles/rails_6_1.gemfile
             ruby_version: 2.5
