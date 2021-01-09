@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.1.2 - 2020-12-24
+
+* Add compatiblity for Rails 6.1
+
 # 1.1.1 - 2020-04-13
 
 * Fix handling for ActiveRecord's NullRelation (MyModel.none) in block and association's conditions.
