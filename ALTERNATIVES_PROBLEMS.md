@@ -31,6 +31,7 @@ Summary of the problems of the alternatives that the `activerecord_where_assoc` 
     (so your scopes can be incompatible)
   * can't be used with Rails 5's `#or`.
   * doesn't work for polymorphic belongs_to.
+  * doesn't compose well.
 * `joins`:
   * `has_many` may return duplicate records.
   * using `uniq` / `distinct` to solve duplicate rows is an unexpected side-effect when this is in a scope.
@@ -118,7 +119,7 @@ Actually, the `#or` will refuse to mix queries that mismatch structurally:
 Post.by_admin.or(Post.joins(:comments))
 ```
 
-It can work, when both side use the same joins and only have different conditions .
+It can work, when both side use the same joins and only have different conditions.
 
 Since the `#where_assoc_*` methods only add a single `#where`, they are compatible with `#or` and other similar tools.
 
@@ -145,6 +146,15 @@ feature, such as `activerecord_where_assoc`.
 * The default will raise an exception
 * You can have the gem do a `#pluck` to auto detect which models to search in, but this can be expensive
 * You can specify which models to search in, this has the added benefit of allowing to search for a subset only
+
+### Doesn't compose well
+
+Let's say Posts that have a comment that was reported and a comment that was made by an admin. You have
+to be careful, because using `#includes` and `#joins` will instead return Posts what have a comment that is
+both reported and made by an admin at the same time.
+
+If you are looking for it to possibly be 2 different comments, then you either need to write the `#joins`
+manually or to use simply use the `#where_assoc_*` of this gem.
 
 ## ActiveRecord only alternatives
 
@@ -190,11 +200,11 @@ Post.joins(:comments).where(comments: {is_spam: true})
     .joins("JOIN comments comments_for_reported ON posts.id = comments_for_reported.post_id")
     .where(comments_for_reported: {is_reported: true})
 ```
-
 * [Cannot be used with Rails 5's `#or`](#incompatible-with-or)
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 * [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
+* [Doesn't compose well](#doesnt-compose-well)
 
 ### Using `#includes` (or `#eager_load`) and `#where`
 
@@ -219,6 +229,7 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 * [Can't handle polymorphic belongs_to](#unable-to-handle-polymorphic-belongs_to)
+* [Doesn't compose well](#doesnt-compose-well)
 
 * Simply cannot be used for complex cases.
 
