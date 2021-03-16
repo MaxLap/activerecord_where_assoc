@@ -80,6 +80,7 @@ module Test
                           database:  database_name,
                           username:  db_user_name,
                           password:  db_password,
+                          collation: 'utf8_general_ci',
                         }
     end
 
