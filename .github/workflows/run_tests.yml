@@ -95,8 +95,8 @@ jobs:
         # The path given to bundler is used relatively to the directory of the gemfile
         # I keep the different gemfiles in the 'gemfiles' directory, so the path to cache is also there.
         path: gemfiles/vendor/bundle
-        key: ${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('activerecord_where_assoc.gemspec') }}
-        restore-keys: ${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}
+        key: ResetCaches1-${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('activerecord_where_assoc.gemspec') }}
+        restore-keys: ResetCaches1-${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}
     - name: Install dependencies
       run: |
         bundle install --jobs 4 --retry 3
