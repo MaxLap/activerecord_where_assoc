@@ -51,7 +51,7 @@ And then execute:
 
     $ bundle install
 
-Or install it yourself as:
+Or install it yourself with:
 
     $ gem install activerecord_where_assoc
 
