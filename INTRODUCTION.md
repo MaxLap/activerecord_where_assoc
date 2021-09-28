@@ -1,4 +1,4 @@
-This is meant to be an introduction to the
+This is an introduction to the
 [activerecord_where_assoc](https://github.com/MaxLap/activerecord_where_assoc) gem. It's a bit long, but that's because
 it is quite powerful and I have to explain some problems with the alternative ways of doing what it does.
 

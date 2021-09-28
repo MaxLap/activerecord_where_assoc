@@ -37,9 +37,8 @@ These methods have many advantages over the alternative ways of achieving the si
 
 ## Installation
 
-Rails 4.1 to 6.1 are supported with Ruby 2.1 to 3.0.
-Tested against SQLite3, PostgreSQL and MySQL. 
-The gem only depends on the `activerecord` gem.
+Rails 4.1 to 6.1 are supported with Ruby 2.1 to 3.0. Tested against SQLite3, PostgreSQL and MySQL. The gem
+only depends on the `activerecord` gem.
 
 Add this line to your application's Gemfile:
 
