@@ -141,7 +141,7 @@ module ActiveRecordWhereAssoc
       # Each step, we get all of the scoping lambdas that were defined on associations that apply for
       # the reflection's target
       # Basically, we start from the deepest part of the query and wrap it up
-      reflection_chain, constaints_chain = ActiveRecordCompat.chained_reflection_and_chained_constraints(final_reflection)
+      reflection_chain, constraints_chain = ActiveRecordCompat.chained_reflection_and_chained_constraints(final_reflection)
       skip_next = false
 
       reflection_chain.each_with_index do |reflection, i|
@@ -153,7 +153,7 @@ module ActiveRecordWhereAssoc
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
         skip_next = true if actually_has_and_belongs_to_many?(reflection)
 
-        init_scopes = initial_scopes_from_reflection(reflection_chain[i..-1], constaints_chain[i], options)
+        init_scopes = initial_scopes_from_reflection(reflection_chain[i..-1], constraints_chain[i], options)
         current_scopes = init_scopes.map do |alias_scope, current_scope, klass_scope|
           current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
 
@@ -232,11 +232,11 @@ module ActiveRecordWhereAssoc
               INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
 
-          alias_scope, join_constaints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
+          alias_scope, join_constraints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
         elsif on_poly_belongs_to
-          alias_scope, join_constaints = wrapper_and_join_constraints(reflection, poly_belongs_to_klass: klass)
+          alias_scope, join_constraints = wrapper_and_join_constraints(reflection, poly_belongs_to_klass: klass)
         else
-          alias_scope, join_constaints = wrapper_and_join_constraints(reflection)
+          alias_scope, join_constraints = wrapper_and_join_constraints(reflection)
         end
 
         assoc_scopes.each do |callable|
@@ -256,7 +256,7 @@ module ActiveRecordWhereAssoc
           current_scope = current_scope.merge(relation)
         end
 
-        [alias_scope, current_scope.where(join_constaints), klass_scope]
+        [alias_scope, current_scope.where(join_constraints), klass_scope]
       end
     end
 
