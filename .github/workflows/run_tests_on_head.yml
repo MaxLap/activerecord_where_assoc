@@ -71,6 +71,7 @@ jobs:
         }} -e 'CREATE DATABASE activerecord_where_assoc'
     - run: DB=sqlite3 bundle exec rake test
     - run: DB=pg bundle exec rake test
+      if: "${{ matrix.ruby_version >= 2.4 || matrix.ruby_version == 'head' }}"
     - run: DB=mysql bundle exec rake test
       if: "${{ matrix.ruby_version >= 2.4 || matrix.ruby_version == 'head' }}"
     continue-on-error: true
