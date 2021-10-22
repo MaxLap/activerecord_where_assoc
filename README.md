@@ -234,6 +234,19 @@ It is pretty complicated to support `#limit` and `#offset` of the `has_* :throug
 
 Note that the support of `#limit` and `#offset` for the `:source` and `:through` parts is a feature. I consider `ActiveRecord` wrong for not handling them correctly.
 
+## Another recommended gem
+
+If you feel a need for this gem's feature, you may also be interested in another gem I made: [activerecord_follow_assoc](https://github.com/MaxLap/activerecord_follow_assoc).
+
+It allows you to follow an association of your choice while building a query (a scope). You start querying posts, and then you change to querying the authors of those posts. For simple cases, it's possible that both `where_assoc` and `follow_assoc` can build the query your need, but each can handle different situations. Here is an example:
+
+```ruby
+# Find every posts that have comments by an admin
+Post.where_assoc_exists([:comments, :author], &:admins)
+```
+
+This could be done with `follow_assoc`: `User.admins.follow_assoc(:comments, :post)`. But if you wanted conditions on a second association, then `follow_assoc` wouldn't work. On the other hand, if you received a scope on users and wanted their posts, then `follow_assoc` would be a nicer tool for the job. It all depends on the context where you need to do the query and what starting point you have.
+
 ## Development
 
 After checking out the repo, run `bundle install` to install dependencies.
