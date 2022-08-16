@@ -266,3 +266,24 @@ class RecursiveS < BaseTestModel
   has_many :mp1, class_name: "RecursiveS", as: "has"
   has_one :op1, class_name: "RecursiveS", as: "has"
 end
+
+class AbstractModel < BaseTestModel
+  self.abstract_class = true
+
+  # These don't really make sense. Since this is abstract, there will be
+  # multiple models with these associations, so they should be polymorphic associations
+  # Still, we can test from this side.
+  belongs_to :b1, class_name: 'NeverAbstractedModel', foreign_key: "belongs_id"
+  has_many :m1, class_name: 'NeverAbstractedModel', foreign_key: "has_id"
+  has_one :o1, class_name: 'NeverAbstractedModel', foreign_key: "has_id"
+
+  belongs_to :bp1, polymorphic: true, foreign_key: 'belongs_id', foreign_type: 'belongs_type'
+  has_many :mp1, as: "has", class_name: 'NeverAbstractedModel'
+  has_one :op1, as: "has", class_name: 'NeverAbstractedModel'
+end
+
+class UnabstractModel < AbstractModel
+end
+
+class NeverAbstractedModel < BaseTestModel
+end
