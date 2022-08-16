@@ -140,4 +140,26 @@ ActiveRecord::Schema.define do
     t.integer :has_id
     t.string :has_type
   end
+
+  create_table :unabstract_models do |t|
+    t.integer :belongs_id
+    t.string :belongs_type
+
+    t.integer :has_id
+    t.string :has_type
+
+    t.integer :unabstracted_models_column, limit: 8
+    t.integer :unabstracted_models_adhoc_column, limit: 8
+  end
+
+  create_table :never_abstracted_models do |t|
+    t.integer :belongs_id
+    t.string :belongs_type
+
+    t.integer :has_id
+    t.string :has_type
+
+    t.integer :never_abstracted_models_column, limit: 8
+    t.integer :never_abstracted_models_adhoc_column, limit: 8
+  end
 end

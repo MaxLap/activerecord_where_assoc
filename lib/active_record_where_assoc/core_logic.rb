@@ -153,7 +153,7 @@ module ActiveRecordWhereAssoc
         # the 2nd part of has_and_belongs_to_many is handled at the same time as the first.
         skip_next = true if actually_has_and_belongs_to_many?(reflection)
 
-        init_scopes = initial_scopes_from_reflection(reflection_chain[i..-1], constraints_chain[i], options)
+        init_scopes = initial_scopes_from_reflection(record_class, reflection_chain[i..-1], constraints_chain[i], options)
         current_scopes = init_scopes.map do |alias_scope, current_scope, klass_scope|
           current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
 
@@ -197,13 +197,13 @@ module ActiveRecordWhereAssoc
     end
 
     # Can return multiple pairs for polymorphic belongs_to, one per table to look into
-    def self.initial_scopes_from_reflection(reflection_chain, assoc_scopes, options)
+    def self.initial_scopes_from_reflection(record_class, reflection_chain, assoc_scopes, options)
       reflection = reflection_chain.first
       actual_source_reflection = user_defined_actual_source_reflection(reflection)
 
       on_poly_belongs_to = option_value(options, :poly_belongs_to) if poly_belongs_to?(actual_source_reflection)
 
-      classes_with_scope = classes_with_scope_for_reflection(reflection, options)
+      classes_with_scope = classes_with_scope_for_reflection(record_class, reflection, options)
 
       assoc_scope_allowed_lim_off = assoc_scope_to_keep_lim_off_from(reflection)
 
@@ -225,18 +225,18 @@ module ActiveRecordWhereAssoc
           # would be great, except we cannot add a given_conditions afterward because we are on the wrong "base class",
           # and we can't do #merge because of the LEW crap.
           # So we must do the joins ourself!
-          _wrapper, sub_join_contraints = wrapper_and_join_constraints(reflection)
+          _wrapper, sub_join_contraints = wrapper_and_join_constraints(record_class, reflection)
           next_reflection = reflection_chain[1]
 
           current_scope = current_scope.joins(<<-SQL)
               INNER JOIN #{next_reflection.klass.quoted_table_name} ON #{sub_join_contraints.to_sql}
           SQL
 
-          alias_scope, join_constraints = wrapper_and_join_constraints(next_reflection, habtm_other_reflection: reflection)
+          alias_scope, join_constraints = wrapper_and_join_constraints(record_class, next_reflection, habtm_other_reflection: reflection)
         elsif on_poly_belongs_to
-          alias_scope, join_constraints = wrapper_and_join_constraints(reflection, poly_belongs_to_klass: klass)
+          alias_scope, join_constraints = wrapper_and_join_constraints(record_class, reflection, poly_belongs_to_klass: klass)
         else
-          alias_scope, join_constraints = wrapper_and_join_constraints(reflection)
+          alias_scope, join_constraints = wrapper_and_join_constraints(record_class, reflection)
         end
 
         assoc_scopes.each do |callable|
@@ -272,7 +272,7 @@ module ActiveRecordWhereAssoc
       user_defined_actual_source_reflection(reflection).scope
     end
 
-    def self.classes_with_scope_for_reflection(reflection, options)
+    def self.classes_with_scope_for_reflection(record_class, reflection, options)
       actual_source_reflection = user_defined_actual_source_reflection(reflection)
 
       if poly_belongs_to?(actual_source_reflection)
@@ -283,7 +283,15 @@ module ActiveRecordWhereAssoc
         else
           case on_poly_belongs_to
           when :pluck
-            class_names = actual_source_reflection.active_record.distinct.pluck(actual_source_reflection.foreign_type)
+            model_for_ids = actual_source_reflection.active_record
+
+            if model_for_ids.abstract_class
+              # When the reflection is defined on an abstract model, we fallback to the model
+              # on which this was called
+              model_for_ids = record_class
+            end
+
+            class_names = model_for_ids.distinct.pluck(actual_source_reflection.foreign_type)
             class_names.compact.map!(&:safe_constantize).compact
           when Array, Hash
             array = on_poly_belongs_to.to_a
@@ -391,7 +399,7 @@ module ActiveRecordWhereAssoc
       alias_scope
     end
 
-    def self.wrapper_and_join_constraints(reflection, options = {})
+    def self.wrapper_and_join_constraints(record_class, reflection, options = {})
       poly_belongs_to_klass = options[:poly_belongs_to_klass]
       join_keys = ActiveRecordCompat.join_keys(reflection, poly_belongs_to_klass)
 
@@ -400,6 +408,12 @@ module ActiveRecordWhereAssoc
 
       table = (poly_belongs_to_klass || reflection.klass).arel_table
       foreign_klass = reflection.send(:actual_source_reflection).active_record
+      if foreign_klass.abstract_class
+        # When the reflection is defined on an abstract model, we fallback to the model
+        # on which this was called
+        foreign_klass = record_class
+      end
+
       foreign_table = foreign_klass.arel_table
 
       habtm_other_reflection = options[:habtm_other_reflection]
