@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.1.3 - 2022-08-16
+
+* Add support for associations defined on abstract models
+
 # 1.1.2 - 2020-12-24
 
 * Add compatiblity for Rails 6.1
