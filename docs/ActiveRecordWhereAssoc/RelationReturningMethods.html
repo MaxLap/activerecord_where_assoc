@@ -11,17 +11,15 @@
   var index_rel_prefix = "../";
 </script>
 
-<script src="../js/jquery.js"></script>
-<script src="../js/darkfish.js"></script>
+<script src="../js/navigation.js" defer></script>
+<script src="../js/search.js" defer></script>
+<script src="../js/search_index.js" defer></script>
+<script src="../js/searcher.js" defer></script>
+<script src="../js/darkfish.js" defer></script>
 
 <link href="../css/fonts.css" rel="stylesheet">
 <link href="../css/rdoc.css" rel="stylesheet">
-
-
 <link href="../docs_customization.css" rel="stylesheet">
-
-
-
 
 
 <body id="top" role="document" class="module">
@@ -73,35 +71,29 @@
 
 
   <div id="class-metadata">
-    <div id="sections-section" class="nav-section">
+    
+<div id="sections-section" class="nav-section">
   <h3>Sections</h3>
 
   <ul class="link-list" role="directory">
-    
       <li><a href="#5Buntitled-5D"></a></li>
-    
       <li><a href="#Basic+methods">Basic methods</a></li>
-    
       <li><a href="#Complex+method">Complex method</a></li>
-    
   </ul>
 </div>
 
     
     
     
-    <!-- Method Quickref -->
+    
+<!-- Method Quickref -->
 <div id="method-list-section" class="nav-section">
   <h3>Methods</h3>
 
   <ul class="link-list" role="directory">
-    
     <li ><a href="#method-i-where_assoc_count">#where_assoc_count</a>
-    
     <li ><a href="#method-i-where_assoc_exists">#where_assoc_exists</a>
-    
     <li ><a href="#method-i-where_assoc_not_exists">#where_assoc_not_exists</a>
-    
   </ul>
 </div>
 
@@ -132,7 +124,7 @@
 <p>models: <code>Post.where_assoc_exists(:comments)</code></p>
 </li></ul>
 
-<p>In short: Anywhere you could use #where, you can also use the methods presented here. This includes with ActiveRecord&#39;s #or method.</p>
+<p>In short: Anywhere you could use #where, you can also use the methods presented here. This includes with ActiveRecord’s #or method.</p>
 
 <p><a href="https://github.com/MaxLap/activerecord_where_assoc/blob/master/INTRODUCTION.md">Introduction to this gem</a> introduces each features of the gem clearly.</p>
 
@@ -146,7 +138,7 @@
 
 <p>The associations referred here are the links between your different models. They are your <code>#belongs_to</code>, <code>#has_many</code>, <code>#has_one</code>, <code>#has_and_belongs_to_many</code>.</p>
 
-<p>This gem is about getting records from your database if their associations match (or don&#39;t match) a certain condition (which by default is just to exist).</p>
+<p>This gem is about getting records from your database if their associations match (or don’t match) a certain condition (which by default is just to exist).</p>
 
 <p>Every method here has an <strong>association_name</strong> parameter. This is the association you want to check if records exists.</p>
 
@@ -264,7 +256,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 <span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-value">:comments</span>, {<span class="ruby-value">is_spam:</span> <span class="ruby-keyword">true</span>}, <span class="ruby-value">ignore_limit:</span> <span class="ruby-keyword">true</span>)
 </pre>
 
-<p>Note, if you don&#39;t need a condition, you must pass nil as condition to provide options:</p>
+<p>Note, if you don’t need a condition, you must pass nil as condition to provide options:</p>
 
 <pre class="ruby"><span class="ruby-constant">Post</span>.<span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-value">:comments</span>, <span class="ruby-keyword">nil</span>, <span class="ruby-value">ignore_limit:</span> <span class="ruby-keyword">true</span>)
 </pre>
@@ -275,7 +267,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
 <p>Main reasons to use ignore_limit: true</p>
 <ul><li>
-<p>Needed for MySQL to be able to do anything with <code>#has_one</code> associations because MySQL doesn&#39;t support sub-limit. <br> See <a href="https://github.com/MaxLap/activerecord_where_assoc#mysql-doesnt-support-sub-limit">MySQL doesn’t support limit</a> <br> Note, this does mean the <code>#has_one</code> will be treated as if it was a <code>#has_many</code> for MySQL too.</p>
+<p>Needed for MySQL to be able to do anything with <code>#has_one</code> associations because MySQL doesn’t support sub-limit. <br> See <a href="https://github.com/MaxLap/activerecord_where_assoc#mysql-doesnt-support-sub-limit">MySQL doesn’t support limit</a> <br> Note, this does mean the <code>#has_one</code> will be treated as if it was a <code>#has_many</code> for MySQL too.</p>
 </li><li>
 <p>You have a <code>#has_one</code> association which you know can never have more than one record and are dealing with a heavy/slow query. The query used to deal with <code>#has_many</code> is less complex, and may prove faster.</p>
 </li><li>
@@ -288,7 +280,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
 <p>Main reasons to use this: you have to use <code>#from</code> in the block of <code>#where_assoc_*</code> method (ex: because a scope needs <code>#from</code>).</p>
 
-<p>Why this isn&#39;t the default:</p>
+<p>Why this isn’t the default:</p>
 <ul><li>
 <p>From very few tests, the aliasing way seems to produce better plans.</p>
 </li><li>
@@ -297,16 +289,16 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
 <h5 id="module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Apoly_belongs_to+option">:poly_belongs_to option<span><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Apoly_belongs_to+option">&para;</a> <a href="#top">&uarr;</a></span></h5>
 
-<p>Specify what to do when a polymorphic belongs_to is encountered. Things are tricky because the query can end up searching in multiple Models, and just knowing which ones to look into can require an expensive query. It&#39;s also possible that you only want to search for those that match some specific Models, ignoring the other ones.</p>
+<p>Specify what to do when a polymorphic belongs_to is encountered. Things are tricky because the query can end up searching in multiple Models, and just knowing which ones to look into can require an expensive query. It’s also possible that you only want to search for those that match some specific Models, ignoring the other ones.</p>
 <dl class="rdoc-list label-list"><dt>:pluck
 <dd>
-<p>Do a <code>#pluck</code> in the column to detect to possible choices. This option can have a performance cost for big tables or when the query if done often, as the <code>#pluck</code> will be executed each time. It is important to note that this happens when the query is prepared, so using this with methods that return SQL (such as <a href="SqlReturningMethods.html#method-i-assoc_exists_sql"><code>SqlReturningMethods#assoc_exists_sql</code></a>) will still execute a query even if you don&#39;t use the returned string.</p>
+<p>Do a <code>#pluck</code> in the column to detect to possible choices. This option can have a performance cost for big tables or when the query if done often, as the <code>#pluck</code> will be executed each time. It is important to note that this happens when the query is prepared, so using this with methods that return SQL (such as <a href="SqlReturningMethods.html#method-i-assoc_exists_sql"><code>SqlReturningMethods#assoc_exists_sql</code></a>) will still execute a query even if you don’t use the returned string.</p>
 </dd><dt>model or array of models
 <dd>
-<p>Specify which models to search for. This avoids the performance cost of <code>#pluck</code> and can allow to filter some of the choices out that don&#39;t interest you. <br> Note, these are not instances, it&#39;s actual models, ex: <code>[Post, Comment]</code></p>
+<p>Specify which models to search for. This avoids the performance cost of <code>#pluck</code> and can allow to filter some of the choices out that don’t interest you. <br> Note, these are not instances, it’s actual models, ex: <code>[Post, Comment]</code></p>
 </dd><dt>a hash
 <dd>
-<p>The keys must be models (same behavior as an array of models). <br> The values are conditions to apply only for key&#39;s model. The conditions are either a proc (behaves like the block, but only for that model) or the same things <code>#where</code> can receive. (String, Hash, Array, nil). Ex:</p>
+<p>The keys must be models (same behavior as an array of models). <br> The values are conditions to apply only for key’s model. The conditions are either a proc (behaves like the block, but only for that model) or the same things <code>#where</code> can receive. (String, Hash, Array, nil). Ex:</p>
 
 <pre class="ruby"><span class="ruby-constant">List</span>.<span class="ruby-identifier">where_assoc_exists</span>(<span class="ruby-value">:items</span>, <span class="ruby-keyword">nil</span>, <span class="ruby-value">poly_belongs_to:</span> {<span class="ruby-constant">Car</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-string">&quot;color = &#39;blue&#39;&quot;</span>,
                                                        <span class="ruby-constant">Computer</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">proc</span> { <span class="ruby-identifier">brand_new</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">core:</span> <span class="ruby-value">4</span>) } })
@@ -318,21 +310,14 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
   </section>
 
-  
   <section id="5Buntitled-5D" class="documentation-section">
-    
 
-    
 
-    
 
-    
 
-    
+
   </section>
-
   <section id="Basic+methods" class="documentation-section">
-    
     <header class="documentation-section-title">
       <h2>
         Basic methods
@@ -341,34 +326,24 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
         <a href="#top">&uarr; top</a>
       </span>
     </header>
-    
 
-    
 
-    
 
-    
 
-    
+
      <section id="public-instance-Basic+methods-method-details" class="method-section">
        <header>
          <h3>Public Instance Methods</h3>
        </header>
 
-    
       <div id="method-i-where_assoc_exists" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">where_assoc_exists</span><span
             class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>Returns a new relation with a condition added (a <code>#where</code>) that checks if an association of the model exists. Extra conditions the associated model must match can also be specified.</p>
 
 <p>You could say this is a way of doing a <code>#select</code> that uses associations of your model on the SQL side, but faster and more concise.</p>
@@ -398,14 +373,11 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 <p>Options to alter the generated query <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options">Options at <code>RelationReturningMethods</code></a></p>
 </dd><dt>&amp;block
 <dd>
-<p>More complex conditions the associated record must match (can also use scopes of the association&#39;s model) <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block at <code>RelationReturningMethods</code></a></p>
+<p>More complex conditions the associated record must match (can also use scopes of the association’s model) <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block at <code>RelationReturningMethods</code></a></p>
 </dd></dl>
 
 <p>You can get the SQL string of the condition using <a href="SqlReturningMethods.html#method-i-assoc_exists_sql"><code>SqlReturningMethods#assoc_exists_sql</code></a>.</p>
-          
-          
 
-          
           <div class="method-source-code" id="where_assoc_exists-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 255</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
@@ -413,28 +385,19 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
       <div id="method-i-where_assoc_not_exists" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">where_assoc_not_exists</span><span
             class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>Returns a new relation with a condition added (a <code>#where</code>) that checks if an association of the model does not exist. Extra conditions the associated model that exists must not match can also be specified.</p>
 
 <p>This the exact opposite of what <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>#where_assoc_exists</code></a> does, so a <a href="RelationReturningMethods.html#method-i-where_assoc_not_exists"><code>#where_assoc_not_exists</code></a> with the same arguments will keep every records that were rejected by the <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>#where_assoc_exists</code></a>.</p>
@@ -466,14 +429,11 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 <p>Options to alter the generated query <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options">Options at <code>RelationReturningMethods</code></a></p>
 </dd><dt>&amp;block
 <dd>
-<p>More complex conditions the associated record must match (can also use scopes of the association&#39;s model) <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block at <code>RelationReturningMethods</code></a></p>
+<p>More complex conditions the associated record must match (can also use scopes of the association’s model) <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block at <code>RelationReturningMethods</code></a></p>
 </dd></dl>
 
 <p>You can get the SQL string of the condition using <a href="SqlReturningMethods.html#method-i-assoc_not_exists_sql"><code>SqlReturningMethods#assoc_not_exists_sql</code></a>.</p>
-          
-          
 
-          
           <div class="method-source-code" id="where_assoc_not_exists-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 301</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_not_exists</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
@@ -481,21 +441,15 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
     </section>
-  
-  </section>
 
+  </section>
   <section id="Complex+method" class="documentation-section">
-    
     <header class="documentation-section-title">
       <h2>
         Complex method
@@ -504,34 +458,24 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
         <a href="#top">&uarr; top</a>
       </span>
     </header>
-    
 
-    
 
-    
 
-    
 
-    
+
      <section id="public-instance-Complex+method-method-details" class="method-section">
        <header>
          <h3>Public Instance Methods</h3>
        </header>
 
-    
       <div id="method-i-where_assoc_count" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">where_assoc_count</span><span
             class="method-args">(left_operand, operator, association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>Returns a new relation with a condition added (a <code>#where</code>) that checks how many records an association of the model has. Extra conditions the associated model must match can also be specified.</p>
 
 <p>This method is a generalization of <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>#where_assoc_exists</code></a> and <a href="RelationReturningMethods.html#method-i-where_assoc_not_exists"><code>#where_assoc_not_exists</code></a>. It does the same thing, but can be more precise over how many records should exist (and match the extra conditions) To clarify, here are equivalent examples:</p>
@@ -602,7 +546,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 <p>Options to alter the generated query <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options">Options at <code>RelationReturningMethods</code></a></p>
 </dd><dt>&amp;block
 <dd>
-<p>More complex conditions the associated record must match (can also use scopes of the association&#39;s model) <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block at <code>RelationReturningMethods</code></a></p>
+<p>More complex conditions the associated record must match (can also use scopes of the association’s model) <br> See <a href="RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block at <code>RelationReturningMethods</code></a></p>
 </dd></dl>
 
 <p>The order of the parameters may seem confusing. But you will get used to it. It helps to remember that the goal is to do:</p>
@@ -622,10 +566,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 </pre>
 
 <p>You can get the SQL string of the condition using <a href="SqlReturningMethods.html#method-i-compare_assoc_count_sql"><code>SqlReturningMethods#compare_assoc_count_sql</code></a>. You can get the SQL string for only the counting using <a href="SqlReturningMethods.html#method-i-only_assoc_count_sql"><code>SqlReturningMethods#only_assoc_count_sql</code></a>.</p>
-          
-          
 
-          
           <div class="method-source-code" id="where_assoc_count-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/relation_returning_methods.rb, line 402</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">where_assoc_count</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
@@ -634,25 +575,20 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
   <span class="ruby-identifier">where</span>(<span class="ruby-identifier">sql</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
     </section>
-  
-  </section>
 
+  </section>
 </main>
 
 
 <footer id="validator-badges" role="contentinfo">
   <p><a href="https://validator.w3.org/check/referer">Validate</a>
-  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.1.0.
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.4.0.
   <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
 </footer>
 

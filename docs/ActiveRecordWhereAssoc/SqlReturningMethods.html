@@ -11,17 +11,15 @@
   var index_rel_prefix = "../";
 </script>
 
-<script src="../js/jquery.js"></script>
-<script src="../js/darkfish.js"></script>
+<script src="../js/navigation.js" defer></script>
+<script src="../js/search.js" defer></script>
+<script src="../js/search_index.js" defer></script>
+<script src="../js/searcher.js" defer></script>
+<script src="../js/darkfish.js" defer></script>
 
 <link href="../css/fonts.css" rel="stylesheet">
 <link href="../css/rdoc.css" rel="stylesheet">
-
-
 <link href="../docs_customization.css" rel="stylesheet">
-
-
-
 
 
 <body id="top" role="document" class="module">
@@ -63,20 +61,16 @@
     
     
     
-    <!-- Method Quickref -->
+    
+<!-- Method Quickref -->
 <div id="method-list-section" class="nav-section">
   <h3>Methods</h3>
 
   <ul class="link-list" role="directory">
-    
     <li ><a href="#method-i-assoc_exists_sql">#assoc_exists_sql</a>
-    
     <li ><a href="#method-i-assoc_not_exists_sql">#assoc_not_exists_sql</a>
-    
     <li ><a href="#method-i-compare_assoc_count_sql">#compare_assoc_count_sql</a>
-    
     <li ><a href="#method-i-only_assoc_count_sql">#only_assoc_count_sql</a>
-    
   </ul>
 </div>
 
@@ -92,7 +86,7 @@
     
 <p>The methods in this module return partial SQL queries. These are used by the main methods of this gem: the #where_assoc_* methods located in <a href="RelationReturningMethods.html"><code>RelationReturningMethods</code></a>. But in some situation, the SQL strings can be useful to do complex manual queries by embedding them in your own SQL code.</p>
 
-<p>Those methods should be used directly on your model&#39;s class. You can use them from a relation, but the result will be the same, so your intent will be clearer by doing it on the class directly.</p>
+<p>Those methods should be used directly on your model’s class. You can use them from a relation, but the result will be the same, so your intent will be clearer by doing it on the class directly.</p>
 
 <pre class="ruby"><span class="ruby-comment"># This is the recommended way:</span>
 <span class="ruby-identifier">sql</span> = <span class="ruby-constant">User</span>.<span class="ruby-identifier">assoc_exists_sql</span>(<span class="ruby-value">:posts</span>)
@@ -104,36 +98,25 @@
 
   </section>
 
-  
   <section id="5Buntitled-5D" class="documentation-section">
-    
 
-    
 
-    
 
-    
 
-    
+
      <section id="public-instance-5Buntitled-5D-method-details" class="method-section">
        <header>
          <h3>Public Instance Methods</h3>
        </header>
 
-    
       <div id="method-i-assoc_exists_sql" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">assoc_exists_sql</span><span
             class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>This method returns a string containing the SQL condition used by <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>RelationReturningMethods#where_assoc_exists</code></a>. You can pass that SQL string directly to #where to get the same result as <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>RelationReturningMethods#where_assoc_exists</code></a>. This can be useful to get the SQL of an EXISTS query for use in your own SQL code.</p>
 
 <p>For example:</p>
@@ -144,73 +127,49 @@
 </pre>
 
 <p>The parameters are the same as <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>RelationReturningMethods#where_assoc_exists</code></a>, including the possibility of specifying a list of association_name.</p>
-          
-          
 
-          
           <div class="method-source-code" id="assoc_exists_sql-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/sql_returning_methods.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">assoc_exists_sql</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">assoc_exists_sql</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
       <div id="method-i-assoc_not_exists_sql" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">assoc_not_exists_sql</span><span
             class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>This method generates the SQL query used by <a href="RelationReturningMethods.html#method-i-where_assoc_not_exists"><code>RelationReturningMethods#where_assoc_not_exists</code></a>. This method is the same as <a href="SqlReturningMethods.html#method-i-assoc_exists_sql"><code>#assoc_exists_sql</code></a>, but for <a href="RelationReturningMethods.html#method-i-where_assoc_not_exists"><code>RelationReturningMethods#where_assoc_not_exists</code></a>.</p>
 
 <p>The parameters are the same as <a href="RelationReturningMethods.html#method-i-where_assoc_not_exists"><code>RelationReturningMethods#where_assoc_not_exists</code></a>, including the possibility of specifying a list of association_name.</p>
-          
-          
 
-          
           <div class="method-source-code" id="assoc_not_exists_sql-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/sql_returning_methods.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">assoc_not_exists_sql</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">assoc_not_exists_sql</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
       <div id="method-i-compare_assoc_count_sql" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">compare_assoc_count_sql</span><span
             class="method-args">(left_operand, operator, association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>This method returns a string containing the SQL condition used by <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>RelationReturningMethods#where_assoc_count</code></a>. You can pass that SQL string directly to #where to get the same result as <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>RelationReturningMethods#where_assoc_count</code></a>. This can be useful to get the SQL query to compare the count of an association for use in your own SQL code.</p>
 
 <p>For example:</p>
@@ -221,38 +180,26 @@
 </pre>
 
 <p>The parameters are the same as <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>RelationReturningMethods#where_assoc_count</code></a>, including the possibility of specifying a list of association_name.</p>
-          
-          
 
-          
           <div class="method-source-code" id="compare_assoc_count_sql-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/sql_returning_methods.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">compare_assoc_count_sql</span>(<span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">compare_assoc_count_sql</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">left_operand</span>, <span class="ruby-identifier">operator</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
       <div id="method-i-only_assoc_count_sql" class="method-detail ">
-        
         <div class="method-heading">
           <span class="method-name">only_assoc_count_sql</span><span
             class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          
           <span class="method-click-advice">click to toggle source</span>
-          
         </div>
-        
 
         <div class="method-description">
-          
           <p>This method returns a string containing the SQL to count an association used by <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>RelationReturningMethods#where_assoc_count</code></a>. The returned SQL does not do a comparison, only the counting part. So you can do the comparison yourself. This can be useful to get the SQL to count the an association query for use in your own SQL code.</p>
 
 <p>For example:</p>
@@ -263,35 +210,27 @@
 </pre>
 
 <p>Since the comparison is not made by this method, the first 2 parameters (left_operand and operator) of <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>RelationReturningMethods#where_assoc_count</code></a> are not accepted by this method. The remaining parameters of <a href="RelationReturningMethods.html#method-i-where_assoc_count"><code>RelationReturningMethods#where_assoc_count</code></a> are accepted, which are the same the same as those of <a href="RelationReturningMethods.html#method-i-where_assoc_exists"><code>RelationReturningMethods#where_assoc_exists</code></a>.</p>
-          
-          
 
-          
           <div class="method-source-code" id="only_assoc_count_sql-source">
             <pre><span class="ruby-comment"># File lib/active_record_where_assoc/sql_returning_methods.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">only_assoc_count_sql</span>(<span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-constant">ActiveRecordWhereAssoc</span><span class="ruby-operator">::</span><span class="ruby-constant">CoreLogic</span>.<span class="ruby-identifier">only_assoc_count_sql</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">conditions</span>, <span class="ruby-identifier">options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
-          
         </div>
 
-        
 
-        
       </div>
 
-    
     </section>
-  
-  </section>
 
+  </section>
 </main>
 
 
 <footer id="validator-badges" role="contentinfo">
   <p><a href="https://validator.w3.org/check/referer">Validate</a>
-  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.1.0.
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.4.0.
   <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
 </footer>
 
