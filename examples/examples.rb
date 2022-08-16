@@ -10,7 +10,7 @@ require_relative "../test/support/load_test_env"
 require_relative "schema"
 require_relative "models"
 require_relative "some_data"
-require "niceql"
+require "rails_sql_prettifier"
 
 class Examples
   def puts_doc

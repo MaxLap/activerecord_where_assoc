@@ -1,8 +1,9 @@
+SELECT "users".* FROM "users"
 Here are some example usages of the gem, along with the generated SQL.
 
 Each of those methods can be chained with scoping methods, so they can be used on `Post`, `my_user.posts`, `Post.where('hello')` or inside a scope. Note that for the `*_sql` variants, those should preferably be used on classes only, because otherwise, it could be confusing for a reader.
 
-The models can be found in [examples/models.rb](examples/models.rb). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
+The models can be found in [examples/models.md](examples/models.md). The comments in that file explain how to get a console to try the queries. There are also example uses of the gem for scopes.
 
 The content of this file is generated when running `rake`
 
@@ -107,13 +108,13 @@ User.where_assoc_exists(:posts).or(User.where_assoc_exists(:comments))
 ```
 ```sql
 SELECT "users".* FROM "users"
-WHERE ((EXISTS (
+WHERE (EXISTS (
   SELECT 1 FROM "posts"
   WHERE "posts"."author_id" = "users"."id"
-)) OR (EXISTS (
+) OR EXISTS (
   SELECT 1 FROM "comments"
   WHERE "comments"."author_id" = "users"."id"
-)))
+))
 ```
 
 ---
