@@ -91,5 +91,15 @@ module ActiveRecordWhereAssoc
         reflection.is_a?(ActiveRecord::Reflection::ThroughReflection)
       end
     end
+
+    if ActiveRecord.gem_version >= Gem::Version.new("7.1.0.alpha")
+      def self.null_relation?(reflection)
+        reflection.null_relation?
+      end
+    else
+      def self.null_relation?(reflection)
+        reflection.is_a?(ActiveRecord::NullRelation)
+      end
+    end
   end
 end

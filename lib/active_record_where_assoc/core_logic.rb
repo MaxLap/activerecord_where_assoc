@@ -13,7 +13,7 @@ module ActiveRecordWhereAssoc
     # => "EXISTS (SELECT... *relation1*) OR EXISTS (SELECT... *relation2*)"
     def self.sql_for_any_exists(relations)
       relations = [relations] unless relations.is_a?(Array)
-      relations = relations.reject { |rel| rel.is_a?(ActiveRecord::NullRelation) }
+      relations = relations.reject { |rel| ActiveRecordCompat.null_relation?(rel) }
       sqls = relations.map { |rel| "EXISTS (#{rel.select('1').to_sql})" }
       if sqls.size > 1
         "(#{sqls.join(" OR ")})" # Parens needed when embedding the sql in a `where`, because the OR could make things wrong
@@ -33,7 +33,7 @@ module ActiveRecordWhereAssoc
     # => "SUM((SELECT... *relation1*)) + SUM((SELECT... *relation2*))"
     def self.sql_for_sum_of_counts(relations)
       relations = [relations] unless relations.is_a?(Array)
-      relations = relations.reject { |rel| rel.is_a?(ActiveRecord::NullRelation) }
+      relations = relations.reject { |rel| ActiveRecordCompat.null_relation?(rel) }
       # Need the double parentheses
       relations.map { |rel| "SUM((#{rel.to_sql}))" }.join(" + ").presence || "0"
     end
@@ -85,7 +85,7 @@ module ActiveRecordWhereAssoc
       end
 
       nested_relations = relations_on_association(record_class, association_names, given_conditions, options, deepest_scope_mod, NestWithSumBlock)
-      nested_relations = nested_relations.reject { |rel| rel.is_a?(ActiveRecord::NullRelation) }
+      nested_relations = nested_relations.reject { |rel| ActiveRecordCompat.null_relation?(rel) }
       nested_relations.map { |nr| "COALESCE((#{nr.to_sql}), 0)" }.join(" + ").presence || "0"
     end
 
@@ -334,7 +334,7 @@ module ActiveRecordWhereAssoc
       end
 
       # No need to do transformations if this is already a NullRelation
-      return current_scope if current_scope.is_a?(ActiveRecord::NullRelation)
+      return current_scope if ActiveRecordCompat.null_relation?(current_scope)
 
       current_scope = current_scope.limit(1) if reflection.macro == :has_one
 
