@@ -69,4 +69,4 @@ class MyMinitestSpec < Minitest::Spec
 end
 
 # Use my custom test case for the specs
-MiniTest::Spec.register_spec_type(//, MyMinitestSpec)
+Minitest::Spec.register_spec_type(//, MyMinitestSpec)
