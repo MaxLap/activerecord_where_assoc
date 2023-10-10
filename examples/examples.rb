@@ -207,6 +207,17 @@ class Examples
 end
 
 # Lets make this a little denser
-Niceql::Prettifier::INLINE_VERBS << "|FROM"
+module Niceql::Prettifier
+  new_inline_keywords = INLINE_KEYWORDS + "|FROM"
+  remove_const(:INLINE_KEYWORDS)
+  INLINE_KEYWORDS = new_inline_keywords
+
+  new_new_line_keywords = NEW_LINE_KEYWORDS.sub('FROM|', '')
+  remove_const(:NEW_LINE_KEYWORDS)
+  NEW_LINE_KEYWORDS = new_new_line_keywords
+
+  remove_const(:KEYWORDS)
+  KEYWORDS = "(#{NEW_LINE_KEYWORDS}|#{INLINE_KEYWORDS})#{AFTER_KEYWORD_SPACE}"
+end
 
 Examples.new.puts_doc

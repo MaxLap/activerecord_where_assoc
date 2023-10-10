@@ -1,4 +1,3 @@
-SELECT "users".* FROM "users"
 Here are some example usages of the gem, along with the generated SQL.
 
 Each of those methods can be chained with scoping methods, so they can be used on `Post`, `my_user.posts`, `Post.where('hello')` or inside a scope. Note that for the `*_sql` variants, those should preferably be used on classes only, because otherwise, it could be confusing for a reader.
