@@ -8,7 +8,7 @@ name: Test supported versions
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '0 10 * * 6'
+    - cron: '0 10 1-7 * 6'
   workflow_dispatch:
     branches: [ master ]
 
@@ -106,8 +106,7 @@ jobs:
         key: ResetCaches1-${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}-${{ hashFiles(matrix.gemfile) }}-${{ hashFiles('activerecord_where_assoc.gemspec') }}
         restore-keys: ResetCaches1-${{ runner.os }}-gems-${{ env.CACHE_VERSION }}-ruby${{ matrix.ruby_version }}-${{ matrix.gemfile }}
     - name: Install dependencies
-      run: |
-        bundle install --jobs 4 --retry 3
+      run: bundle install --jobs 4 --retry 3
     - run: psql --host=localhost --port=5432 -c 'CREATE DATABASE activerecord_where_assoc'
     - run: mysql -h 127.0.0.1 -u "${{ env.MYSQL_USER }}" -p${{ env.MYSQL_PASSWORD }} -e 'CREATE DATABASE activerecord_where_assoc'
     - run: DB=sqlite3 bundle exec rake test
