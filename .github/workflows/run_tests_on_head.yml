@@ -29,8 +29,8 @@ jobs:
         - gemfile: gemfiles/rails_head.gemfile
           ruby_version: head
         - gemfile: gemfiles/rails_head.gemfile
-          ruby_version: 3.1
-        - gemfile: gemfiles/rails_7_0.gemfile
+          ruby_version: 3.2
+        - gemfile: gemfiles/rails_7_1.gemfile
           ruby_version: head
     runs-on: ubuntu-latest
     services:
