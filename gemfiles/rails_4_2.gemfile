@@ -5,4 +5,7 @@ source "https://rubygems.org"
 gem "activerecord", "~> 4.2.0"
 gem "sqlite3", "~> 1.3.6"
 
+# Ruby 2.4 tried to use bigdecimal 3, which removed BigDecimal.new
+gem "bigdecimal", "1.3.5"
+
 gemspec path: "../"
