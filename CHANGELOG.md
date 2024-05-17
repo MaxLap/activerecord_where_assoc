@@ -1,5 +1,7 @@
 # Unreleased
 
+* Add compatibility for Rails 7.2
+
 # 1.1.4 - 2023-10-10
 
 * Add compatibility for Rails 7.1
