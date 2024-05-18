@@ -28,6 +28,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - gemfile: gemfiles/rails_7_2.gemfile
+            ruby_version: '3.3'
+
           - gemfile: gemfiles/rails_7_1.gemfile
             ruby_version: '3.2'
           - gemfile: gemfiles/rails_7_1.gemfile

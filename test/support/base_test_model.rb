@@ -94,7 +94,7 @@ class BaseTestModel < ActiveRecord::Base
 
   def create_has_one!(association_name, attrs = {})
     association_name = ActiveRecordWhereAssoc::ActiveRecordCompat.normalize_association_name(association_name)
-    reflection = self.class.reflections[association_name]
+    reflection = self.class._reflections[association_name]
     raise "Didn't find association: #{association_name}" unless reflection
 
     target_model = reflection.klass
@@ -118,7 +118,7 @@ class BaseTestModel < ActiveRecord::Base
     association_name = ActiveRecordWhereAssoc::ActiveRecordCompat.normalize_association_name(association_name)
     association_macro = association_name.to_s[/^[a-z]+/]
 
-    reflection = self.class.reflections[association_name]
+    reflection = self.class._reflections[association_name]
     raise "Didn't find association: #{association_name}" unless reflection
 
     target_model = options[:target_model] || reflection.klass

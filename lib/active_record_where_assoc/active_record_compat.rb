@@ -72,7 +72,7 @@ module ActiveRecordWhereAssoc
       end
     end
 
-    if ActiveRecord.gem_version >= Gem::Version.new("4.2")
+    if ActiveRecord.gem_version >= Gem::Version.new("4.2") && ActiveRecord.gem_version < Gem::Version.new("7.2.0.alpha")
       def self.normalize_association_name(association_name)
         association_name.to_s
       end
