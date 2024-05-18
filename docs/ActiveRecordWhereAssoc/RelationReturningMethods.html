@@ -42,7 +42,7 @@
     <div id="search-field-wrapper">
       <input id="search-field" role="combobox" aria-label="Search"
              aria-autocomplete="list" aria-controls="search-results"
-             type="text" name="search" placeholder="Search" spellcheck="false"
+             type="text" name="search" placeholder="Search (/) for a class, method, ..." spellcheck="false"
              title="Type to search, Up and Down to navigate, Enter to load">
     </div>
 
@@ -58,14 +58,25 @@
 <div class="nav-section">
   <h3>Table of Contents</h3>
 
+
+
   <ul class="link-list" role="directory">
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Association">Association</a>
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Condition">Condition</a>
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block</a>
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options">Options</a>
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Aignore_limit+option">:ignore_limit option</a>
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Anever_alias_limit+option">:never_alias_limit option</a>
-    <li><a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Apoly_belongs_to+option">:poly_belongs_to option</a>
+              <li>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Association">Association</a>
+          <li>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Condition">Condition</a>
+          <li>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Block">Block</a>
+          <li>
+            <details open>
+              <summary>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options">Options</a>
+</summary>
+              <ul class="link-list" role="directory">
+                          <li>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Aignore_limit+option">:ignore_limit option</a>
+          <li>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Anever_alias_limit+option">:never_alias_limit option</a>
+          <li>      <a href="#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Apoly_belongs_to+option">:poly_belongs_to option</a>
+
+              </ul>
+            </details>
+          </li>
+
   </ul>
 </div>
 
@@ -337,10 +348,12 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
        </header>
 
       <div id="method-i-where_assoc_exists" class="method-detail ">
-        <div class="method-heading">
-          <span class="method-name">where_assoc_exists</span><span
-            class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          <span class="method-click-advice">click to toggle source</span>
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-name">where_assoc_exists</span><span
+              class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
         </div>
 
         <div class="method-description">
@@ -391,10 +404,12 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
       </div>
 
       <div id="method-i-where_assoc_not_exists" class="method-detail ">
-        <div class="method-heading">
-          <span class="method-name">where_assoc_not_exists</span><span
-            class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
-          <span class="method-click-advice">click to toggle source</span>
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-name">where_assoc_not_exists</span><span
+              class="method-args">(association_name, conditions = nil, options = {}, &amp;block)</span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
         </div>
 
         <div class="method-description">
@@ -469,10 +484,12 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
        </header>
 
       <div id="method-i-where_assoc_count" class="method-detail ">
-        <div class="method-heading">
-          <span class="method-name">where_assoc_count</span><span
-            class="method-args">(left_operand, operator, association_name, conditions = nil, options = {}, &amp;block)</span>
-          <span class="method-click-advice">click to toggle source</span>
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-name">where_assoc_count</span><span
+              class="method-args">(left_operand, operator, association_name, conditions = nil, options = {}, &amp;block)</span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
         </div>
 
         <div class="method-description">
@@ -588,7 +605,7 @@ If the condition is blank, it is ignored (just like +#where+ does).</pre>
 
 <footer id="validator-badges" role="contentinfo">
   <p><a href="https://validator.w3.org/check/referer">Validate</a>
-  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.4.0.
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.6.3.1.
   <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
 </footer>
 
