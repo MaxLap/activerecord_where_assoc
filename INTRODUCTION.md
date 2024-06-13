@@ -11,7 +11,7 @@ The common ways you may find online:
 Post.joins(:comments)
 Post.includes(:comments).references(:comments).where("comments.id IS NOT NULL")
 Post.eager_load(:comments).where("comments.id IS NOT NULL")
-Post.where("EXISTS(SELECT 1 FROM comments where posts.id = comments.post_id")
+Post.where("EXISTS(SELECT 1 FROM comments where posts.id = comments.post_id)")
 ```
 
 But each of these approaches have some side effects that can make things harder for yourself later:
