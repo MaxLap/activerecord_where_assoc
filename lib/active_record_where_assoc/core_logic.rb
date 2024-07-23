@@ -424,7 +424,16 @@ module ActiveRecordWhereAssoc
         foreign_table = ALIAS_TABLE
       end
 
-      constraints = table[key].eq(foreign_table[foreign_key])
+      constraints = nil
+      constraint_keys = Array.wrap(key)
+      constraint_foreign_keys = Array.wrap(foreign_key)
+      constraint_key_map = constraint_keys.zip(constraint_foreign_keys)
+
+      constraint_key_map.each do |primary_and_foreign_keys|
+        the_primary_key, the_foreign_key = primary_and_foreign_keys 
+        the_constraint = table[the_primary_key].eq(foreign_table[the_foreign_key])
+        constraints = constraints ? constraints.and(the_constraint) : the_constraint  
+      end 
 
       if reflection.type
         # Handling of the polymorphic has_many/has_one's type column
