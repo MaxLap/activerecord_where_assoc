@@ -396,13 +396,14 @@ module ActiveRecordWhereAssoc
       alias_scope = foreign_klass.base_class.unscoped
       alias_scope = alias_scope.from("#{table.name} #{ALIAS_TABLE.name}")
 
-      Array.wrap(primary_key).each_with_index do |a_primary_key, i|
-        a_constraint = table[a_primary_key].eq(ALIAS_TABLE[a_primary_key])
-        the_operation = i == 0 ? :where : :and  
-        alias_scope = alias_scope.send(the_operation, a_constraint)
-      end 
+      primary_key_constraints = 
+        Array.wrap(primary_key).map do |a_primary_key|
+          table[a_primary_key].eq(ALIAS_TABLE[a_primary_key])
+        end 
 
-      alias_scope
+      primary_key_constraints.any? ? 
+        alias_scope.where(primary_key_constraints.inject(&:and)) : 
+        alias_scope
     end
 
     def self.wrapper_and_join_constraints(record_class, reflection, options = {})
@@ -430,16 +431,18 @@ module ActiveRecordWhereAssoc
         foreign_table = ALIAS_TABLE
       end
 
-      constraints = nil
       constraint_keys = Array.wrap(key)
       constraint_foreign_keys = Array.wrap(foreign_key)
       constraint_key_map = constraint_keys.zip(constraint_foreign_keys)
 
-      constraint_key_map.each do |primary_and_foreign_keys|
-        a_primary_key, a_foreign_key = primary_and_foreign_keys 
-        a_constraint = table[a_primary_key].eq(foreign_table[a_foreign_key])
-        constraints = constraints ? constraints.and(a_constraint) : a_constraint  
-      end 
+      primary_foreign_key_constraints = 
+        constraint_key_map.map do |primary_and_foreign_keys|
+          a_primary_key, a_foreign_key = primary_and_foreign_keys 
+
+          table[a_primary_key].eq(foreign_table[a_foreign_key])
+        end 
+
+      constraints = primary_foreign_key_constraints.inject(&:and)
 
       if reflection.type
         # Handling of the polymorphic has_many/has_one's type column
