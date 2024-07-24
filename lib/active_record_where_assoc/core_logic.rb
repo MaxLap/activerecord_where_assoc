@@ -395,7 +395,13 @@ module ActiveRecordWhereAssoc
 
       alias_scope = foreign_klass.base_class.unscoped
       alias_scope = alias_scope.from("#{table.name} #{ALIAS_TABLE.name}")
-      alias_scope = alias_scope.where(table[primary_key].eq(ALIAS_TABLE[primary_key]))
+
+      Array.wrap(primary_key).each_with_index do |a_primary_key, i|
+        a_constraint = table[a_primary_key].eq(ALIAS_TABLE[a_primary_key])
+        the_operation = i == 0 ? :where : :and  
+        alias_scope = alias_scope.send(the_operation, a_constraint)
+      end 
+
       alias_scope
     end
 
@@ -430,9 +436,9 @@ module ActiveRecordWhereAssoc
       constraint_key_map = constraint_keys.zip(constraint_foreign_keys)
 
       constraint_key_map.each do |primary_and_foreign_keys|
-        the_primary_key, the_foreign_key = primary_and_foreign_keys 
-        the_constraint = table[the_primary_key].eq(foreign_table[the_foreign_key])
-        constraints = constraints ? constraints.and(the_constraint) : the_constraint  
+        a_primary_key, a_foreign_key = primary_and_foreign_keys 
+        a_constraint = table[a_primary_key].eq(foreign_table[a_foreign_key])
+        constraints = constraints ? constraints.and(a_constraint) : a_constraint  
       end 
 
       if reflection.type
