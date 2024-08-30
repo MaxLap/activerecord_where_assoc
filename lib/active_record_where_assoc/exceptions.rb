@@ -6,4 +6,7 @@ module ActiveRecordWhereAssoc
 
   class PolymorphicBelongsToWithoutClasses < StandardError
   end
+
+  class NeverAliasLimitDoesntWorkWithCompositePrimaryKeysError < StandardError
+  end
 end

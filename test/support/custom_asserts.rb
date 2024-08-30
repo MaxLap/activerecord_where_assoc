@@ -54,7 +54,7 @@ module Minitest::Assertions
       msgs << "Expected query from where_assoc_exists to include the SQL from assoc_exists_sql"
     end
     if !exists_relation.exists?
-      msgs << "Expected a match but got none for S0.where_assoc_exists(#{association_name.inspect}, ...)"
+      msgs << "Expected a match but got none for where_assoc_exists(#{association_name.inspect}, ...)"
     end
 
     not_exists_relation = start_from.where_assoc_not_exists(association_name, *args, &block)
@@ -62,7 +62,7 @@ module Minitest::Assertions
       msgs << "Expected query from where_assoc_not_exists to include the SQL from assoc_not_exists_sql"
     end
     if not_exists_relation.exists?
-      msgs << "Expected no matches but got one for S0.where_assoc_not_exists(#{association_name.inspect}, ...)"
+      msgs << "Expected no matches but got one for where_assoc_not_exists(#{association_name.inspect}, ...)"
     end
     assert msgs.empty?, msgs.map { |s| "  #{s}" }.join("\n")
   end
@@ -74,7 +74,7 @@ module Minitest::Assertions
       msgs << "Expected query from where_assoc_exists to include the SQL from assoc_exists_sql"
     end
     if exists_relation.exists?
-      msgs << "Expected no matches but got one for S0.where_assoc_exists(#{association_name.inspect}, ...)"
+      msgs << "Expected no matches but got one for where_assoc_exists(#{association_name.inspect}, ...)"
     end
 
     not_exists_relation = start_from.where_assoc_not_exists(association_name, *args, &block)
@@ -82,7 +82,7 @@ module Minitest::Assertions
       msgs << "Expected query from where_assoc_not_exists to include the SQL from assoc_not_exists_sql"
     end
     if !not_exists_relation.exists?
-      msgs << "Expected a match but got none for S0.where_assoc_not_exists(#{association_name.inspect}, ...)"
+      msgs << "Expected a match but got none for where_assoc_not_exists(#{association_name.inspect}, ...)"
     end
     assert msgs.empty?, msgs.map { |s| "  #{s}" }.join("\n")
   end
@@ -163,10 +163,13 @@ module Minitest::Assertions
 
     record_sets = record_sets.map do |records|
       next records if records.blank?
-      scope = records.first.class.base_class.unscoped.where(id: records.map(&:id))
+
+      record_klass = records.first.class.base_class
+
+      scope = record_klass.unscoped.where(record_klass.primary_key => records.map(&:id))
       scope = scope.where(conditions)
       scope = ActiveRecordWhereAssoc::CoreLogic.apply_proc_scope(scope, block) if block
-      scope.pluck(:id)
+      scope.pluck(*record_klass.primary_key)
     end
 
     correct_result = record_sets.any? do |records|

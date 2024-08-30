@@ -287,3 +287,30 @@ end
 
 class NeverAbstractedModel < BaseTestModel
 end
+
+if ActiveRecord.gem_version >= Gem::Version.new("7.2")
+  class Ck0 < BaseTestModel
+    self.primary_key = [:an_id0, :a_str0]
+    setup_test_default_scope
+
+    testable_has_many :m1, class_name: "Ck1", foreign_key: [:an_id0, :a_str0]
+    testable_has_one :o1, -> { order("ck1s.an_id1 DESC, ck1s.a_str1 DESC") }, class_name: "Ck1", foreign_key: [:an_id0, :a_str0]
+    # I don't think has_and_belongs_to_many supports composite keys?
+    #testable_has_and_belongs_to_many :z1, class_name: "Ck1"
+
+    testable_has_many :m2m1, class_name: "Ck2", through: :m1, source: :m2, foreign_key: [:an_id0, :a_str0]
+  end
+
+  class Ck1 < BaseTestModel
+    self.primary_key = [:an_id1, :a_str1]
+    setup_test_default_scope
+
+    testable_belongs_to :b0, class_name: "Ck0", foreign_key: [:an_id0, :a_str0]
+    testable_has_many :m2, class_name: "Ck2", foreign_key: [:an_id1, :a_str1]
+  end
+
+  class Ck2 < BaseTestModel
+    self.primary_key = [:an_id2, :a_str2]
+    setup_test_default_scope
+  end
+end

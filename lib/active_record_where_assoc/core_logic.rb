@@ -364,6 +364,9 @@ module ActiveRecordWhereAssoc
       if reflection.klass.table_name.include?(".") || option_value(options, :never_alias_limit)
         # We use unscoped to avoid duplicating the conditions in the query, which is noise. (unless it
         # could helps the query planner of the DB, if someone can show it to be worth it, then this can be changed.)
+        if reflection.klass.primary_key.is_a?(Array)
+          raise NeverAliasLimitDoesntWorkWithCompositePrimaryKeysError, "Sorry, it just doesn't work..."
+        end
 
         reflection.klass.unscoped.where(reflection.klass.primary_key.to_sym => current_scope)
       else
@@ -396,14 +399,12 @@ module ActiveRecordWhereAssoc
       alias_scope = foreign_klass.base_class.unscoped
       alias_scope = alias_scope.from("#{table.name} #{ALIAS_TABLE.name}")
 
-      primary_key_constraints = 
-        Array.wrap(primary_key).map do |a_primary_key|
+      primary_key_constraints =
+        Array(primary_key).map do |a_primary_key|
           table[a_primary_key].eq(ALIAS_TABLE[a_primary_key])
-        end 
+        end
 
-      primary_key_constraints.any? ? 
-        alias_scope.where(primary_key_constraints.inject(&:and)) : 
-        alias_scope
+      alias_scope.where(primary_key_constraints.inject(&:and))
     end
 
     def self.wrapper_and_join_constraints(record_class, reflection, options = {})
@@ -435,12 +436,12 @@ module ActiveRecordWhereAssoc
       constraint_foreign_keys = Array.wrap(foreign_key)
       constraint_key_map = constraint_keys.zip(constraint_foreign_keys)
 
-      primary_foreign_key_constraints = 
+      primary_foreign_key_constraints =
         constraint_key_map.map do |primary_and_foreign_keys|
-          a_primary_key, a_foreign_key = primary_and_foreign_keys 
+          a_primary_key, a_foreign_key = primary_and_foreign_keys
 
           table[a_primary_key].eq(foreign_table[a_foreign_key])
-        end 
+        end
 
       constraints = primary_foreign_key_constraints.inject(&:and)
 
