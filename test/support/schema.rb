@@ -162,4 +162,37 @@ ActiveRecord::Schema.define do
     t.integer :never_abstracted_models_column, limit: 8
     t.integer :never_abstracted_models_adhoc_column, limit: 8
   end
+
+  create_table :ck0s, primary_key: [:an_id0, :a_str0] do |t|
+    t.integer :an_id0
+    t.string :a_str0, limit: 20 # Needed for MySQL's primary keys
+
+    t.integer :ck0s_column
+    t.integer :ck0s_adhoc_column
+  end
+
+  create_table :ck1s, primary_key: [:an_id1, :a_str1] do |t|
+    t.integer :an_id1
+    t.string :a_str1, limit: 20 # Needed for MySQL's primary keys
+
+    t.integer :an_id0
+    t.string :a_str0, limit: 20 # Needed for MySQL's primary keys
+
+    t.integer :ck1s_column
+    t.integer :ck1s_adhoc_column
+  end
+
+  create_join_table "ck0s", "ck1s"
+
+
+  create_table :ck2s, primary_key: [:an_id2, :a_str2] do |t|
+    t.integer :an_id2
+    t.string :a_str2, limit: 20 # Needed for MySQL's primary keys
+
+    t.integer :an_id1
+    t.string :a_str1, limit: 20 # Needed for MySQL's primary keys
+
+    t.integer :ck2s_column
+    t.integer :ck2s_adhoc_column
+  end
 end

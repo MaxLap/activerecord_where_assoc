@@ -86,10 +86,10 @@ class BaseTestModel < ActiveRecord::Base
     testable_association(:has_and_belongs_to_many, association_name, given_scope, **options)
   end
 
-  def self.create_default!(*source_associations)
+  def self.create_default!(*source_associations, **attributes)
     condition_value = TestHelpers.condition_value_result_for(*source_associations) || 1
     condition_value *= need_test_condition_value_for(:default_scope)
-    create!(test_condition_column => condition_value)
+    create!(test_condition_column => condition_value, **attributes)
   end
 
   def create_has_one!(association_name, attrs = {})
@@ -99,9 +99,18 @@ class BaseTestModel < ActiveRecord::Base
 
     target_model = reflection.klass
 
-    old_matched_ids = target_model.where(reflection.foreign_key => self.id).unscope(:offset, :limit).pluck(:id).to_a
+    old_matched_ids = target_model.where(reflection.foreign_key => [self.id]).unscope(:offset, :limit).pluck(*target_model.primary_key).to_a
     record = send("create_#{association_name}!", attrs)
-    target_model.where(id: old_matched_ids).unscope(:offset, :limit).update_all(reflection.foreign_key => self.id)
+
+    if old_matched_ids.present?
+      if reflection.foreign_key.is_a?(Array)
+        to_update = reflection.foreign_key.zip(self.id).to_h
+      else
+        to_update = {reflection.foreign_key => self.id}
+      end
+      target_model.where(target_model.primary_key => old_matched_ids).unscope(:offset, :limit).update_all(to_update)
+    end
+
     record
   end
 
@@ -109,7 +118,7 @@ class BaseTestModel < ActiveRecord::Base
   # the matching association of each passed source_associations
   def create_assoc!(association_name, *source_associations)
     options = source_associations.extract_options!
-    options = options.reverse_merge(allow_no_source: false, adhoc_value: nil, skip_default: false, use_bad_type: false)
+    options = options.reverse_merge(allow_no_source: false, adhoc_value: nil, skip_default: false, use_bad_type: false, attributes: {})
 
     raise "Must be a direct association, not #{association_name.inspect}" unless association_name =~ /^[mobz]p?l?\d+$/
     raise "Need at least one source model or a nil instead" if !options[:allow_no_source] && source_associations.empty?
@@ -123,9 +132,7 @@ class BaseTestModel < ActiveRecord::Base
 
     target_model = options[:target_model] || reflection.klass
 
-    if options[:skip_attributes]
-      attributes = {}
-    else
+    if !options[:skip_attributes]
       condition_value = target_model.test_condition_value_for(:default_scope) unless options[:skip_default]
 
       if source_associations.present?
@@ -133,9 +140,10 @@ class BaseTestModel < ActiveRecord::Base
         condition_value *= TestHelpers.condition_value_result_for(*source_associations)
       end
 
-      attributes = { target_model.test_condition_column => condition_value,
-                     target_model.adhoc_column_name => options[:adhoc_value],
-      }
+      attributes = options[:attributes].merge(
+        target_model.test_condition_column => condition_value,
+        target_model.adhoc_column_name => options[:adhoc_value],
+      )
     end
 
     case association_macro
