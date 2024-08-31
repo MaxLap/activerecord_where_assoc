@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.2.0 - 2024-08-31
+
 * Add support for composite primary keys in Rails 7.2
 
 # 1.1.5 - 2024-05-18
