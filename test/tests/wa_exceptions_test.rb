@@ -15,7 +15,7 @@ describe "wa" do
     skip if Test::SelectedDBHelper != Test::MySQL
 
     assert_raises(ActiveRecordWhereAssoc::MySQLDoesntSupportSubLimitError) do
-      S0.where_assoc_exists(:o1)
+      S0.where_assoc_exists(:o1, id: 1)
     end
   end
 

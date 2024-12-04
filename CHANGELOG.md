@@ -1,5 +1,7 @@
 # Unreleased
 
+* Optimize `has_one` handling when `#where_assoc_exists` with a `has_one` as last association + without any conditions or offset.
+
 # 1.2.0 - 2024-08-31
 
 * Add support for composite primary keys in Rails 7.2

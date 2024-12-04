@@ -155,9 +155,17 @@ module ActiveRecordWhereAssoc
 
         init_scopes = initial_scopes_from_reflection(record_class, reflection_chain[i..-1], constraints_chain[i], options)
         current_scopes = init_scopes.map do |alias_scope, current_scope, klass_scope|
-          current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
-
           if i.zero?
+            if given_conditions || klass_scope || last_assoc_block || current_scope.offset_value || nest_assocs_block == NestWithSumBlock
+              # In the deepest layer, the limit & offset complexities only matter when:
+              # * There is a condition to apply
+              # * There is an offset (which is a form of filtering)
+              # * We are counting the total matches
+              # Since last_assoc_block is always set except for the deepest association, and is only unset for the deepest layer if
+              # there is no condition given, using it as part of the condition does a lot of work here.
+              current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
+            end
+
             current_scope = current_scope.where(given_conditions) if given_conditions
             if klass_scope
               if klass_scope.respond_to?(:call)
@@ -167,6 +175,8 @@ module ActiveRecordWhereAssoc
               end
             end
             current_scope = apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
+          else
+            current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
           end
 
           # Those make no sense since at this point, we are only limiting the value that would match using conditions
