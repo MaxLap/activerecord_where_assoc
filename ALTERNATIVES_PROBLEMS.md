@@ -8,10 +8,10 @@ This is a list of some of those alternatives, explaining what issues they have o
 
 **Use this gem, you will avoid problems and save time**
 
-* No more having to choose, case by case, which way has the less problems.  
+* No more having to choose, case by case, which way has the less problems.
   Just use `#where_assoc_*` each time and avoid every problems.
 * Need less raw SQL, which means less code, more clarity and less maintenance.
-* Generates a single `#where`. No weird side-effects things like `#eager_load` or `#join`  
+* Generates a single `#where`. No weird side-effects things like `#eager_load` or `#join`
   This makes well-behaved scopes, you can even have multiple conditions on the same association
 * Handles recursive associations correctly.
 * Handles has_one correctly (Except [MySQL has a limitation](README.md#mysql-doesnt-support-sub-limit)).
@@ -169,7 +169,7 @@ Post.joins(:comments).where(comments: {is_spam: true})
 
 * If the association maps to multiple records (such as with a has_many), then the the relation will return one
 record for each matching association record. In this example, you would get the same post twice if it has 2
-comments that are marked as spam.  
+comments that are marked as spam.
   Using `uniq` can solve this issue, but if you do that in a scope, then that scope unexpectedly adds a DISTINCT
   to your query, which can lead to unexpected results if you actually wanted duplicates for a different reason.
 
@@ -220,7 +220,7 @@ Post.eager_load(:comments).where(comments: {is_spam: true})
   scope like `have_reported_comments` to trigger eager loading. This is a performance degradation.
 
 * The eager loaded records of the association are actually also filtered by the conditions. All of the posts
-  returned will only have the comments that are spam.  
+  returned will only have the comments that are spam.
   This means if you iterate on `Post.have_reported_comments` to display each of the comments of the posts that
   have at least one reported comment, you are actually only going to display the reported comments. This may
   be what you wanted to do, but it clearly isn't intuitive.
@@ -276,14 +276,14 @@ User.where_exists(:posts) { |posts| posts.where_exists(comments) }
 * Has no equivalent to `#where_assoc_count`
 ```ruby
 # There is no equivalent for this (posts with more than 5 comments)
-Post.where_assoc_count(:comments, :>, 5)
+Post.where_assoc_count(5, :<, :comments)
 ```
 
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
 
 * [Can't handle recursive associations](#unable-to-handle-recursive-associations)
 
-* `#where_exists` is shorter than `#where_assoc_exists`, but it is also less obvious about what it does.  
+* `#where_exists` is shorter than `#where_assoc_exists`, but it is also less obvious about what it does.
   In any case, it is trivial to alias one name to the other one.
 
 * where_exists supports Rails 4.2 and up, while activerecord_where_assoc supports Rails 4.1 and up.
