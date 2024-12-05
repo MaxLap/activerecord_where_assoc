@@ -349,9 +349,8 @@ module ActiveRecordWhereAssoc
       current_scope = current_scope.limit(1) if reflection.macro == :has_one
 
       # Order is useless without either limit or offset
-      current_scope = current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
+      return current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
 
-      return current_scope unless current_scope.limit_value || current_scope.offset_value
       if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
         msg = String.new
         msg << "Associations and default_scopes with a limit or offset are not supported for MySQL (this includes has_many). "
