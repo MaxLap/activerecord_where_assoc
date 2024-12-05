@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.2.1 - 2024-12-05
+
 * Optimize `has_one` handling for `#where_assoc_exists` with a `has_one` as last association + without any conditions or offset.
 * Optimize `has_one` handling when the foreign_key has a unique index and there is no offset
 
