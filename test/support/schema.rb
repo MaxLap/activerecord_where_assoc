@@ -19,6 +19,7 @@ ActiveRecord::Schema.define do
 
   create_table :s1s do |t|
     t.integer :s0_id
+    t.integer :s0_u_id
     t.integer :s2_id
 
     t.integer :has_s1s_poly_id
@@ -28,10 +29,13 @@ ActiveRecord::Schema.define do
 
     t.integer :s1s_column, limit: 8
     t.integer :s1s_adhoc_column, limit: 8
+
+    t.index ["s0_u_id"], name: "index_s1s__s0_u_id", unique: true
   end
 
   create_table :s2s do |t|
     t.integer :s1_id
+    t.integer :s1_u_id
     t.integer :s3_id
 
     t.integer :has_s2s_poly_id
@@ -41,6 +45,8 @@ ActiveRecord::Schema.define do
 
     t.integer :s2s_column, limit: 8
     t.integer :s2s_adhoc_column, limit: 8
+
+    t.index ["s1_u_id"], name: "index_s2s__s1_u_id", unique: true
   end
 
   create_table :s3s do |t|
@@ -93,13 +99,19 @@ ActiveRecord::Schema.define do
 
     create_table "bar_schema.schema_s1s" do |t|
       t.integer :schema_s0_id
+      t.integer :schema_s0_u_id
       t.integer :schema_s2_id
+
+    t.index ["schema_s0_u_id"], name: "index_schema_s1s__schema_s0_u_id", unique: true
     end
 
     create_join_table "schema_s0s", "schema_s1s", table_name: "spam_schema.schema_s0s_schema_s1s"
 
     create_table "bar_schema.schema_s2s" do |t|
       t.integer :schema_s1_id
+      t.integer :schema_s1_u_id
+
+      t.index ["schema_s1_u_id"], name: "index_schema_s2s__schema_s1_u_id", unique: true
     end
   end
 

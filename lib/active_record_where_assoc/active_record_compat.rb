@@ -101,5 +101,28 @@ module ActiveRecordWhereAssoc
         reflection.is_a?(ActiveRecord::NullRelation)
       end
     end
+
+    if ActiveRecord.gem_version >= Gem::Version.new("6.0")
+      def self.indexes(model)
+        model.connection.schema_cache.indexes(model.table_name)
+      end
+    else
+      def self.indexes(model)
+        model.connection.indexes(model.table_name)
+      end
+    end
+
+    @unique_indexes_cache = {}
+    def self.has_unique_index?(model, column_names)
+      column_names = Array(column_names).map(&:to_s)
+      @unique_indexes_cache.fetch([model, column_names]) do |k|
+        unique_indexes = indexes(model).select(&:unique)
+        columns_names_set = Set.new(column_names)
+
+        # We check for an index whose columns are a subset of the columns we specify
+        # This way, a composite column_names will find uniqueness if just a single of the column is unique
+        @unique_indexes_cache[k] = unique_indexes.any? { |ui| Set.new(ui.columns) <= columns_names_set }
+      end
+    end
   end
 end

@@ -348,8 +348,17 @@ module ActiveRecordWhereAssoc
 
       current_scope = current_scope.limit(1) if reflection.macro == :has_one
 
-      # Order is useless without either limit or offset
-      return current_scope.unscope(:order) if !current_scope.limit_value && !current_scope.offset_value
+      if !current_scope.offset_value
+        if current_scope.limit_value
+          join_keys = ActiveRecordCompat.join_keys(reflection, nil)
+          # #join_keys is inverted... the foreign key is on the "source" table, and the key is on the "target" table...
+          # Everything is so complicated in ActiveRecord.
+          current_scope = current_scope.unscope(:limit) if ActiveRecordCompat.has_unique_index?(current_scope.model, join_keys.key)
+        end
+
+        # Order is useless without either limit or offset
+        return current_scope.unscope(:order) if !current_scope.limit_value
+      end
 
       if %w(mysql mysql2).include?(relation_klass.connection.adapter_name.downcase)
         msg = String.new

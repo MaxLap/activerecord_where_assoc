@@ -12,6 +12,7 @@ require_relative "base_test_model"
 # Classes are names S0, S1, S2... for "Step"
 # Associations are names m1, o2, b3 for "Many", "One", "Belong" and the id of the next step
 # Associations with 'p' in the middle of the name, like mp1, op1, bp1 are polymorphic
+# Association with 'u' in the middle use a unique index
 # A class always point further down to the next steps
 
 class S0 < BaseTestModel
@@ -21,6 +22,7 @@ class S0 < BaseTestModel
   testable_has_one :o1, -> { order("s1s.id DESC") }, class_name: "S1"
   testable_belongs_to :b1, class_name: "S1", foreign_key: "s1_id"
   testable_has_and_belongs_to_many :z1, class_name: "S1"
+  testable_has_one :ou1, -> { order("s1s.id DESC") }, foreign_key: "s0_u_id", class_name: "S1"
 
   testable_has_many :m1_none, -> { none }, class_name: "S1"
   testable_has_one :o1_none, -> { order("s1s.id DESC").none }, class_name: "S1"
@@ -39,6 +41,7 @@ class S0 < BaseTestModel
   testable_has_one :o2m1, -> { order("s2s.id DESC") }, through: :m1, source: :o2, class_name: "S2"
   testable_has_one :o2o1, -> { order("s2s.id DESC") }, through: :o1, source: :o2, class_name: "S2"
   testable_has_one :o2b1, -> { order("s2s.id DESC") }, through: :b1, source: :o2, class_name: "S2"
+  testable_has_one :ou2ou1, -> { order("s2s.id DESC") }, through: :ou1, source: :ou2, class_name: "S2"
 
   testable_has_one :o2z1, -> { order("s2s.id DESC") }, through: :z1, source: :o2, class_name: "S2"
   testable_has_one :ob2b1, -> { order("s2s.id DESC") }, through: :b1, source: :b2, class_name: "S2"
@@ -75,6 +78,7 @@ class S0 < BaseTestModel
   belongs_to :schema_b1, class_name: "SchemaS1", foreign_key: "s1_id"
   has_many :schema_m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
   has_one :schema_o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+  has_one :schema_ou1, class_name: "SchemaS1", foreign_key: "schema_s0_u_id"
 end
 
 class S1 < BaseTestModel
@@ -84,6 +88,7 @@ class S1 < BaseTestModel
   testable_has_one :o2, -> { order("s2s.id DESC") }, class_name: "S2"
   testable_belongs_to :b2, class_name: "S2", foreign_key: "s2_id"
   testable_has_and_belongs_to_many :z2, class_name: "S2"
+  testable_has_one :ou2, -> { order("s2s.id DESC") }, foreign_key: "s1_u_id", class_name: "S2"
 
   testable_has_many :mp2, class_name: "S2", as: "has_s2s_poly"
   testable_has_one :op2, -> { order("s2s.id DESC") }, class_name: "S2", as: "has_s2s_poly"
@@ -129,6 +134,7 @@ class SchemaS0 < BaseTestModel
   belongs_to :schema_b1, class_name: "SchemaS1", foreign_key: "schema_s1_id"
   has_many :schema_m1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
   has_one :schema_o1, class_name: "SchemaS1", foreign_key: "schema_s0_id"
+  has_one :schema_ou1, class_name: "SchemaS1", foreign_key: "schema_s0_u_id"
   has_and_belongs_to_many :schema_z1, class_name: "SchemaS1", join_table: "spam_schema.schema_s0s_schema_s1s"
 
   belongs_to :b1, class_name: "S1", foreign_key: "schema_s1_id"
@@ -142,6 +148,7 @@ class SchemaS1 < BaseTestModel
   belongs_to :schema_b2, class_name: "SchemaS2", foreign_key: "schema_s2_id"
   has_many :schema_m2, class_name: "SchemaS2", foreign_key: "schema_s1_id"
   has_one :schema_o2, class_name: "SchemaS2", foreign_key: "schema_s1_id"
+  has_one :schema_ou2, class_name: "SchemaS2", foreign_key: "schema_s1_u_id"
 
   belongs_to :b2, class_name: "S2", foreign_key: "schema_s2_id"
   has_many :m2, class_name: "S2", foreign_key: "schema_s1_id"
