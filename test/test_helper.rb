@@ -12,7 +12,7 @@ else
   require "deep_cover"
 end
 
-
+require "logger"
 require_relative "support/load_test_env"
 require "minitest/autorun"
 require_relative "support/custom_asserts"
