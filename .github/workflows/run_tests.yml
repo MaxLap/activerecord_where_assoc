@@ -100,7 +100,7 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby_version }}
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       if: ${{ env.CACHE_DEPENDENCIES == 'true' }}
       with:
         # The path given to bundler is used relatively to the directory of the gemfile
