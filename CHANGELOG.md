@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.3.0 - 2025-03-04
+
 * The arguments of `#where_assoc_count` can now be swapped when comparing to a number or a range. <br>
   So `where_assoc_count(:posts, :>, 5)` is now valid for having more than 5 posts.
 
