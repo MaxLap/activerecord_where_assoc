@@ -54,10 +54,14 @@ task :generate_run_tests_on_head_workflow do
   config = YAML.load_file('.github/workflows/run_tests.yml')
   config['name'] = 'Test future versions'
   config['env']['CACHE_DEPENDENCIES'] = false
+
+  max_gemfile = config['jobs']['test']['strategy']['matrix']['include'].map { |c| c['gemfile'] }.max
+  max_ruby_version = config['jobs']['test']['strategy']['matrix']['include'].map { |c| c['ruby_version'].to_s }.max
+
   config['jobs']['test']['strategy']['matrix']['include'] = [
     {'gemfile' => 'gemfiles/rails_head.gemfile', 'ruby_version' => 'head'},
-    {'gemfile' => 'gemfiles/rails_head.gemfile', 'ruby_version' => 3.3},
-    {'gemfile' => 'gemfiles/rails_7_2.gemfile', 'ruby_version' => 'head'},
+    {'gemfile' => 'gemfiles/rails_head.gemfile', 'ruby_version' => max_ruby_version},
+    {'gemfile' => max_gemfile, 'ruby_version' => 'head'},
   ]
 
   #
