@@ -65,7 +65,7 @@ task :generate_run_tests_on_head_workflow do
   ]
 
   #
-  config['jobs']['test']['continue-on-error'] = true
+  # config['jobs']['test']['continue-on-error'] = true
 
   header = <<-TXT
 # This file is generated from run_tests.yml, changes here will be lost next time `rake` is run
