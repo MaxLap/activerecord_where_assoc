@@ -13,7 +13,7 @@ my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
 Post.where_assoc_exists([:comments, :author], &:admins).where(...)
 
 # Find my_user's posts that have at least 5 non-spam comments (not_spam is a scope on comments)
-my_user.posts.where_assoc_count(5, :>=, :comments) { |comments| comments.not_spam }.where(...)
+my_user.posts.where_assoc_count(5, :<=, :comments) { |comments| comments.not_spam }.where(...)
 ```
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
