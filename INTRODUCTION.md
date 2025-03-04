@@ -15,7 +15,7 @@ Post.where("EXISTS(SELECT 1 FROM comments where posts.id = comments.post_id)")
 ```
 
 But each of these approaches have some side effects that can make things harder for yourself later:
-* Using `#joins` will make your query return duplicate entries if a `Post` has multiple `Comments`.  
+* Using `#joins` will make your query return duplicate entries if a `Post` has multiple `Comments`.<br>
   You might fix that by adding `#distinct` to the query, but that is a change to the whole query which could
   cause issues depending on what else you are doing in the query (maybe you wanted duplicates from another join?).
 * Using `#includes` or `#eager_load` will trigger eager-loading of your models.
@@ -214,7 +214,7 @@ sometimes it's more of a curiosity that you want to query once. In any case, doi
 (without just loading everything) is a nightmare, especially when you want to nest through multiple associations.
 
 ```ruby
-Post.where_assoc_count(5, :<=, :comments)
+Post.where_assoc_count(:comments, :>=, 5)
 ```
 
 This is a more powerful version of `#where_assoc_exists` / `#where_assoc_not_exists`. You can specify how many
@@ -223,16 +223,12 @@ records in the association must match for a record to be returned.
 Again, lets say we want posts with at least 5 comments by admin:
 
 ```ruby
-Post.where_assoc_count(5, :<=, :comments) {
+Post.where_assoc_count(:comments, :>=, 5) {
   where_assoc_exists(:author, is_admin: true)
 }
 # Or if you have the by_admin scope on Comment
-Post.where_assoc_count(5, :<=, :comments, &:by_admin)
+Post.where_assoc_count(:comments, :>=, 5, &:by_admin)
 ```
-
-The order of the parameters may seem confusing. But you will get used to it. It helps to remember that the
-goal is to do: `5 < (SELECT COUNT(*) FROM ...)`. So the parameters are in the same order as in that query:
-number, operator, association.
 
 You can use any of the basic operators: `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`. You can even give it a range
 instead of a fixed number. See the
@@ -246,7 +242,7 @@ complex query, or maybe you need them for an even more complex condition. These 
 
 * `assoc_exists_sql` returns only the SQL for doing an EXISTS condition
 * `assoc_not_exists_sql` returns only the SQL for doing a NOT EXISTS condition
-* `compare_assoc_count_sql` returns only the SQL for doing a condition on the number of associated records that match 
+* `compare_assoc_count_sql` returns only the SQL for doing a condition on the number of associated records that match
 * `only_assoc_count_sql` returns only the SQL to count the number of associated records that match, this is to be used in a condition
 
 You can read about them in the [documentation](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/SqlReturningMethods.html). Here is a quick example:

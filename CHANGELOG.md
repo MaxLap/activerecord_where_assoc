@@ -1,5 +1,8 @@
 # Unreleased
 
+* The arguments of `#where_assoc_count` can now be swapped when comparing to a number or a range. <br>
+  So `where_assoc_count(:posts, :>, 5)` is now valid for having more than 5 posts.
+
 # 1.2.1 - 2024-12-05
 
 * Optimize `has_one` handling for `#where_assoc_exists` with a `has_one` as last association + without any conditions or offset.

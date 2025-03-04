@@ -13,7 +13,7 @@ my_post.comments.where_assoc_not_exists(:author, is_admin: true).where(...)
 Post.where_assoc_exists([:comments, :author], &:admins).where(...)
 
 # Find my_user's posts that have at least 5 non-spam comments (not_spam is a scope on comments)
-my_user.posts.where_assoc_count(5, :<=, :comments) { |comments| comments.not_spam }.where(...)
+my_user.posts.where_assoc_count(:comments, :>=, 5) { |comments| comments.not_spam }.where(...)
 ```
 
 These allow for powerful, chainable, clear and easy to reuse queries. (Great for scopes)
@@ -56,7 +56,7 @@ Or install it yourself with:
 
 ## Development state
 
-This gem is feature complete and production ready.  
+This gem is feature complete and production ready.<br>
 Other than rare tweaks as new versions of Rails and Ruby are released, there shouldn't be much activity on this repository.
 
 ## Documentation
@@ -77,45 +77,36 @@ Otherwise, here is a short explanation of the main methods provided by this gem:
 ```ruby
 where_assoc_exists(association_name, conditions, options, &block)
 where_assoc_not_exists(association_name, conditions, options, &block)
-where_assoc_count(left_operand, operator, association_name, conditions, options, &block)
+where_assoc_count(left_assoc_or_value, operator, right_assoc_or_value, conditions, options, &block)
 ```
 
-* These methods add a condition (a `#where`) that checks if the association exists (or not)  
-* You can specify condition on the association, so you could check only for comments that are made by an admin.  
-* Each method returns a new relation, meaning you can chain `#where`, `#order`, `limit`, etc.  
+* These methods add a condition (a `#where`) that checks if the association exists (or not)
+* You can specify condition on the association, so you could check only for comments that are made by an admin.
+* Each method returns a new relation, meaning you can chain `#where`, `#order`, `limit`, etc.
 * common arguments:
   * association_name: the association we are doing the condition on.
   * conditions: (optional) the condition to apply on the association. It can be anything that `#where` can receive, so: Hash, String and Array (string with binds).
   * options: [available options](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-Options) to alter some behaviors. (rarely necessary)
-  * block: adds more complex conditions by receiving a relation on the association. Can use `#where`, `#where_assoc_*`, scopes, and other scoping methods.  
-    Must return a relation.
+  * block: adds more complex conditions by receiving a relation on the association. Can use `#where`, `#where_assoc_*`, scopes, and other scoping methods.<br>
+    Must return a relation.<br>
     The block either:
     * receives no argument, in which case `self` is set to the relation, so you can do `{ where(id: 123) }`
     * receives arguments, in which case the block is called with the relation as first parameter.
 
-    The block should return the new relation to use or `nil` to do as if there were no blocks.  
+    The block should return the new relation to use or `nil` to do as if there were no blocks.<br>
     It's common to use `where_assoc_*(..., &:scope_name)` to use a single scope.
 * `#where_assoc_count` is a generalization of `#where_assoc_exists` and `#where_assoc_not_exists`. It behaves the same way, but is more powerful, as it allows you to specify how many matches there should be.
     ```ruby
     # These are equivalent:
     Post.where_assoc_exists(:comments, is_spam: true)
-    Post.where_assoc_count(1, :<=, :comments, is_spam: true)
+    Post.where_assoc_count(:comments, :>=, 1, is_spam: true)
 
     Post.where_assoc_not_exists(:comments, is_spam: true)
-    Post.where_assoc_count(0, :==, :comments, is_spam: true)
+    Post.where_assoc_count(:comments, :==, 0, is_spam: true)
 
     # This has no equivalent (Posts with at least 5 spam comments)
-    Post.where_assoc_count(5, :<=, :comments, is_spam: true)
+    Post.where_assoc_count(:comments, :>=, 5, is_spam: true)
     ```
-* `where_assoc_count`'s additional arguments  
-  The order of the parameters of `#where_assoc_count` may seem confusing, but you will get used to it. It helps to remember: the goal is to do: `5 < (SELECT COUNT(*) FROM ...)`, the number is first, then operator, then the association and its conditions.
-  * left_operand:  
-      * a number  
-      * a string of SQL to embed in the query  
-      * a range (operator must be `:==` or `:!=`)  
-        will use SQL's `BETWEEN` or `NOT BETWEEN`  
-        supports infinite ranges and exclusive end
-  * operator: one of `:<`, `:<=`, `:==`, `:!=`, `:>=`, `:>`
 
 ## Intuition
 
@@ -127,8 +118,8 @@ Here is the basic intuition for the methods:
 
 `#where_assoc_count` the more specific version of `#where_assoc_exists`. Filters the models, returning those *where* a record for the *association* matching a condition (by default any record in the association) do *not exists*
 
-The condition that you may need on the record can be quite complicated. For this reason, you can pass a block to these methods.  
-The block will receive a relation on records of the association. Your job is then to call `where` and scopes to specify what you want to exist (or to not exist if using `#where_assoc_not_exists`). 
+The condition that you may need on the record can be quite complicated. For this reason, you can pass a block to these methods.
+The block will receive a relation on records of the association. Your job is then to call `where` and scopes to specify what you want to exist (or to not exist if using `#where_assoc_not_exists`).
 
 So if you have `User.where_assoc_exists(:comments) {|rel| rel.where("content ilike '%github.com%'") }`, `rel` is a relation is on `Comment`, and you are specifying what you want to exist. So now we are looking for users that made a comment containing 'github.com'.
 
@@ -142,7 +133,7 @@ Sometimes, there isn't a single association that goes deep enough. In that situa
 # Find users that have a post that has a comment that was made by an admin.
 # Using &:admins to use the admins scope (or any other class method of comments)
 User.where_assoc_exists(:posts) { |posts|
-    posts.where_assoc_exists(:comments) { |comments| 
+    posts.where_assoc_exists(:comments) { |comments|
         comments.where_assoc_exists(:author, &:admins)
     }
 }
@@ -223,7 +214,7 @@ On MySQL databases, it is not possible to use `has_one` associations and associa
 
 I do not know of a way to do a SQL query that can deal with all the specifics of `has_one` for MySQL. If you have one, then please suggest it in an issue/pull request.
 
-In order to work around this, you must use the [ignore_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Aignore_limit+option) option. The behavior is less correct, but better than being unable to use the gem. 
+In order to work around this, you must use the [ignore_limit](https://maxlap.github.io/activerecord_where_assoc/ActiveRecordWhereAssoc/RelationReturningMethods.html#module-ActiveRecordWhereAssoc::RelationReturningMethods-label-3Aignore_limit+option) option. The behavior is less correct, but better than being unable to use the gem.
 
 ### has_* :through vs limit/offset
 For `has_many` and `has_one` with the `:through` option, `#limit` and `#offset` are ignored. Note that `#limit` and `#offset` of the `:source` and of the `:through` side are applied correctly.

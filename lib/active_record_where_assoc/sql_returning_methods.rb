@@ -45,13 +45,18 @@ module ActiveRecordWhereAssoc
     #
     # For example:
     #   # Users with at least 10 posts or at least 10 comment
+    #   User.where("#{User.compare_assoc_count_sql(:posts, :>=, 10)} OR #{User.compare_assoc_count_sql(:comments, :>=, 10)}")
+    #   my_users.where("#{User.compare_assoc_count_sql(:posts, :>=, 10)} OR #{User.compare_assoc_count_sql(:comments, :>=, 10)}")
+    #
+    #   # The older way of doing the same thing (the order of parameter used to be reversed,
+    #   # both order work when using a number or a range as one of the operand)
     #   User.where("#{User.compare_assoc_count_sql(10, :<=, :posts)} OR #{User.compare_assoc_count_sql(10, :<=, :comments)}")
     #   my_users.where("#{User.compare_assoc_count_sql(10, :<=, :posts)} OR #{User.compare_assoc_count_sql(10, :<=, :comments)}")
     #
     # The parameters are the same as RelationReturningMethods#where_assoc_count, including the
     # possibility of specifying a list of association_name.
-    def compare_assoc_count_sql(left_operand, operator, association_name, conditions = nil, options = {}, &block)
-      ActiveRecordWhereAssoc::CoreLogic.compare_assoc_count_sql(self, left_operand, operator, association_name, conditions, options, &block)
+    def compare_assoc_count_sql(left_assoc_or_value, operator, right_assoc_or_value, conditions = nil, options = {}, &block)
+      ActiveRecordWhereAssoc::CoreLogic.compare_assoc_count_sql(self, left_assoc_or_value, operator, right_assoc_or_value, conditions, options, &block)
     end
 
     # This method returns a string containing the SQL to count an association used by RelationReturningMethods#where_assoc_count.
