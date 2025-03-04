@@ -7,6 +7,17 @@ module ActiveRecordWhereAssoc
   module CoreLogic
     # Arel table used for aliasing when handling recursive associations (such as parent/children)
     ALIAS_TABLE = Arel::Table.new("_ar_where_assoc_alias_")
+    OPERATOR_SWAP_OPERANDS = {
+      "<" => ">",
+      "<=" => ">=",
+      ">" => "<",
+      ">=" => "<=",
+      # Below stays the same
+      "=" => "=",
+      "==" => "==",
+      "!=" => "!=",
+      "<>" => "<>",
+    }
 
     # Returns the SQL for checking if any of the received relation exists.
     # Uses a OR if there are multiple relations.
@@ -92,7 +103,28 @@ module ActiveRecordWhereAssoc
     # Returns the SQL condition to check if the specified association of the record_class has the desired number of records.
     #
     # See RelationReturningMethods#where_assoc_count or SqlReturningMethods#compare_assoc_count_sql for usage details.
-    def self.compare_assoc_count_sql(record_class, left_operand, operator, association_names, given_conditions, options, &block)
+    #
+    # The codebase originally only allowed where_assoc_count(5, :<, :comments).
+    # This has since been considered confusing and error prone, with `where_assoc_count(:comments, :>, 5)` being preferable.
+    # So we want to allow the better way to work.
+    # However:
+    # * We originally already allowed any valid SQL to be given as left valid (even a symbol that names a column).
+    # * We don't want this to be a breaking change
+    #
+    # Because of this, it is not simple to correctly auto-detect which situation we are in.
+    # So only the simple and most common case of using a number or a range on the right side (3rd argument) is supported.
+    #
+    # And due to this history, the generated SQL will still have the counting SQL on the right side.
+    def self.compare_assoc_count_sql(record_class, left_assoc_or_value, operator, right_assoc_or_value, given_conditions, options, &block)
+      if right_assoc_or_value.is_a?(Numeric) || right_assoc_or_value.is_a?(Range)
+        association_names = left_assoc_or_value
+        left_operand = right_assoc_or_value
+        operator = OPERATOR_SWAP_OPERANDS.fetch(operator.to_s)
+      else
+        association_names = right_assoc_or_value
+        left_operand = left_assoc_or_value
+      end
+
       right_sql = only_assoc_count_sql(record_class, association_names, given_conditions, options, &block)
 
       sql_for_count_operator(left_operand, operator, right_sql)

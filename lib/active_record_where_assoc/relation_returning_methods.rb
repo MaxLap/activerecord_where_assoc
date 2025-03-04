@@ -313,18 +313,18 @@ module ActiveRecordWhereAssoc
     # To clarify, here are equivalent examples:
     #
     #   Post.where_assoc_exists(:comments)
-    #   Post.where_assoc_count(1, :<=, :comments)
+    #   Post.where_assoc_count(:comments, :>=, 1)
     #
     #   Post.where_assoc_not_exists(:comments)
-    #   Post.where_assoc_count(0, :==, :comments)
+    #   Post.where_assoc_count(:comments, :==, 0)
     #
-    # But these have no equivalent:
+    # But these have no equivalent with the *_exists methods:
     #
     #   # Posts with at least 5 comments
-    #   Post.where_assoc_count(5, :<=, :comments)
+    #   Post.where_assoc_count(:comments, :>=, 5)
     #
     #   # Posts with less than 5 comments
-    #   Post.where_assoc_count(5, :>, :comments)
+    #   Post.where_assoc_count(:comments, :<, 5)
     #
     # You could say this is a way of doing a +#select+ that +#count+ the associations of your model
     # on the SQL side, but faster and more concise.
@@ -332,20 +332,30 @@ module ActiveRecordWhereAssoc
     # Examples (with an equivalent ruby +#select+ and +#count+)
     #
     #   # Posts with at least 5 comments
-    #   Post.where_assoc_count(5, :<=, :comments)
+    #   Post.where_assoc_count(:comments, :>=, 5)
     #   Post.all.select { |post| post.comments.count >= 5 }
     #
     #   # Posts that have at least 5 comments marked as spam
-    #   Post.where_assoc_count(5, :<=, :comments, is_spam: true)
+    #   Post.where_assoc_count(:comments, :>=, 5, is_spam: true)
     #   Post.all.select { |post| post.comments.where(is_spam: true).count >= 5 }
     #
     #   # Posts that have at least 10 replies spread over their comments
-    #   Post.where_assoc_count(10, :<=, [:comments, :replies])
-    #   Post.select { |post| post.comments.sum { |comment| comment.replies.count } >= 5 }
+    #   Post.where_assoc_count([:comments, :replies], :>=, 10)
+    #   Post.select { |post| post.comments.sum { |comment| comment.replies.count } >= 10 }
     #
-    # [left_operand]
+    # Note: Originally, the order of the arguments used to have to be: `where_assoc_count(5, :<, :comments)`.
+    # This was confusing and error prone, with `where_assoc_count(:comments, :>, 5)` appearing preferable.
+    # However, due to the flexibility of what could already be received as first argument, it was not
+    # simple to detect all cases of the arguments being swapped. We didn't want this to be a breaking change.
+    #
+    # So a special case was made for the main case of using a number or a range. This means the only time where
+    # the association_name(s) can be the first argument is when using a number.<br>
+    # Otherwise, the association_names must be the third arguments, such as: where_assoc_count("Some SQL", :<, :comments)
+    #
+    # [left_assoc_or_value]
     #   1st argument, the left side of the comparison. <br>
     #   One of:
+    #   * If using a number or a range as third argument, this can be the association_name(s). (See third parameter)
     #   * a number
     #   * a string of SQL to embed in the query
     #   * a range (operator must be :== or :!=), will use BETWEEN or NOT BETWEEN<br>
@@ -353,20 +363,27 @@ module ActiveRecordWhereAssoc
     #
     #     # Posts with 5 to 10 comments
     #     Post.where_assoc_count(5..10, :==, :comments)
+    #     Post.where_assoc_count(:comments, :==, 5..10) # Equivalent
     #
     #     # Posts with less than 5 or more than 10 comments
     #     Post.where_assoc_count(5..10, :!=, :comments)
+    #     Post.where_assoc_count(:comments, :!=, 5..10) # Equivalent
     #
     # [operator]
     #   The operator to use, one of these symbols: <code>  :<  :<=  :==  :!=  :>=  :>  </code>
     #
-    # [association_name]
+    # [right_assoc_or_value]
+    #   If the first argument was the association_name(s), then this must be a number or a range.
+    #
+    #   Otherwise, this must be the association_names(s).
+    #
     #   The association that must have a certain number of occurrences <br>
-    #   Note that if you use an array of association names, the number of the last association
+    #   Note that if you use an array of association names, the total number of the last association
     #   is what is counted.
     #
     #     # Users which have received at least 5 comments total (can be spread on all of their posts)
     #     User.where_assoc_count(5, :<=, [:posts, :comments])
+    #     User.where_assoc_count([:posts, :comments], :>=, 5)
     #
     #   See RelationReturningMethods@Association
     #
@@ -382,26 +399,28 @@ module ActiveRecordWhereAssoc
     #   More complex conditions the associated record must match (can also use scopes of the association's model) <br>
     #   See RelationReturningMethods@Block
     #
-    # The order of the parameters may seem confusing. But you will get used to it. It helps
-    # to remember that the goal is to do:
+    # The order of the parameters may seem confusing. That's an mistake that cannot be fixed without a breaking change.
+    # That's why there is now a special case for using a number or range as third argument. Note that the generated SQL will always
+    # place the counting SQL on the right side. (Reversing the operator when needed), like so:
     #    5 < (SELECT COUNT(*) FROM ...)
-    # So the parameters are in the same order as in that query: number, operator, association.
     #
     # To be clear, when you use multiple associations in an array, the count you will be
     # comparing against is the total number of records of that last association.
     #
     #   # The users that have received at least 5 comments total on all of their posts
     #   # So this can be from one post that has 5 comments of from 5 posts with 1 comments
+    #   User.where_assoc_count([:posts, :comments], :>=, 5)
     #   User.where_assoc_count(5, :<=, [:posts, :comments])
     #
     #   # The users that have at least 5 posts with at least one comments
     #   User.where_assoc_count(5, :<=, :posts) { where_assoc_exists(:comments) }
+    #   User.where_assoc_count(:posts, :>=, 5) { where_assoc_exists(:comments) }
     #
     # You can get the SQL string of the condition using SqlReturningMethods#compare_assoc_count_sql.
     # You can get the SQL string for only the counting using SqlReturningMethods#only_assoc_count_sql.
-    def where_assoc_count(left_operand, operator, association_name, conditions = nil, options = {}, &block)
-      sql = ActiveRecordWhereAssoc::CoreLogic.compare_assoc_count_sql(self.klass, left_operand, operator,
-                                                                      association_name, conditions, options, &block)
+    def where_assoc_count(left_assoc_or_value, operator, right_assoc_or_value, conditions = nil, options = {}, &block)
+      sql = ActiveRecordWhereAssoc::CoreLogic.compare_assoc_count_sql(self.klass, left_assoc_or_value, operator,
+                                                                      right_assoc_or_value, conditions, options, &block)
       where(sql)
     end
   end

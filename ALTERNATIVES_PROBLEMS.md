@@ -276,7 +276,7 @@ User.where_exists(:posts) { |posts| posts.where_exists(comments) }
 * Has no equivalent to `#where_assoc_count`
 ```ruby
 # There is no equivalent for this (posts with more than 5 comments)
-Post.where_assoc_count(5, :<, :comments)
+Post.where_assoc_count(:comments, :>, 5)
 ```
 
 * [Treats has_one like a has_many](#treating-has_one-like-has_many)
