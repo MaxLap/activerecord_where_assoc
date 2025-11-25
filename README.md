@@ -1,7 +1,6 @@
 # ActiveRecord Where Assoc
 
 ![Test supported versions](https://github.com/MaxLap/activerecord_where_assoc/workflows/Test%20supported%20versions/badge.svg)
-[![Code Climate](https://codeclimate.com/github/MaxLap/activerecord_where_assoc/badges/gpa.svg)](https://codeclimate.com/github/MaxLap/activerecord_where_assoc)
 
 This gem makes it easy to do conditions based on the associations of your records in ActiveRecord (Rails). (Using SQL's `EXISTS` operator)
 
