@@ -1,5 +1,7 @@
 # Unreleased
 
+* Add support for extensions on `has_many` and `has_and_belongs_to_many` associations
+
 # 1.3.0 - 2025-03-04
 
 * The arguments of `#where_assoc_count` can now be swapped when comparing to a number or a range. <br>

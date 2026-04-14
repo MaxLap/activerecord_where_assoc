@@ -30,6 +30,8 @@ ActiveRecord::Schema.define do
     t.integer :s1s_column, limit: 8
     t.integer :s1s_adhoc_column, limit: 8
 
+    t.boolean :extension_filter, default: false, null: false
+
     t.index ["s0_u_id"], name: "index_s1s__s0_u_id", unique: true
   end
 
@@ -45,6 +47,8 @@ ActiveRecord::Schema.define do
 
     t.integer :s2s_column, limit: 8
     t.integer :s2s_adhoc_column, limit: 8
+
+    t.boolean :extension_filter, default: false, null: false
 
     t.index ["s1_u_id"], name: "index_s2s__s1_u_id", unique: true
   end

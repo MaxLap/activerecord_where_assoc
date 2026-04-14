@@ -62,6 +62,16 @@ module ActiveRecordWhereAssoc
     end
 
     if ActiveRecord.gem_version >= Gem::Version.new("5.0")
+      def self.reflection_extensions(reflection)
+        reflection.extensions
+      end
+    else
+      def self.reflection_extensions(reflection)
+        []
+      end
+    end
+
+    if ActiveRecord.gem_version >= Gem::Version.new("5.0")
       def self.parent_reflection(reflection)
         reflection.parent_reflection
       end

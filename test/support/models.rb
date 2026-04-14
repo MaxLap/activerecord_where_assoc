@@ -18,10 +18,18 @@ require_relative "base_test_model"
 class S0 < BaseTestModel
   setup_test_default_scope
 
-  testable_has_many :m1, class_name: "S1"
-  testable_has_one :o1, -> { order("s1s.id DESC") }, class_name: "S1"
-  testable_belongs_to :b1, class_name: "S1", foreign_key: "s1_id"
-  testable_has_and_belongs_to_many :z1, class_name: "S1"
+  testable_has_many :m1, class_name: "S1" do 
+    def with_extension_filter
+      where(extension_filter: true)
+    end
+  end
+  testable_has_one :o1, -> { order("s1s.id DESC") }, class_name: "S1" # has_one doesn't support extensions
+  testable_belongs_to :b1, class_name: "S1", foreign_key: "s1_id" # belongs_to doesn't support extensions
+  testable_has_and_belongs_to_many :z1, class_name: "S1" do 
+    def with_extension_filter
+      where(extension_filter: true)
+    end
+  end
   testable_has_one :ou1, -> { order("s1s.id DESC") }, foreign_key: "s0_u_id", class_name: "S1"
 
   testable_has_many :m1_none, -> { none }, class_name: "S1"
@@ -33,7 +41,11 @@ class S0 < BaseTestModel
   testable_has_one :op1, -> { order("s1s.id DESC") }, class_name: "S1", as: "has_s1s_poly"
   testable_belongs_to :bp1, polymorphic: true, foreign_key: "s0s_belongs_to_poly_id", foreign_type: "s0s_belongs_to_poly_type"
 
-  testable_has_many :m2m1, through: :m1, source: :m2, class_name: "S2"
+  testable_has_many :m2m1, through: :m1, source: :m2, class_name: "S2"do 
+    def with_extension_filter
+      where(extension_filter: true)
+    end
+  end
   testable_has_many :m2o1, through: :o1, source: :m2, class_name: "S2"
   testable_has_many :m2b1, through: :b1, source: :m2, class_name: "S2"
   testable_has_many :m2z1, through: :z1, source: :m2, class_name: "S2"

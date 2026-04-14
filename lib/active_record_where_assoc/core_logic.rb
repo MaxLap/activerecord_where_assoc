@@ -206,7 +206,11 @@ module ActiveRecordWhereAssoc
                 current_scope = current_scope.where(klass_scope)
               end
             end
-            current_scope = apply_proc_scope(current_scope, last_assoc_block) if last_assoc_block
+            if last_assoc_block
+              extensions = ActiveRecordCompat.reflection_extensions(final_reflection)
+              current_scope = current_scope.extending(*extensions) if extensions.any?
+              current_scope = apply_proc_scope(current_scope, last_assoc_block)
+            end
           else
             current_scope = process_association_step_limits(current_scope, reflection, record_class, options)
           end
