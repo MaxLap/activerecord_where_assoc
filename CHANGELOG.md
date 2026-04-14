@@ -1,6 +1,8 @@
 # Unreleased
 
-* Add support for extensions on `has_many` and `has_and_belongs_to_many` associations
+# 1.4.0 - 2026-04-14
+
+* Add support for extensions on `has_many` and `has_and_belongs_to_many` associations in Rails 5.0 and above
 
 # 1.3.0 - 2025-03-04
 
