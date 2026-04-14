@@ -8,7 +8,7 @@ describe "wa" do
   it "belongs_to with composite_key works" do
     ck1 = Ck1.create_default!(an_id1: 0, a_str1: "hi")
     ck1.create_assoc!(:b0, :Ck1_b0, attributes: {an_id0: 1, a_str0: "bar"})
-    ck0_spam = ck1.create_assoc!(:b0, :Ck1_b0, attributes: {an_id0: 1, a_str0: "spam"})
+    _ck0_spam = ck1.create_assoc!(:b0, :Ck1_b0, attributes: {an_id0: 1, a_str0: "spam"})
     ck1.save! # Save the updates ids
 
     assert_wa_from(Ck1, 1, :b0)

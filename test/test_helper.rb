@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-coverage_config = proc do
+_coverage_config = proc do
   add_filter "/test/"
 end
 
